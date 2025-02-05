@@ -9,6 +9,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
@@ -50,5 +51,21 @@ public class UserController {
     @Operation(description = "Delete user by id")
     public ResponseEntity<User> delete(@PathVariable int id) throws BadRequestException {
         return this.user_service.delete(id);
+    }
+
+    @GetMapping("/test")
+    @Operation(description = "Test thymeleaf dispatcher")
+    public ModelAndView login() throws BadRequestException {
+        // Fetch user data for user_id = 1
+        ResponseEntity<User> userResponse = this.user_service.getById(1);
+        User user = userResponse.getBody();
+
+        // Create a ModelAndView object and set the view name to "login.html"
+        ModelAndView modelAndView = new ModelAndView("login");
+
+        // Add the user object to the model
+        modelAndView.addObject("user", user);
+
+        return modelAndView;
     }
 }
