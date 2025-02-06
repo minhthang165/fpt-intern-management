@@ -72,6 +72,7 @@ GO
 CREATE TABLE [Class] ( -- Class for each intern to join in
     [id] INT PRIMARY KEY IDENTITY(1,1),
     [class_name] NVARCHAR(255) NOT NULL,
+	[number_of_interns] INT DEFAULT 0,
 	[manager_id] INT NOT NULL,
     [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
     [updated_at] DATETIME DEFAULT NULL,
@@ -321,7 +322,9 @@ CREATE TABLE [CompletedTasks] (
 	[created_by] INT DEFAULT NULL,
     [updated_by] INT DEFAULT NULL, -- submission's change time
     [deleted_by] INT DEFAULT NULL,
-    [is_active] BIT DEFAULT 1
+    [is_active] BIT DEFAULT 1,
+	CONSTRAINT FK_CompletedTasks_User FOREIGN KEY ([user_id]) REFERENCES [user]([id]),
+	CONSTRAINT FK_CompletedTasks_Class FOREIGN KEY ([class_id]) REFERENCES [Class]([id])
 )
 
 CREATE TABLE [Event] (
@@ -391,11 +394,12 @@ VALUES
 ('Jane', 'Smith', 'jane.smith@example.com', '0987654321', NULL, 'FEMALE', 'EMPLOYEE');
 
 -- Class
-INSERT INTO [Class] ([class_name], [manager_id], [created_by]) 
+INSERT INTO [Class] ([class_name], [number_of_interns] , [manager_id], [created_by]) 
 VALUES 
-('Class A', 1, 1),
-('Class B', 2, 1),
-('Class C', 2, 1);
+('Class A', 0, 1, 1),
+('Class B', 15, 2, 1),
+('JS01', 20, 2, 1),
+('Class C', 30, 2, 1);
 
 -- User
 INSERT INTO [user] ([first_name], [last_name], [email], [phone_number], [class_id], [gender], [role]) 
