@@ -85,14 +85,14 @@ CREATE TABLE [Class] ( -- Class for each intern to join in
 
 CREATE TABLE [user] ( -- include admin, employee, intern, guest 
     [id] INT PRIMARY KEY IDENTITY(1,1),
-    [first_name] NVARCHAR(255) NOT NULL,
-    [last_name] NVARCHAR(255) NOT NULL,
+    [first_name] NVARCHAR(255),
+    [last_name] NVARCHAR(255),
     [email] NVARCHAR(255) NOT NULL,
-    [phone_number] NVARCHAR(255) NOT NULL,
+    [phone_number] NVARCHAR(255),
     [class_id] INT, -- For Intern Only
     [avatar_path] NVARCHAR(MAX) DEFAULT (N'/assets/img/user/default-avatar.png'),
-	[gender] NVARCHAR(50) NOT NULL CHECK ([gender] IN ('MALE', 'FEMALE', 'OTHER')), 
-    [role] NVARCHAR(50) NOT NULL CHECK ([role] IN ('ADMIN', 'EMPLOYEE', 'INTERN', 'GUEST')), 
+	[gender] NVARCHAR(50) DEFAULT 'MALE' CHECK ([gender] IN ('MALE', 'FEMALE', 'OTHER')), 
+    [role] NVARCHAR(50) DEFAULT 'GUEST' CHECK ([role] IN ('ADMIN', 'EMPLOYEE', 'INTERN', 'GUEST')), 
     [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
     [updated_at] DATETIME DEFAULT NULL,
     [deleted_at] DATETIME DEFAULT NULL,
