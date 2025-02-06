@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -25,13 +26,15 @@ public class UserService {
         if (!"INTERN".equalsIgnoreCase(userDTO.getRole().name())) {
             throw new BadRequestException(ErrorDictionaryConstraints.CREATED_FOR_INTERN_ONLY.getMessage());
         }
+
+        User existed_user = findUserByEmail(userDTO.getEmail());
+        if (existed_user != null) {
+            throw new BadRequestException(ErrorDictionaryConstraints.USERS_ALREADY_EXISTS.getMessage());
+        }
+
         User user = new User();
-        user.setFirst_name(userDTO.getFirst_name());
-        user.setLast_name(userDTO.getLast_name());
         user.setEmail(userDTO.getEmail());
-        user.setPhone_number(userDTO.getPhone_number());
         user.setClass_id(userDTO.getClass_id());
-        user.setGender(userDTO.getGender());
         user.setRole(userDTO.getRole());
 
         User savedUser = user_repository.save(user);
@@ -43,12 +46,13 @@ public class UserService {
             throw new BadRequestException(ErrorDictionaryConstraints.CREATED_FOR_EMPLOYEE_OR_GUEST_ONLY.getMessage());
         }
 
+        User existed_user = findUserByEmail(userDTO.getEmail());
+        if (existed_user != null) {
+            throw new BadRequestException(ErrorDictionaryConstraints.USERS_ALREADY_EXISTS.getMessage());
+        }
+
         User user = new User();
-        user.setFirst_name(userDTO.getFirst_name());
-        user.setLast_name(userDTO.getLast_name());
         user.setEmail(userDTO.getEmail());
-        user.setPhone_number(userDTO.getPhone_number());
-        user.setGender(userDTO.getGender());
         user.setRole(userDTO.getRole());
 
         User savedUser = user_repository.save(user);
@@ -92,5 +96,14 @@ public class UserService {
         user_repository.save(user);
 
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    private User findUserByEmail(String email) {
+        Optional<User> user = this.user_repository.findByEmail(email);
+        if (user.isPresent()) {
+            return user.get();
+        } else {
+            return null;
+        }
     }
 }

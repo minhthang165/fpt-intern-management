@@ -51,4 +51,10 @@ public class UserController {
     public ResponseEntity<User> delete(@PathVariable int id) throws BadRequestException {
         return this.user_service.delete(id);
     }
+
+    @PostMapping("/users/create-employee")
+    @Operation(description = "Create Employee")
+    public ResponseEntity<User> createEmployee(@RequestBody UserDTO user) throws BadRequestException {
+        return this.user_service.createEmployeeOrGuest(user);
+    }
 }

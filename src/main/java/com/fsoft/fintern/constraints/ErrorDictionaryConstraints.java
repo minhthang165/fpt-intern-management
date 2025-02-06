@@ -5,6 +5,7 @@ public enum ErrorDictionaryConstraints {
     //USER
     USER_NOT_FOUND("Can not find this user"),
     USERS_IS_EMPTY("There are no users"),
+    USERS_ALREADY_EXISTS("There is already a user with this email address"),
     CREATED_FOR_INTERN_ONLY("Role must be Intern"),
     CREATED_FOR_EMPLOYEE_OR_GUEST_ONLY("Role must be Employee or Guest");
 
