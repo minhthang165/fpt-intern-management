@@ -375,7 +375,17 @@ GO
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 */
 
+CREATE TRIGGER UpdateNumberOfInterns 
+ON [user]
+AFTER INSERT
+AS 
+BEGIN 
+	UPDATE [Class]
+	SET number_of_interns = number_of_interns + 1
+	FROM [Class]
+	INNER JOIN INSERTED intern ON [Class].id = intern.class_id
 
+END;
 
 /*
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

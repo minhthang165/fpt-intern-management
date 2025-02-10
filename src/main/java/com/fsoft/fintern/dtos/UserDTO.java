@@ -2,31 +2,12 @@ package com.fsoft.fintern.dtos;
 
 import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
+import com.fsoft.fintern.models.Classroom;
 
 public class UserDTO {
-    private String first_name;
-    private String last_name;
     private String email;
-    private String phone_number;
-    private Integer class_id;
-    private Gender gender;
+    private Integer classId;
     private Role role;
-
-    public String getFirst_name() {
-        return first_name;
-    }
-
-    public void setFirst_name(String first_name) {
-        this.first_name = first_name;
-    }
-
-    public String getLast_name() {
-        return last_name;
-    }
-
-    public void setLast_name(String last_name) {
-        this.last_name = last_name;
-    }
 
     public String getEmail() {
         return email;
@@ -36,28 +17,12 @@ public class UserDTO {
         this.email = email;
     }
 
-    public String getPhone_number() {
-        return phone_number;
+    public Integer getClassId() {
+        return classId;
     }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
-    }
-
-    public Integer getClass_id() {
-        return class_id;
-    }
-
-    public void setClass_id(Integer class_id) {
-        this.class_id = class_id;
-    }
-
-    public Gender getGender() {
-        return gender;
-    }
-
-    public void setGender(Gender gender) {
-        this.gender = gender;
+    public void setClassId(Integer classId) {
+        this.classId = classId;
     }
 
     public Role getRole() {
