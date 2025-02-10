@@ -1,4 +1,4 @@
-package com.fsoft.fintern.models.User;
+package com.fsoft.fintern.models;
 
 import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
@@ -17,7 +17,18 @@ public class User extends BaseModel {
     private String last_name;
     private String email;
     private String phone_number;
-    private Integer class_id;
+
+    @ManyToOne
+    @JoinColumn(name = "class_id", referencedColumnName = "id")
+    private Classroom classroom;
+
+    public Classroom getClassroom() {
+        return classroom;
+    }
+
+    public void setClassroom(Classroom classroom) {
+        this.classroom = classroom;
+    }
 
     @Column(name = "avatar_path", columnDefinition = "NVARCHAR(MAX) DEFAULT '/assets/img/user/default-avatar.png'")
     private String avatar_path;
@@ -94,11 +105,4 @@ public class User extends BaseModel {
         this.role = role;
     }
 
-    public Integer getClass_id() {
-        return class_id;
-    }
-
-    public void setClass_id(Integer class_id) {
-        this.class_id = class_id;
-    }
 }
