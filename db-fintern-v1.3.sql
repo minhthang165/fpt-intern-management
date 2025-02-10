@@ -128,6 +128,7 @@ CREATE TABLE [Recruitment] (  -- Show the positions are needed in order to the g
 	[work_form] NVARCHAR(50) NOT NULL CHECK (work_form IN ('PART-TIME', 'FULL-TIME')),
     [total_slot] INT NOT NULL,
     [available_slot] INT NOT NULL,
+	[description] NVARCHAR(MAX),
 	[start_time] DATETIME NOT NULL,
 	[end_time] DATETIME NOT NULL,
     [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
