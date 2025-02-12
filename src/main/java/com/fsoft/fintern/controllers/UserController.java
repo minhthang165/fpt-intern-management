@@ -35,7 +35,7 @@ public class UserController {
         return this.user_service.createIntern(user);
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/users/id/{id}")
     @Operation(description =  "Get User by id")
     public ResponseEntity<User> getById(@PathVariable int id) throws BadRequestException {
         return this.user_service.getById(id);
@@ -53,19 +53,9 @@ public class UserController {
         return this.user_service.delete(id);
     }
 
-    @GetMapping("/test")
-    @Operation(description = "Test thymeleaf dispatcher")
-    public ModelAndView login() throws BadRequestException {
-        // Fetch user data for user_id = 1
-        ResponseEntity<User> userResponse = this.user_service.getById(1);
-        User user = userResponse.getBody();
-
-        // Create a ModelAndView object and set the view name to "login.html"
-        ModelAndView modelAndView = new ModelAndView("login");
-
-        // Add the user object to the model
-        modelAndView.addObject("user", user);
-
-        return modelAndView;
+    @GetMapping("/users/email/{email}")
+    @Operation(description = "Find user by email")
+    public ResponseEntity<User> findByEmail(@PathVariable String email) throws BadRequestException {
+        return this.user_service.getByEmail(email);
     }
 }

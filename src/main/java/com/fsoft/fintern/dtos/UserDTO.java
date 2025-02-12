@@ -4,13 +4,23 @@ import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
 
 public class UserDTO {
+    private int id;
     private String first_name;
     private String last_name;
     private String email;
     private String phone_number;
     private Integer class_id;
+    private String picture;
     private Gender gender;
     private Role role;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getFirst_name() {
         return first_name;
@@ -66,5 +76,13 @@ public class UserDTO {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 }
