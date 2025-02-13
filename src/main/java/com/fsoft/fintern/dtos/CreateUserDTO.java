@@ -1,10 +1,8 @@
 package com.fsoft.fintern.dtos;
 
-import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
-import com.fsoft.fintern.models.Classroom;
 
-public class UserDTO {
+public class CreateUserDTO {
     private String email;
     private Integer classId;
     private Role role;

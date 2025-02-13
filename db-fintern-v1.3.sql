@@ -147,7 +147,7 @@ CREATE TABLE [File] ( -- Save the file include CV from intern or report from man
     [file_type] NVARCHAR(255) NOT NULL, -- 'REPORT' or 'CV'
     [displayName] NVARCHAR(255) NOT NULL,-- Display name is the file name user submitted -- 
     [path] NVARCHAR(255) NOT NULL,
-    [status] NVARCHAR(50) NOT NULL, -- PENDING / REVIEWING / APPROVED / REJECTED
+    [size] FLOAT,
     [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
     [updated_at] DATETIME DEFAULT NULL,
     [deleted_at] DATETIME DEFAULT NULL,
@@ -375,6 +375,7 @@ GO
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 */
 
+/*increase number of intern when add intern into class */
 CREATE TRIGGER UpdateNumberOfInterns 
 ON [user]
 AFTER INSERT
@@ -386,6 +387,19 @@ BEGIN
 	INNER JOIN INSERTED intern ON [Class].id = intern.class_id
 
 END;
+
+/* decrease number of slot when a guest apply cv into recruitment */
+CREATE TRIGGER UpdateTotalSlots
+ON [Recruitment]
+AFTER INSERT
+AS 
+BEGIN
+	UPDATE [Recruitment]
+	SET available_slot = available_slot - 1
+	FROM [Recruitment]
+	WHERE id IN (SELECT id FROM INSERTED)
+END;
+
 
 /*
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
