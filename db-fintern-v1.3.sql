@@ -436,9 +436,7 @@ VALUES
 INSERT INTO [Recruitment] ([position], [salary], [experience], [education], [work_form], [total_slot], [available_slot], [start_time], [end_time], [created_by]) 
 VALUES 
 ('Software Engineer', 1000, '2 years', 'Bachelor', 'FULL-TIME', 5, 3, GETDATE(), DATEADD(DAY, 30, GETDATE()), 1),
-('Project Manager', 2000, '5 years', 'Master', 'PART-TIME', 2, 1, GETDATE(), DATEADD(DAY, 15, GETDATE()), 1);
-
--- File
+('Project Manager', 2000, '5 years', 'Master', 'PART-TIME', 2, 1, GETDATE(), DATEADD(DAY, 15, GETDATE())
 INSERT INTO [File] ([submitter_id], [file_type], [displayName], [path], [status]) 
 VALUES 
 (3, 'CV', 'alice_cv.pdf', '/files/alice_cv.pdf', 'APPROVED'),

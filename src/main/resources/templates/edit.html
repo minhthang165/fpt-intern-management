@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            max-width: 800px;
+            margin: auto;
+        }
+        .form-container {
+            flex: 1;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            background-color: #f3eaf4;
+        }
+        .profile-image-container {
+            text-align: center;
+            position: relative;
+        }
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .edit-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: white;
+            padding: 5px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<h2>Edit your Information</h2>
+<div class="container">
+    <div class="form-container">
+        <form>
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" th:value="${user.first_name}" placeholder="Enter your First name here" required>
+
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" th:value="${user.last_name}" placeholder="Enter your Last name here" required>
+
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender" required>
+                <option th:selected="${user.gender == 'Female'}" value="Female">Female</option>
+                <option th:selected="${user.gender == 'Male'}" value="Male">Male</option>
+                <option th:selected="${user.gender == 'Other'}" value="Other">Other</option>
+            </select>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" th:value="${user.email}" readonly>
+
+            <label for="phone_number">Phone Number:</label>
+            <input type="text" id="phone_number" name="phone" placeholder="Enter your phone number here">
+
+            <button type="submit">Save</button>
+        </form>
+    </div>
+
+    <div class="profile-image-container">
+        <img th:src="${user.picture}" class="profile-image" alt="Profile Picture">
+        <div class="edit-icon">✏️</div>
+    </div>
+</div>
+</body>
+<script src="/assets/js/editProfile.js"></script>
+</html>
