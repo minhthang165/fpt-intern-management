@@ -80,6 +80,11 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<User> getByEmail(String email) throws BadRequestException {
+        User user = this.user_repository.findByEmail(email).orElse(null);
+            return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
     public ResponseEntity<User> getById(int id) throws BadRequestException {
         User user =  this.userRepository.findById(id).orElse(null);
         if (user == null) {

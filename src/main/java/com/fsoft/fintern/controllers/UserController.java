@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class UserController {
         return this.userService.createIntern(user);
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/users/id/{id}")
     @Operation(description =  "Get User by id")
     public ResponseEntity<User> getById(@PathVariable int id) throws BadRequestException {
         return this.userService.getById(id);
@@ -63,5 +64,11 @@ public class UserController {
     @Operation(description = "Update isActive true")
     public ResponseEntity<User> updateIsActive(@PathVariable int id) throws BadRequestException {
         return this.userService.setIsActiveTrue(id);
+    }
+
+    @GetMapping("/users/email/{email}")
+    @Operation(description = "Find user by email")
+    public ResponseEntity<User> findByEmail(@PathVariable String email) throws BadRequestException {
+        return this.user_service.getByEmail(email);
     }
 }
