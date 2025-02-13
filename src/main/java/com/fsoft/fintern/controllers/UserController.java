@@ -1,6 +1,7 @@
 package com.fsoft.fintern.controllers;
 
-import com.fsoft.fintern.dtos.UserDTO;
+import com.fsoft.fintern.dtos.CreateUserDTO;
+import com.fsoft.fintern.dtos.UpdateUserDTO;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +31,7 @@ public class UserController {
 
     @PostMapping("/users/create")
     @Operation(description = "create new intern")
-    public ResponseEntity<User> createIntern(@RequestBody UserDTO user) throws BadRequestException {
+    public ResponseEntity<User> createIntern(@RequestBody CreateUserDTO user) throws BadRequestException {
         return this.userService.createIntern(user);
     }
 
@@ -42,7 +43,7 @@ public class UserController {
 
     @PatchMapping("/users/update/{id}")
     @Operation(description = "Update user by id")
-    public ResponseEntity<User> update(@RequestBody UserDTO user, @PathVariable int id) throws BadRequestException  {
+    public ResponseEntity<User> update(@RequestBody UpdateUserDTO user, @PathVariable int id) throws BadRequestException  {
         return this.userService.update(id, user);
     }
 
@@ -54,7 +55,7 @@ public class UserController {
 
     @PostMapping("/users/create-employee")
     @Operation(description = "Create Employee")
-    public ResponseEntity<User> createEmployee(@RequestBody UserDTO user) throws BadRequestException {
+    public ResponseEntity<User> createEmployee(@RequestBody CreateUserDTO user) throws BadRequestException {
         return this.userService.createEmployeeOrGuest(user);
     }
 
