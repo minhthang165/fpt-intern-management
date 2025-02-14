@@ -7,7 +7,6 @@
 <h1>User Profile</h1>
 <div>
   <p><strong>Name:</strong> <span th:text="${user.first_name}">Unknown</span></p>
-  <p><strong>Email:</strong> <span th:text="${user.email}">Unknown</span></p>
   <img th:src="${user.picture}" alt="Profile Picture">
     <a th:href="@{/logout}"> Log out</a>
   <!-- Add more fields as needed -->

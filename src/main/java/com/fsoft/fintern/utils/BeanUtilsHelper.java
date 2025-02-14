@@ -12,14 +12,14 @@ public class BeanUtilsHelper {
         final BeanWrapper src = new BeanWrapperImpl(source);
         PropertyDescriptor[] pds = src.getPropertyDescriptors();
 
-        Set<String> emptyNames = new HashSet<>();
+        Set<String> nullValue = new HashSet<>();
         for (PropertyDescriptor pd : pds) {
             Object srcValue = src.getPropertyValue(pd.getName());
             if (srcValue == null) {
-                emptyNames.add(pd.getName());
+                nullValue.add(pd.getName());
             }
         }
 
-        return emptyNames.toArray(new String[0]);
+        return nullValue.toArray(new String[0]);
     }
 }

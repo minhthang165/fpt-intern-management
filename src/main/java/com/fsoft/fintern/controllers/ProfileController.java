@@ -1,13 +1,13 @@
 package com.fsoft.fintern.controllers;
 
-import com.fsoft.fintern.models.User.User;
+import com.fsoft.fintern.dtos.CreateUserDTO;
+import com.fsoft.fintern.models.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
+@SessionAttributes("user")
 @Controller
 @RequestMapping("profile")
-@SessionAttributes("user")
 public class ProfileController {
 
     @GetMapping("")
@@ -17,10 +17,8 @@ public class ProfileController {
 
     //Edit profile screen
     @GetMapping("/edit")
-    public String getInfo(Model model) {
+    public String getInfo(@ModelAttribute("tempUser") CreateUserDTO tempUser, Model model) {
+        model.addAttribute("tempUser", tempUser);
         return "edit";
     }
-
-
-
 }

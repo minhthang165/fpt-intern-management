@@ -1,61 +1,75 @@
 package com.fsoft.fintern.controllers;
 
-import com.fsoft.fintern.dtos.UserDTO;
-import com.fsoft.fintern.models.User.User;
+import com.fsoft.fintern.dtos.CreateUserDTO;
+import com.fsoft.fintern.dtos.LoginUserDTO;
+import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.servlet.http.HttpServletRequest;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
+import java.util.Random;
 
 @RestController
 @RequestMapping("api/user")
 public class UserController {
-    private final UserService user_service;
-
+    private AuthenticationManager authenticationManager;
+    private final UserService userService;
+    Random rand = new Random();
     @Autowired
-    public UserController(UserService user_service) {
-        this.user_service = user_service;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/users")
     @Operation(description = "view all user")
     public ResponseEntity<List<User>> findAll() throws BadRequestException {
-        return this.user_service.findAll();
+        return this.userService.findAll();
     }
 
     @PostMapping("/users/create")
     @Operation(description = "create new intern")
-    public ResponseEntity<User> createIntern(@RequestBody UserDTO user) throws BadRequestException {
-        return this.user_service.createIntern(user);
+    public ResponseEntity<User> createIntern(@RequestBody CreateUserDTO user) throws BadRequestException {
+        return this.userService.createIntern(user);
     }
 
     @GetMapping("/users/id/{id}")
     @Operation(description =  "Get User by id")
     public ResponseEntity<User> getById(@PathVariable int id) throws BadRequestException {
-        return this.user_service.getById(id);
+        return this.userService.getById(id);
     }
 
     @PatchMapping("/users/update/{id}")
     @Operation(description = "Update user by id")
-    public ResponseEntity<User> update(@RequestBody UserDTO user, @PathVariable int id) throws BadRequestException  {
-        return this.user_service.update(id, user);
+    public ResponseEntity<User> update(@RequestBody LoginUserDTO user, @PathVariable int id) throws BadRequestException  {
+        return this.userService.update(id, user);
     }
 
     @DeleteMapping("/users/delete/{id}")
     @Operation(description = "Delete user by id")
     public ResponseEntity<User> delete(@PathVariable int id) throws BadRequestException {
-        return this.user_service.delete(id);
+        return this.userService.delete(id);
+    }
+
+    @PostMapping("/users/create-employee")
+    @Operation(description = "Create Employee")
+    public ResponseEntity<User> createEmployee(@RequestBody CreateUserDTO user) throws BadRequestException {
+        return this.userService.createEmployeeOrGuest(user);
+    }
+
+    @PatchMapping("/users/setIsActive/{id}")
+    @Operation(description = "Update isActive true")
+    public ResponseEntity<User> updateIsActive(@PathVariable int id) throws BadRequestException {
+        return this.userService.setIsActiveTrue(id);
     }
 
     @GetMapping("/users/email/{email}")
     @Operation(description = "Find user by email")
     public ResponseEntity<User> findByEmail(@PathVariable String email) throws BadRequestException {
-        return this.user_service.getByEmail(email);
+        return this.userService.getByEmail(email);
     }
 }
