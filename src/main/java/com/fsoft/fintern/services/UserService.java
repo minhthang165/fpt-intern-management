@@ -3,6 +3,7 @@ package com.fsoft.fintern.services;
 import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.dtos.CreateUserDTO;
 import com.fsoft.fintern.dtos.UpdateUserDTO;
+import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.Classroom;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.repositories.ClassroomRepository;
@@ -54,6 +55,10 @@ public class UserService {
     }
 
     public ResponseEntity<User> createEmployeeOrGuest(CreateUserDTO createUserDTO) throws BadRequestException {
+        if (createUserDTO.getRole() == null) {
+            createUserDTO.setRole(Role.GUEST);
+        }
+
         if ("INTERN".equalsIgnoreCase(createUserDTO.getRole().name())) {
             throw new BadRequestException(ErrorDictionaryConstraints.CREATED_FOR_EMPLOYEE_OR_GUEST_ONLY.getMessage());
         }
@@ -64,8 +69,12 @@ public class UserService {
         }
 
         User user = new User();
+        user.setFirst_name(createUserDTO.getFirst_name());
+        user.setLast_name(createUserDTO.getLast_name());
         user.setEmail(createUserDTO.getEmail());
         user.setRole(createUserDTO.getRole());
+        user.setGender(createUserDTO.getGender());
+        user.setAvatar_path(createUserDTO.getPicture());
 
         User savedUser = userRepository.save(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
@@ -81,7 +90,7 @@ public class UserService {
     }
 
     public ResponseEntity<User> getByEmail(String email) throws BadRequestException {
-        User user = this.user_repository.findByEmail(email).orElse(null);
+        User user = this.userRepository.findByEmail(email).orElse(null);
             return new ResponseEntity<>(user, HttpStatus.OK);
     }
 

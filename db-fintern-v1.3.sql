@@ -297,6 +297,7 @@ CREATE TABLE [Tasks] ( -- Assign task
     [task_name] NVARCHAR(255) NOT NULL,
     [start_time] DATETIME NOT NULL,
     [end_time] DATETIME NOT NULL,
+	[description] NVARCHAR(MAX),
     [file] NVARCHAR(255),
     [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
     [updated_at] DATETIME DEFAULT NULL,
@@ -387,6 +388,7 @@ BEGIN
 	INNER JOIN INSERTED intern ON [Class].id = intern.class_id
 
 END;
+GO
 
 /* decrease number of slot when a guest apply cv into recruitment */
 CREATE TRIGGER UpdateTotalSlots
@@ -436,11 +438,13 @@ VALUES
 INSERT INTO [Recruitment] ([position], [salary], [experience], [education], [work_form], [total_slot], [available_slot], [start_time], [end_time], [created_by]) 
 VALUES 
 ('Software Engineer', 1000, '2 years', 'Bachelor', 'FULL-TIME', 5, 3, GETDATE(), DATEADD(DAY, 30, GETDATE()), 1),
-('Project Manager', 2000, '5 years', 'Master', 'PART-TIME', 2, 1, GETDATE(), DATEADD(DAY, 15, GETDATE())
-INSERT INTO [File] ([submitter_id], [file_type], [displayName], [path], [status]) 
+('Project Manager', 2000, '5 years', 'Master', 'PART-TIME', 2, 1, GETDATE(), DATEADD(DAY, 15, GETDATE()), 1);
+
+
+INSERT INTO [File] ([submitter_id], [file_type], [displayName], [path]) 
 VALUES 
-(3, 'CV', 'alice_cv.pdf', '/files/alice_cv.pdf', 'APPROVED'),
-(4, 'REPORT', 'bob_report.docx', '/files/bob_report.docx', 'PENDING');
+(3, 'CV', 'alice_cv.pdf', '/files/alice_cv.pdf'),
+(4, 'REPORT', 'bob_report.docx', '/files/bob_report.docx');
 
 -- Conversation
 INSERT INTO [Conversation] ([conversation_name], [conversation_avatar]) 

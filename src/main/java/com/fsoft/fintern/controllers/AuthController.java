@@ -2,10 +2,10 @@ package com.fsoft.fintern.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fsoft.fintern.dtos.UserDTO;
+import com.fsoft.fintern.dtos.CreateUserDTO;
 import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
-import com.fsoft.fintern.models.User.User;
+import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.UserService;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class AuthController {
     public String handleAuthentication(Model model, OAuth2AuthenticationToken token) throws BadRequestException {
         OAuth2User oauth2User = token.getPrincipal();
         String email = oauth2User.getAttribute("email");
-        UserDTO userDTO = new UserDTO();
+        CreateUserDTO userDTO = new CreateUserDTO();
         if(userService.getByEmail(email).getBody() == null) {
             userDTO.setEmail(email);
             userDTO.setFirst_name(oauth2User.getAttribute("given_name"));

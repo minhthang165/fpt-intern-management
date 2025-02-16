@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
@@ -69,6 +68,6 @@ public class UserController {
     @GetMapping("/users/email/{email}")
     @Operation(description = "Find user by email")
     public ResponseEntity<User> findByEmail(@PathVariable String email) throws BadRequestException {
-        return this.user_service.getByEmail(email);
+        return this.userService.getByEmail(email);
     }
 }

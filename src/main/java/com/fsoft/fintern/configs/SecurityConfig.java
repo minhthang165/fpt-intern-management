@@ -15,6 +15,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,9 +44,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/assets/**", "/home").permitAll()
-                        .requestMatchers("/logout", "/login","/register").anonymous()
-                        .anyRequest().authenticated()
+//                        .requestMatchers("/assets/**", "/home" , "/api-docs/**", "/swagger-ui.html", "/swagger-ui/*", "/webjars/**", "/api/**").permitAll()
+//                        .requestMatchers("/logout", "/login", "/register").anonymous()
+//                        .anyRequest().authenticated()
+                                .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
@@ -56,7 +58,8 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
                         .logoutSuccessHandler((request, response, authentication) -> response.sendRedirect("/login?logout"))
-                );
+                )
+                .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
     }
