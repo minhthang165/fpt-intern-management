@@ -1,25 +1,17 @@
 package com.fsoft.fintern.dtos;
 
+import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
 
 public class CreateUserDTO {
-    private int id;
     private String first_name;
     private String last_name;
     private String email;
     private String phone_number;
-    private Integer class_id;
+    private Integer classId;
     private String picture;
     private Gender gender;
     private Role role;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getFirst_name() {
         return first_name;
@@ -53,12 +45,12 @@ public class CreateUserDTO {
         this.phone_number = phone_number;
     }
 
-    public Integer getClass_id() {
-        return class_id;
+    public Integer getClassId() {
+        return classId;
     }
 
-    public void setClass_id(Integer class_id) {
-        this.class_id = class_id;
+    public void setClassId(Integer classId) {
+        this.classId = classId;
     }
 
     public Gender getGender() {

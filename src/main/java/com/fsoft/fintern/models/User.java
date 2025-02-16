@@ -38,7 +38,7 @@ public class User extends BaseModel {
     private Gender gender;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 50)
+    @Column(name = "role", nullable = true, length = 50,  columnDefinition = "NVARCHAR(50) DEFAULT 'GUEST' CHECK (role IN ('ADMIN', 'EMPLOYEE', 'INTERN', 'GUEST'))")
     private Role role;
 
     public Integer getId() {

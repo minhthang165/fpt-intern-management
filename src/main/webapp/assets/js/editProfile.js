@@ -8,9 +8,9 @@ async function updateUser () {
         email: document.getElementById('email').value, // Read-only field
         phone_number: document.getElementById('phone_number').value,
     };
-    console.log("Vjp")
+
     try {
-        const response = await fetch('/api/user/users/create', {
+        const response = await fetch('/api/user/users/create-employee', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
