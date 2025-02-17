@@ -1,40 +1,24 @@
-package com.fsoft.fintern.models.User;
+package com.fsoft.fintern.dtos;
 
 import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
-import com.fsoft.fintern.models.Shared.BaseModel;
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "\"User\"")
-public class User extends BaseModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", updatable = false, nullable = false)
-    private Integer id;
-
+public class UpdateUserDTO {
+    private int id;
     private String first_name;
     private String last_name;
     private String email;
     private String phone_number;
     private Integer class_id;
-
-    @Column(name = "avatar_path", columnDefinition = "NVARCHAR(MAX) DEFAULT '/assets/img/user/default-avatar.png'")
-    private String avatar_path;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "gender")
+    private String picture;
     private Gender gender;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 50)
     private Role role;
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -70,20 +54,20 @@ public class User extends BaseModel {
         this.phone_number = phone_number;
     }
 
+    public Integer getClass_id() {
+        return class_id;
+    }
+
+    public void setClass_id(Integer class_id) {
+        this.class_id = class_id;
+    }
+
     public Gender getGender() {
         return gender;
     }
 
     public void setGender(Gender gender) {
         this.gender = gender;
-    }
-
-    public String getAvatar_path() {
-        return avatar_path;
-    }
-
-    public void setAvatar_path(String avatar_path) {
-        this.avatar_path = avatar_path;
     }
 
     public Role getRole() {
@@ -94,11 +78,11 @@ public class User extends BaseModel {
         this.role = role;
     }
 
-    public Integer getClass_id() {
-        return class_id;
+    public String getPicture() {
+        return picture;
     }
 
-    public void setClass_id(Integer class_id) {
-        this.class_id = class_id;
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 }
