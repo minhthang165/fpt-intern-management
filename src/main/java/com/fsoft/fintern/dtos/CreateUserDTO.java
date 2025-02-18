@@ -8,7 +8,7 @@ public class CreateUserDTO {
     private String last_name;
     private String email;
     private String phone_number;
-    private Integer class_id;
+    private Integer classId;
     private String picture;
     private Gender gender;
     private Role role;
@@ -44,13 +44,14 @@ public class CreateUserDTO {
     public void setPhone_number(String phone_number) {
         this.phone_number = phone_number;
     }
-
-    public Integer getClass_id() {
-        return class_id;
+  
+    public Integer getClassId() {
+        return classId;
     }
 
-    public void setClass_id(Integer class_id) {
-        this.class_id = class_id;
+    public void setClassId(Integer classId) {
+        this.classId = classId;
+      
     }
 
     public Gender getGender() {

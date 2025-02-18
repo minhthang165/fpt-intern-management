@@ -58,7 +58,8 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
                         .logoutSuccessHandler((request, response, authentication) -> response.sendRedirect("/login?logout"))
-                );
+                )
+                .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
     }

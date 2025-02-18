@@ -2,7 +2,8 @@ package com.fsoft.fintern.services;
 
 import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.dtos.CreateUserDTO;
-import com.fsoft.fintern.dtos.LoginUserDTO;
+import com.fsoft.fintern.dtos.UpdateUserDTO;
+import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.Classroom;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.repositories.ClassroomRepository;
@@ -34,7 +35,7 @@ public class UserService {
             throw new BadRequestException(ErrorDictionaryConstraints.CREATED_FOR_INTERN_ONLY.getMessage());
         }
 
-        Classroom existedClass = this.classRepository.findById(createUserDTO.getClass_id()).orElse(null);
+        Classroom existedClass = this.classRepository.findById(createUserDTO.getClassId()).orElse(null);
         if (existedClass == null) {
             throw new BadRequestException(ErrorDictionaryConstraints.CLASS_NOT_EXISTS_ID.getMessage());
         }
@@ -51,11 +52,17 @@ public class UserService {
         user.setPhone_number(createUserDTO.getPhone_number());
         user.setGender(createUserDTO.getGender());
         user.setAvatar_path(createUserDTO.getPicture());
+
         User savedUser = userRepository.save(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
     public ResponseEntity<User> createEmployeeOrGuest(CreateUserDTO createUserDTO) throws BadRequestException {
+
+        if (createUserDTO.getRole() == null) {
+            createUserDTO.setRole(Role.GUEST);
+        }
+
         if ("INTERN".equalsIgnoreCase(createUserDTO.getRole().name())) {
             throw new BadRequestException(ErrorDictionaryConstraints.CREATED_FOR_EMPLOYEE_OR_GUEST_ONLY.getMessage());
         }
@@ -101,11 +108,11 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<User> update(int id, LoginUserDTO loginUserDTO) throws BadRequestException {
+    public ResponseEntity<User> update(int id, UpdateUserDTO updateUserDTO) throws BadRequestException {
         User user = this.userRepository.findById(id).orElseThrow(()
                 -> new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage()));
 
-        BeanUtils.copyProperties(loginUserDTO, user, BeanUtilsHelper.getNullPropertyNames(loginUserDTO));
+        BeanUtils.copyProperties(updateUserDTO, user, BeanUtilsHelper.getNullPropertyNames(updateUserDTO));
         this.userRepository.save(user);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }

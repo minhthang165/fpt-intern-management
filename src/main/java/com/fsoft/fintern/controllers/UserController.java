@@ -1,7 +1,7 @@
 package com.fsoft.fintern.controllers;
 
 import com.fsoft.fintern.dtos.CreateUserDTO;
-import com.fsoft.fintern.dtos.LoginUserDTO;
+import com.fsoft.fintern.dtos.UpdateUserDTO;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,17 +9,17 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Random;
 
-@RestController
+@Controller
 @RequestMapping("api/user")
 public class UserController {
-    private AuthenticationManager authenticationManager;
     private final UserService userService;
-    Random rand = new Random();
+  
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
@@ -45,7 +45,7 @@ public class UserController {
 
     @PatchMapping("/users/update/{id}")
     @Operation(description = "Update user by id")
-    public ResponseEntity<User> update(@RequestBody LoginUserDTO user, @PathVariable int id) throws BadRequestException  {
+    public ResponseEntity<User> update(@RequestBody UpdateUserDTO user, @PathVariable int id) throws BadRequestException  {
         return this.userService.update(id, user);
     }
 

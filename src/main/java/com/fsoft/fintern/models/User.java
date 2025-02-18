@@ -12,7 +12,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "\"User\"")
-public class User extends BaseModel implements UserDetails {
+public class User extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = true)
@@ -43,7 +43,7 @@ public class User extends BaseModel implements UserDetails {
     private Gender gender;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", length = 50)
+    @Column(name = "role", nullable = true, length = 50,  columnDefinition = "NVARCHAR(50) DEFAULT 'GUEST' CHECK (role IN ('ADMIN', 'EMPLOYEE', 'INTERN', 'GUEST'))")
     private Role role;
 
     public Integer getId() {
@@ -110,38 +110,5 @@ public class User extends BaseModel implements UserDetails {
         this.role = role;
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
-    }
-
-    @Override
-    public String getPassword() {
-        return "";
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
-    }
+  
 }

@@ -3,7 +3,6 @@ package com.fsoft.fintern.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsoft.fintern.dtos.CreateUserDTO;
-import com.fsoft.fintern.dtos.LoginUserDTO;
 import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.User;
@@ -35,15 +34,16 @@ public class AuthController {
     public String handleAuthentication(Model model, RedirectAttributes redirectAttributes, OAuth2AuthenticationToken token) throws BadRequestException {
         OAuth2User oauth2User = token.getPrincipal();
         String email = oauth2User.getAttribute("email");
-        User user = userService.getByEmail(email).getBody();
-        if(user == null) {
-            CreateUserDTO createUserDTO = new CreateUserDTO();
-            createUserDTO.setEmail(email);
-            createUserDTO.setFirst_name(oauth2User.getAttribute("given_name"));
-            createUserDTO.setLast_name(oauth2User.getAttribute("family_name"));
-            createUserDTO.setPicture(oauth2User.getAttribute("picture"));
-            createUserDTO.setRole(Role.INTERN);
-            redirectAttributes.addFlashAttribute("tempUser", createUserDTO);
+        CreateUserDTO userDTO = new CreateUserDTO();
+        if(userService.getByEmail(email).getBody() == null) {
+            userDTO.setEmail(email);
+            userDTO.setFirst_name(oauth2User.getAttribute("given_name"));
+            userDTO.setLast_name(oauth2User.getAttribute("family_name"));
+            userDTO.setPicture(oauth2User.getAttribute("picture"));
+            userDTO.setRole(Role.INTERN);
+            RedirectAttributes redirectAttributes;
+            model.addAttribute("user", userDTO);
+
             return "redirect:/profile/edit";
         }
         else {

@@ -1,5 +1,4 @@
 package com.fsoft.fintern.controllers;
-
 import com.fsoft.fintern.dtos.CreateUserDTO;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.UserService;

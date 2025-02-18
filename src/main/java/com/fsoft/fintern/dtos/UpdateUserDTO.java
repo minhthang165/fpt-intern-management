@@ -1,5 +1,4 @@
 package com.fsoft.fintern.dtos;
-
 import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
 
@@ -68,6 +67,7 @@ public class UpdateUserDTO {
 
     public void setGender(Gender gender) {
         this.gender = gender;
+
     }
 
     public Role getRole() {
@@ -85,4 +85,5 @@ public class UpdateUserDTO {
     public void setPicture(String picture) {
         this.picture = picture;
     }
+
 }
