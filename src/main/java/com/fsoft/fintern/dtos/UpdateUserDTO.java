@@ -1,45 +1,40 @@
 package com.fsoft.fintern.dtos;
-
+import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
 
 public class UpdateUserDTO {
-    private String firstName;
-    private String lastName;
-    private String phoneNumber;
-    private Integer classId;
+    private int id;
+    private String first_name;
+    private String last_name;
     private String email;
+    private String phone_number;
+    private Integer class_id;
+    private String picture;
+    private Gender gender;
     private Role role;
 
-    public String getFirstName() {
-        return firstName;
+    public int getId() {
+        return id;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getFirst_name() {
+        return first_name;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setFirst_name(String first_name) {
+        this.first_name = first_name;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public String getLast_name() {
+        return last_name;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public Integer getClassId() {
-        return classId;
-    }
-
-    public void setClassId(Integer classId) {
-        this.classId = classId;
+    public void setLast_name(String last_name) {
+        this.last_name = last_name;
     }
 
     public String getEmail() {
@@ -50,6 +45,31 @@ public class UpdateUserDTO {
         this.email = email;
     }
 
+    public String getPhone_number() {
+        return phone_number;
+    }
+
+    public void setPhone_number(String phone_number) {
+        this.phone_number = phone_number;
+    }
+
+    public Integer getClass_id() {
+        return class_id;
+    }
+
+    public void setClass_id(Integer class_id) {
+        this.class_id = class_id;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+
+    }
+
     public Role getRole() {
         return role;
     }
@@ -57,4 +77,13 @@ public class UpdateUserDTO {
     public void setRole(Role role) {
         this.role = role;
     }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
 }
