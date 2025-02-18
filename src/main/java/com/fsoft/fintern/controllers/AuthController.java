@@ -8,6 +8,7 @@ import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
+@Slf4j
 @Controller
 @SessionAttributes("user")
 @RequestMapping("authenticate")
@@ -51,7 +53,7 @@ public class AuthController {
             loginUserDTO.setPicture(user.getAvatar_path());
             loginUserDTO.setRole(user.getRole());
             model.addAttribute("user", loginUserDTO);
-            return "redirect:/profile";
+            return "redirect:/profile/";
         }
     }
 }

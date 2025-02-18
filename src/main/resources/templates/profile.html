@@ -1,15 +1,26 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Profile</title>
 </head>
 <body>
 <h1>User Profile</h1>
-<div>
-  <p><strong>Name:</strong> <span th:text="${user.first_name}">Unknown</span></p>
-  <img th:src="${user.picture}" alt="Profile Picture">
-    <a th:href="@{/logout}"> Log out</a>
-  <!-- Add more fields as needed -->
-</div>
+
+<input type="hidden" id="user_id" th:value="${user_id}"> <!-- Use Thymeleaf syntax -->
+
+<img id="picture" src="" alt="Profile Picture" width="150">
+<p><strong>Full Name:</strong> <span id="full_name"></span></p>
+<p><strong>Email:</strong> <span id="email"></span></p>
+<p><strong>Phone Number:</strong> <span id="phone"></span></p>
+<p><strong>Gender:</strong> <span id="gender"></span></p>
+<p><strong>Role:</strong> <span id="role"></span></p>
+
+<p id="error" style="color: red;"></p>
+
+<a th:href="@{/profile/edit}">Edit Profile</a>
+<a th:href="@{/logout}"> Log out</a>
+<script src="/assets/js/profile-page.js"></script>
 </body>
 </html>
