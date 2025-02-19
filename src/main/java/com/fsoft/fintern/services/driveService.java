@@ -1,7 +1,7 @@
 package com.fsoft.fintern.services;
 
 
-import com.fsoft.fintern.controllers.Res.Res;
+import com.fsoft.fintern.dtos.ResDTO;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.FileContent;
@@ -29,8 +29,8 @@ public class driveService {
         return filePath.toString();
     }
 
-    public Res uploadPdfToDrive(File file) throws GeneralSecurityException, IOException {
-        Res res = new Res();
+    public ResDTO uploadPdfToDrive(File file) throws GeneralSecurityException, IOException {
+        ResDTO res = new ResDTO();
 
         try {
             String folderId = "1yasyBmXD6xN_zwqtuBuU5z0JrQVczG3o";

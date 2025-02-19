@@ -1,9 +1,9 @@
-package com.fsoft.fintern.controllers.Res;
+package com.fsoft.fintern.dtos;
 
 import lombok.Data;
 
 @Data
-public class Res {
+public class ResDTO {
     private int status;
     private String message;
     private String url;

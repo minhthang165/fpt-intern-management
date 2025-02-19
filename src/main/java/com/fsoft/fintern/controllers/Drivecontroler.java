@@ -1,5 +1,5 @@
     package com.fsoft.fintern.controllers;
-    import com.fsoft.fintern.controllers.Res.Res;
+    import com.fsoft.fintern.dtos.ResDTO;
     import com.fsoft.fintern.services.driveService;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,7 @@
             }
             File tempFile = File.createTempFile("temp", null);
             file.transferTo(tempFile);
-            Res res = service.uploadPdfToDrive(tempFile);
+            ResDTO res = service.uploadPdfToDrive(tempFile);
             System.out.println(res);
             return res;
         }
