@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 @Table(name = "Recruitment")
 public class Recruitment extends BaseModel {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
@@ -25,9 +26,8 @@ public class Recruitment extends BaseModel {
     @Column(nullable = false, length = 255)
     private String education;
 
-    @Column(nullable = false, length = 50)
-    @Enumerated(EnumType.STRING)
-    private WorkForm workForm;
+    @Column(name = "work_form", nullable = false, length = 50)
+    private String workForm; // Dùng String thay vì Enum
 
     @Column(nullable = false)
     private Integer totalSlot;
@@ -48,8 +48,20 @@ public class Recruitment extends BaseModel {
     @JoinColumn(name = "created_by", referencedColumnName = "id", insertable = false, updatable = false)
     private User createdBy;
 
-    public enum WorkForm {
-        PART_TIME, FULL_TIME
+
+
+    // Constructor mặc định
+    public Recruitment() {
+        this.workForm = "PART-TIME"; // Đặt giá trị mặc định
+    }
+
+    // Getter và Setter
+    public String getWorkForm() {
+        return workForm;
+    }
+
+    public void setWorkForm(String workForm) {
+        this.workForm = workForm;
     }
 
     // Getters và Setters
@@ -93,13 +105,6 @@ public class Recruitment extends BaseModel {
         this.education = education;
     }
 
-    public WorkForm getWorkForm() {
-        return workForm;
-    }
-
-    public void setWorkForm(WorkForm workForm) {
-        this.workForm = workForm;
-    }
 
     public Integer getTotalSlot() {
         return totalSlot;

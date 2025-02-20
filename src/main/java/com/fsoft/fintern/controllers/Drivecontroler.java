@@ -14,7 +14,7 @@
         @Autowired
         private driveService service;
 
-        @PostMapping("/uploadToGoogleDrive")
+        @PostMapping("/uploadFileToGoogleDrive")
         public Object handleFileUpload(@RequestParam("file") MultipartFile file) throws IOException, GeneralSecurityException {
             if (file.isEmpty()) {
                 return "FIle is empty";
@@ -25,6 +25,18 @@
             System.out.println(res);
             return res;
         }
+        @PostMapping("/uploadImgToGoogleDrive")
+        public Object handleImageUpload(@RequestParam("image") MultipartFile file) throws IOException, GeneralSecurityException {
+            if (file.isEmpty()) {
+                return "FIle is empty";
+            }
+            File tempFile = File.createTempFile("temp", null);
+            file.transferTo(tempFile);
+            ResDTO res = service.uploadImageToDrive(tempFile);
+            System.out.println(res);
+            return res;
+        }
+
     }
 
 

@@ -1,12 +1,8 @@
 package com.fsoft.fintern.services;
 import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.dtos.RecruitmentDTO;
-import com.fsoft.fintern.dtos.TaskDTO;
-import com.fsoft.fintern.enums.WorkForm;
-import com.fsoft.fintern.models.Classroom;
 import com.fsoft.fintern.models.Recruitment;
 import com.fsoft.fintern.models.Task;
-import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.repositories.RecruitRepository;
 import com.fsoft.fintern.utils.BeanUtilsHelper;
 import org.apache.coyote.BadRequestException;
@@ -18,8 +14,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,9 +76,47 @@ public class RecruitmentServices {
         newRecruitment.setStartTime(recruitmentDTO.getStartTime());
         newRecruitment.setEndTime(recruitmentDTO.getEndTime());
         newRecruitment.setCreatedBy(recruitmentDTO.getCreator());
+
+        // Đặt giá trị mặc định nếu null
+        if (recruitmentDTO.getWorkForm() == null ||
+                (!recruitmentDTO.getWorkForm().equals("PART-TIME") &&
+                        !recruitmentDTO.getWorkForm().equals("FULL-TIME"))) {
+            newRecruitment.setWorkForm("PART-TIME");
+        } else {
+            newRecruitment.setWorkForm(recruitmentDTO.getWorkForm());
+        }
+
         Recruitment savedRecruitment = this.recruitRepository.save(newRecruitment);
         return new ResponseEntity<>(savedRecruitment, HttpStatus.CREATED);
     }
+    public ResponseEntity<Recruitment> setIsActiveTrue(int id) throws BadRequestException {
+        Recruitment existedRecruitment = this.recruitRepository.findById(id).orElse(null);
+        if (existedRecruitment == null) {
+            throw new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage());
+        }
+        if (existedRecruitment.isActive()) {
+            throw new BadRequestException(ErrorDictionaryConstraints.IS_ACTIVE_TRUE.getMessage());
+        }
+
+        existedRecruitment.setActive(true);
+        recruitRepository.save(existedRecruitment);
+        return new ResponseEntity<>(existedRecruitment, HttpStatus.OK);
+    }
+    public ResponseEntity<Recruitment> setIsActiveFalse(int id) throws BadRequestException {
+        Recruitment existedRecruitment = this.recruitRepository.findById(id).orElse(null);
+        if (existedRecruitment == null) {
+            throw new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage());
+        }
+        if (!existedRecruitment.isActive()) {
+            throw new BadRequestException("This object is already false");
+        }
+
+        existedRecruitment.setActive(false);
+        recruitRepository.save(existedRecruitment);
+
+        return new ResponseEntity<>(existedRecruitment, HttpStatus.OK);
+    }
+
 
 
 }

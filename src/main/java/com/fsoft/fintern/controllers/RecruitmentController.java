@@ -51,11 +51,20 @@ public class RecruitmentController {
     public ResponseEntity<Recruitment> update(@PathVariable int id, @RequestBody RecruitmentDTO recruitmentDTO) throws BadRequestException {
         return this.recruitmentServices.update(id, recruitmentDTO);
     }
-    
+
+    @PatchMapping("/recruitment/setIsActiveTrue/{id}")
+    @Operation(description = "Update IsActive True")
+    public ResponseEntity<Recruitment> setIsActiveTrue(@PathVariable int id) throws BadRequestException {
+        return this.recruitmentServices.setIsActiveTrue(id);
+    }
 
 
 
-
+    @PatchMapping("/recruitment/setIsActiveFalse/{id}")
+    @Operation(description = "Update  IsActive False")
+    public ResponseEntity<Recruitment> setIsActiveFalse(@PathVariable int id) throws BadRequestException {
+        return this.recruitmentServices.setIsActiveFalse(id);
+    }
 
 
 }

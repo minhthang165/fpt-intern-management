@@ -1,16 +1,13 @@
 package com.fsoft.fintern.dtos;
 
-import com.fsoft.fintern.enums.WorkForm;
-
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
 public class RecruitmentDTO {
     private String position;
     private Integer salary;
     private String experience;
     private String education;
-    private WorkForm workForm;
+    private String workForm; // Dùng String thay vì Enum
     private Integer totalSlot;
     private Integer availableSlot;
     private String description;
@@ -96,5 +93,12 @@ public class RecruitmentDTO {
     }
     public Integer getCreator() {
         return creatorId;
+    }
+
+    public String getWorkForm() {
+        return workForm;
+    }
+    public void setWorkForm(String workForm) {
+        this.workForm = workForm;
     }
 }

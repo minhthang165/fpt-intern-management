@@ -60,6 +60,33 @@ public class driveService {
         return res;
     }
 
+    public ResDTO uploadImageToDrive(File file) throws GeneralSecurityException, IOException {
+        ResDTO res = new ResDTO();
+
+        try{
+            String folderId = "1yasyBmXD6xN_zwqtuBuU5z0JrQVczG3o";
+            Drive drive = createDriveService();
+            com.google.api.services.drive.model.File fileMetaData = new com.google.api.services.drive.model.File();
+            fileMetaData.setName(file.getName());
+            fileMetaData.setParents(Collections.singletonList(folderId));
+            FileContent mediaContent = new FileContent("image/jpeg", file);
+            com.google.api.services.drive.model.File uploadedFile = drive.files().create(fileMetaData, mediaContent)
+                    .setFields("id").execute();
+            String imageUrl = "https://drive.google.com/uc?export=view&id="+uploadedFile.getId();
+            System.out.println("IMAGE URL: " + imageUrl);
+            file.delete();
+            res.setStatus(200);
+            res.setMessage("Image Successfully Uploaded To Drive");
+            res.setUrl(imageUrl);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            res.setStatus(500);
+            res.setMessage(e.getMessage());
+        }
+        return  res;
+
+    }
+
 
     private Drive createDriveService() throws GeneralSecurityException, IOException {
 
