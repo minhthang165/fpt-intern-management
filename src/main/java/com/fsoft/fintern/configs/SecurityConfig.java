@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/assets/**", "/home" , "/api-docs/**", "/swagger-ui.html", "/swagger-ui/*", "/webjars/**", "/api/**").permitAll()
                         .requestMatchers("/logout", "/login", "/register").anonymous()
                         .anyRequest().authenticated()
+//                                .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")

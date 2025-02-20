@@ -176,7 +176,7 @@
 }
 
 /*---------------------------------
-    Typography css start 
+    Typography css start
 ---------------------------------*/
 body {
   font-family: var(--bd-ff-body);
@@ -406,7 +406,7 @@ i[class^=flaticon-] {
 }
 
 /*---------------------------------
-    common classes css start 
+    common classes css start
 ---------------------------------*/
 .w-img img {
   width: 100%;
@@ -2188,7 +2188,7 @@ input[type=file] {
   }
 }
 /*======================================
-	Footer Line 
+	Footer Line
 ========================================*/
 @-webkit-keyframes footerLine {
   0% {
@@ -2213,7 +2213,7 @@ input[type=file] {
   }
 }
 /*======================================
-	Line animation 
+	Line animation
 ========================================*/
 @keyframes scroll1 {
   0% {
@@ -2242,7 +2242,7 @@ input[type=file] {
   }
 }
 /*======================================
-	Diot pluse animation 
+	Diot pluse animation
 ========================================*/
 @keyframes pulse-me {
   0% {
