@@ -12,11 +12,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/class")
-public class ClassroomController {
+public class ClassroomRestController {
     private final ClassroomService classroomService;
 
     @Autowired
-    public ClassroomController(ClassroomService classroomService) {
+    public ClassroomRestController(ClassroomService classroomService) {
         this.classroomService = classroomService;
     }
 
