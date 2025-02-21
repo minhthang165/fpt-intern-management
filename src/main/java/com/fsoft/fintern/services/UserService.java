@@ -46,15 +46,19 @@ public class UserService {
         }
 
         User user = new User();
-        user.setEmail(createUserDTO.getEmail());
-        user.setClassroom(existedClass);
-        user.setRole(createUserDTO.getRole());
+        user.setEmail(createUserDTO.getEmail());;
+        user.setFirst_name(createUserDTO.getFirst_name());
+        user.setLast_name(createUserDTO.getLast_name());
+        user.setPhone_number(createUserDTO.getPhone_number());
+        user.setGender(createUserDTO.getGender());
+        user.setAvatar_path(createUserDTO.getPicture());
 
         User savedUser = userRepository.save(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
     public ResponseEntity<User> createEmployeeOrGuest(CreateUserDTO createUserDTO) throws BadRequestException {
+
         if (createUserDTO.getRole() == null) {
             createUserDTO.setRole(Role.GUEST);
         }
@@ -69,12 +73,13 @@ public class UserService {
         }
 
         User user = new User();
-        user.setFirst_name(createUserDTO.getFirst_name());
         user.setLast_name(createUserDTO.getLast_name());
+        user.setFirst_name(createUserDTO.getFirst_name());
+        user.setAvatar_path(createUserDTO.getPicture());
+        user.setGender(createUserDTO.getGender());
+        user.setPhone_number(createUserDTO.getPhone_number());
         user.setEmail(createUserDTO.getEmail());
         user.setRole(createUserDTO.getRole());
-        user.setGender(createUserDTO.getGender());
-        user.setAvatar_path(createUserDTO.getPicture());
 
         User savedUser = userRepository.save(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);

@@ -44,13 +44,14 @@ public class CreateUserDTO {
     public void setPhone_number(String phone_number) {
         this.phone_number = phone_number;
     }
-
+  
     public Integer getClassId() {
         return classId;
     }
 
     public void setClassId(Integer classId) {
         this.classId = classId;
+      
     }
 
     public Gender getGender() {
