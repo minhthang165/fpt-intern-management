@@ -91,6 +91,11 @@
 			<artifactId>mssql-jdbc</artifactId>
 			<version>12.2.0.jre11</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-drive</artifactId>
+			<version>v3-rev20250210-2.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
