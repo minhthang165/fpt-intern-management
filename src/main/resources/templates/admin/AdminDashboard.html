@@ -1,39 +1,9 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>FUEM-FPTU Event Management System</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-style-mode" content="1">
-    <!-- Place favicon.ico in the root directory -->
-    <link rel="shortcut icon" type="image/x-icon" href="#">
-    <!-- CSS here -->
-    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/assets/css/meanmenu.min.css">
-    <link rel="stylesheet" href="/assets/css/animate.css">
-    <link rel="stylesheet" href="/assets/css/metisMenu.min.css">
-    <link rel="stylesheet" href="/assets/css/swiper-bundle.min.css">
-    <link rel="stylesheet" href="/assets/css/slick.css">
-    <link rel="stylesheet" href="/assets/css/backtotop.css">
-    <link rel="stylesheet" href="/assets/css/magnific-popup.css">
-    <link rel="stylesheet" href="/assets/css/flaticon_expovent.css">
-    <link rel="stylesheet" href="/assets/css/fontawesome-pro.css">
-    <link rel="stylesheet" href="/assets/css/spacing.css">
-    <link rel="stylesheet" href="/assets/css/main.css">
-    <style>
-        .user__portfolio-thumb img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-    </style>
-</head>
+<head th:replace="include/admin-header :: head"></head>
 <body class="body-area">
-    <div th:replace="~{include/admin-header :: header(~{::content})}">
+    <th:block th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
+    <!--header breadcrumb area-->
         <div class="app__slide-wrapper" th:fragment="content">
             <div class="breadcrumb__area">
                 <div class="breadcrumb__wrapper mb-35" style="padding: 0px;">
@@ -45,33 +15,29 @@
                             <div class="breadcrumb__menu">
                                 <nav>
                                     <ul>
-                                        <li><span><a href="">Dashboard</a></span></li>
+                                        <li class="active" style="margin-bottom: 20px; margin-top: 20px"><span>Dashboard</span></li>
                                     </ul>
                                 </nav>
                             </div>
-                        </div>
-                        <div class="search_add d-flex justify-content-between align-items-center">
-                            <form method="get" action="">
-                                <div class="search_add d-flex justify-content-between align-items-center">
-                                    <div class="search__bar d-flex">
-                                        <input type="text" id="searchValue" name="searchValue" placeholder="Search by..." aria-label="Search students" />
-
-                                    </div>
-                                    <div class="col-md-1 input d-flex "  style="padding-bottom: 18px; margin-left: 5px;" >
-                                        <button type="submit"  class="btn element__btn border-yellow find-button manage-student-find-button mt-10" >Find</button>
-                                    </div>
-                                    <div class="breadcrum__button">
-                                        <a class="breadcrum__btn event__popup-active" style="width: 160px;">Add student<i class="fa-regular fa-plus"></i></a>
-                                    </div>
-                                </div>
-                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div th:replace="~{include/master-footer :: footer}"></div>
+    <!-- insert main content here -->
+        <section th:fragment="content">
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+        </section>
+    </th:block>
+<footer th:replace="~{include/master-footer :: footer}"></footer>
 </body>
 </html>
 

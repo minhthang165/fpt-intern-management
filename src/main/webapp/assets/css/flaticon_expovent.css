@@ -108,6 +108,7 @@ i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
 .flaticon-quotation-1:before {
     content: "\f11e";
 }
+
 .flaticon-plus:before {
     content: "\f11f";
 }
