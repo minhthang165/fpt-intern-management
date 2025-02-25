@@ -23,7 +23,7 @@ public class User extends BaseModel {
     private String email;
     private String phone_number;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "class_id", referencedColumnName = "id")
     private Classroom classroom;
 

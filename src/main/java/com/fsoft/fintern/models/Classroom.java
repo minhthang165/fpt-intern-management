@@ -18,7 +18,7 @@ public class Classroom extends BaseModel {
     private String className;
 
     @Column(name = "number_of_interns", nullable = false, columnDefinition = "INT DEFAULT 0")
-    private Integer number_of_interns = 0;
+    private Integer number_of_interns = (Integer) 0;
 
     @OneToOne
     @JoinColumn(name = "manager_id",
