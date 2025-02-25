@@ -1,10 +1,10 @@
 @font-face {
     font-family: "flaticon_expovent";
-    src: url("../../fonts/flaticon_expoventaf74.ttf?3412f9d0e97ce82141669ad6b2cf1108") format("truetype"),
-url("../../fonts/flaticon_expoventaf74.woff?3412f9d0e97ce82141669ad6b2cf1108") format("woff"),
-url("../../fonts/flaticon_expoventaf74.woff2?3412f9d0e97ce82141669ad6b2cf1108") format("woff2"),
-url("../../fonts/flaticon_expoventaf74.eot?3412f9d0e97ce82141669ad6b2cf1108#iefix") format("embedded-opentype"),
-url("../../fonts/flaticon_expoventaf74.svg?3412f9d0e97ce82141669ad6b2cf1108#flaticon_expovent") format("svg");
+    src: url("../fonts/flaticon_expoventaf74.ttf?3412f9d0e97ce82141669ad6b2cf1108") format("truetype"),
+url("../fonts/flaticon_expoventaf74.woff?3412f9d0e97ce82141669ad6b2cf1108") format("woff"),
+url("../fonts/flaticon_expoventaf74.woff2?3412f9d0e97ce82141669ad6b2cf1108") format("woff2"),
+url("../fonts/flaticon_expoventaf74.eot?3412f9d0e97ce82141669ad6b2cf1108#iefix") format("embedded-opentype"),
+url("../fonts/flaticon_expoventaf74.svg?3412f9d0e97ce82141669ad6b2cf1108#flaticon_expovent") format("svg");
 }
 
 i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
@@ -108,6 +108,7 @@ i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
 .flaticon-quotation-1:before {
     content: "\f11e";
 }
+
 .flaticon-plus:before {
     content: "\f11f";
 }

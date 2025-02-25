@@ -4,13 +4,18 @@ import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.Shared.BaseModel;
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "\"User\"")
 public class User extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(name = "id", updatable = false, nullable = true)
     private Integer id;
 
     private String first_name;
@@ -105,4 +110,5 @@ public class User extends BaseModel {
         this.role = role;
     }
 
+  
 }

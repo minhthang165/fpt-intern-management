@@ -1,4 +1,4 @@
-﻿GO
+GO
 /*
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 <<<<<<<<<< BEGIN: CREATE DATABASE <<<<<<<<<<
@@ -140,6 +140,20 @@ CREATE TABLE [Recruitment] (  -- Show the positions are needed in order to the g
     [is_active] BIT DEFAULT 1
 	CONSTRAINT FK_Requirement_CreatedBy FOREIGN KEY ([created_by]) REFERENCES [user]([id]) -- admin create
 );
+
+CREATE TABLE [CV_Submitter] (
+	[submitter_id] INT NOT NULL,
+	[recruitment_id] INT NOT NULL,
+	[created_at] DATETIME NOT NULL DEFAULT GETDATE(),
+    [updated_at] DATETIME DEFAULT NULL,
+	[deleted_at] DATETIME DEFAULT NULL,
+	[created_by] INT DEFAULT NULL,
+    [updated_by] INT DEFAULT NULL,
+    [deleted_by] INT DEFAULT NULL,
+    [is_active] BIT DEFAULT 1,
+	CONSTRAINT FK_Submitter_Id FOREIGN KEY ([submitter_id]) REFERENCES [user]([id]),
+	CONSTRAINT FK_Recruitment_Id FOREIGN KEY ([recruitment_id]) REFERENCES [Recruitment]([id])
+)
 
 CREATE TABLE [File] ( -- Save the file include CV from intern or report from manager 
     [id] INT PRIMARY KEY IDENTITY(1,1),

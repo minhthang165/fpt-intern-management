@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="include/admin-header :: head"></head>
+<style>
+    .search__bar input {
+        margin-right: auto;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 500px;
+    }
+    .breadcrum__button{
+        display: flex;
+        padding-left: 120px;
+    }
+    .search__bar input {
+        border: 1px solid #ccc;
+        border-radius: 15px;
+        width: 400px;
+        height: fit-content;
+    }
+</style>
+<body class="body-area">
+    <th:block  th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
+        <!--header breadcrumb area-->
+        <div class="app__slide-wrapper" th:fragment="content">
+            <div class="breadcrumb__area">
+                <div class="breadcrumb__wrapper mb-35" style="padding: 0px;">
+                    <div class="breadcrumb__main">
+                        <div class="breadcrumb__inner">
+                            <div class="breadcrumb__icon">
+                                <i class="flaticon-home"></i>
+                            </div>
+                            <div class="breadcrumb__menu">
+                                <nav>
+                                    <ul>
+                                        <li><span><a href="authenticate">Dashboard</a></span></li>
+                                        <li class="active"><span>Manage Student</span></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                        <div class="search_add d-flex justify-content-between align-items-center">
+                            <form method="get" action="">
+                                <div class="search_add d-flex justify-content-between align-items-center">
+                                    <div class="search__bar d-flex">
+                                        <input type="text" id="searchValue" name="searchValue" placeholder="Search by..." aria-label="Search students"/>
+                                    </div>
+                                    <div class="col-md-1 input d-flex "  style="padding-bottom: 18px; margin-left: 5px;" >
+                                        <button type="submit"  class="btn element__btn border-yellow find-button manage-student-find-button mt-15" style="" >Find</button>
+                                    </div>
+                                    <div class="breadcrum__button">
+                                        <button class="element__btn yellow-bg">Add User      +</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- insert custom content here -->
+        <section th:fragment="content">
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+            <p>Hello World</p>
+        </section>
+    </th:block>
+
+
+    <footer th:replace="~{include/master-footer :: footer}"></footer>
+</body>
+</html>
+
+
+
+
+
+
