@@ -3,23 +3,13 @@ import com.fsoft.fintern.enums.Gender;
 import com.fsoft.fintern.enums.Role;
 
 public class UpdateUserDTO {
-    private int id;
     private String first_name;
     private String last_name;
-    private String email;
     private String phone_number;
     private Integer class_id;
     private String picture;
     private Gender gender;
     private Role role;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getFirst_name() {
         return first_name;
@@ -35,14 +25,6 @@ public class UpdateUserDTO {
 
     public void setLast_name(String last_name) {
         this.last_name = last_name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPhone_number() {

@@ -1,6 +1,7 @@
 package com.fsoft.fintern.configs;
 
 import ch.qos.logback.core.filter.Filter;
+import com.fsoft.fintern.filter.LoggedInRedirectFilter;
 import com.fsoft.fintern.services.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -45,11 +46,13 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/assets/**", "/home" , "/api-docs/**", "/swagger-ui.html", "/swagger-ui/*", "/webjars/**", "/api/**").permitAll()
-                        .requestMatchers("/logout", "/login", "/register").anonymous()
+                        .requestMatchers("/assets/**", "/home", "/api-docs/**", "/swagger-ui.html", "/swagger-ui/*", "/webjars/**", "/api/**")
+                        .permitAll()
+                        .requestMatchers("/logout", "/login", "/register")
+                        .anonymous()
                         .anyRequest().authenticated()
-//                                .anyRequest().permitAll()
                 )
+                .addFilterBefore(new LoggedInRedirectFilter(), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .permitAll()
@@ -59,8 +62,7 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
                         .logoutSuccessHandler((request, response, authentication) -> response.sendRedirect("/login?logout"))
-                )
-                .csrf(AbstractHttpConfigurer::disable);
+                );
 
         return http.build();
     }
