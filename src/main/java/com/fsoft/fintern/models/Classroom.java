@@ -23,6 +23,7 @@ public class Classroom extends BaseModel {
     @OneToOne
     @JoinColumn(name = "manager_id",
             referencedColumnName = "id")
+
     private User manager;
 
     public User getManager() {
@@ -41,11 +42,11 @@ public class Classroom extends BaseModel {
         this.id = id;
     }
 
-    public String getclassName() {
+    public String getClassName() {
         return className;
     }
 
-    public void setclassName(String className) {
+    public void setClassName(String className) {
         this.className = className;
     }
 

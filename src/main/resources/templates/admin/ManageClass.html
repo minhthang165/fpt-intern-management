@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="include/admin-header :: head"></head>
+
+<style>
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background-color: #f4f4f4;
+    }
+    .classroom-title {
+        font-size: 32px;
+        font-weight: bold;
+    }
+    .search__bar input {
+        margin-right: auto;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 500px;
+    }
+    .breadcrum__button{
+        display: flex;
+        padding-left: 120px;
+    }
+    .search__bar input {
+        border: 1px solid #ccc;
+        border-radius: 15px;
+        width: 400px;
+        height: fit-content;
+    }
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .pagination button {
+        padding: 6px 8px;
+        margin: 0 3px;
+        border: none;
+        cursor: pointer;
+        background-color: #ccc;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+    .pagination .active {
+        background-color: orange;
+        color: white;
+    }
+
+    .lock-icon {
+        font-size: 20px;
+        margin-left: 10px;
+        cursor: pointer; /* Biến icon thành nút có thể nhấn */
+    }
+
+    .active {
+        color: green; /* Màu xanh khi lớp đang hoạt động */
+    }
+
+    .inactive {
+        color: red; /* Màu đỏ khi lớp bị khóa */
+    }
+
+    .modal-content {
+        position: relative;
+        z-index: 1070;
+    }
+
+    .modal-backdrop {
+        display: none;
+    }
+
+
+
+
+
+
+</style>
+
+<body class="body-area">
+<th:block  th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
+    <!--header breadcrumb area-->
+    <div class="app__slide-wrapper" th:fragment="content">
+        <div class="breadcrumb__area">
+            <div class="breadcrumb__wrapper mb-35" style="padding: 0px;">
+                <div class="breadcrumb__main">
+                    <div class="breadcrumb__inner">
+                        <div class="breadcrumb__icon">
+                            <i class="flaticon-home"></i>
+                        </div>
+                        <div class="breadcrumb__menu">
+                            <nav>
+                                <ul>
+                                    <li><span><a href="authenticate">Dashboard</a></span></li>
+                                    <li class="active"><span>Manage Classroom</span></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    <div class="search_add d-flex justify-content-between align-items-center">
+                        <form method="get" action="">
+                            <div class="search_add d-flex justify-content-between align-items-center">
+                                <div class="search__bar d-flex">
+                                    <input type="text" id="searchValue" name="searchValue" placeholder="Search by..." aria-label="Search students"/>
+                                </div>
+                                <div class="col-md-1 input d-flex "  style="padding-bottom: 18px; margin-left: 5px;" >
+                                    <button type="submit"  class="btn element__btn border-yellow find-button manage-student-find-button mt-15" style="" >Find</button>
+                                </div>
+                                <div class="breadcrum__button">
+                                    <button class="element__btn yellow-bg" data-bs-toggle="modal" data-bs-target="#addClassModal">
+                                        Add Class +
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--List Classroom-->
+    <section th:fragment="content">
+        <div class="flex-grow-1 p-4">
+
+            <h5 class="classroom-title">Classroom List</h5>
+
+            <!-- Table -->
+            <div class="card mt-4">
+
+                <div class="card-body">
+
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Class Name</th>
+                            <th>Number of Interns</th>
+                            <th>Manager</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="classroom : ${classroomList}">
+                            <td th:text="${classroom.className}"></td>
+                            <td th:text="${classroom.getNumber_of_interns()}"></td>
+                            <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}"></td>
+                            <!-- Nút Delete -->
+                            <td th:classappend="${classroom.isActive()} ? 'active' : 'inactive'">
+                                <a href="#" th:data-id="${classroom.id}" class="toggle-class-status open-modal">
+                                    <i th:data-id="${classroom.id}"
+                                       th:class="${classroom.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"
+                                       onclick="toggleActiveStatus(this, event)">
+                                    </i>
+                                </a>
+                                <a href="#" class="edit-class-status">
+                                    <i class="flaticon-edit edit-class" style="cursor: pointer; color: blue;"></i>
+                                </a>
+
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Modal xác nhận khóa/mở khóa lớp -->
+        <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitle">Title</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="modalMessage">Message here...</div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary d-none" id="modalCancelBtn" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary d-none" id="modalConfirmBtn">Yes</button>
+                        <button type="button" class="btn btn-success d-none" id="modalOkBtn" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+<!--        <div class="modal fade" id="editClassModal" tabindex="-1" aria-labelledby="editClassModalLabel" aria-hidden="true">-->
+<!--            <div class="modal-dialog">-->
+<!--                <div class="modal-content">-->
+<!--                    <div class="modal-header">-->
+<!--                        <h5 class="modal-title" id="editClassModalLabel">Edit Class</h5>-->
+<!--                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
+<!--                    </div>-->
+<!--                    <div class="modal-body">-->
+<!--                        <form id="editClassForm">-->
+<!--                            <input type="hidden" id="editClassId">-->
+
+<!--                            &lt;!&ndash; Tên lớp &ndash;&gt;-->
+<!--                            <div class="mb-3">-->
+<!--                                <label for="editClassName" class="form-label">Class Name</label>-->
+<!--                                <input type="text" class="form-control" id="editClassName" required>-->
+<!--                            </div>-->
+
+<!--                            &lt;!&ndash; Số lượng Intern &ndash;&gt;-->
+<!--                            <div class="mb-3">-->
+<!--                                <label for="editNumberOfInterns" class="form-label">Number of Interns</label>-->
+<!--                                <input type="number" class="form-control" id="editNumberOfInterns" required min="1">-->
+<!--                            </div>-->
+
+<!--                            <div class="modal-footer">-->
+<!--                                <button type="submit" class="btn btn-primary">Save Changes</button>-->
+<!--                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>-->
+<!--                            </div>-->
+<!--                        </form>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+
+
+
+
+
+        <div class="pagination">
+            <button>&lt;</button>
+            <button class="active">1</button>
+            <button>2</button>
+            <button>3</button>
+            <button>4</button>
+            <button>&gt;</button>
+        </div>
+    </section>
+
+
+
+
+
+</th:block>
+
+<footer th:replace="~{include/master-footer :: footer}"></footer>
+
+
+
+<script>
+    document.addEventListener("click", function (event) {
+        let icon = event.target.closest(".flaticon-padlock");
+        if (!icon) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        let classId = icon.getAttribute("data-id");
+        if (!classId) {
+            showModal("Error", "Missing class ID!");
+            return;
+        }
+
+        let isUnlock = icon.classList.contains("inactive");
+        let action = isUnlock ? "unlock" : "lock";
+        let message = isUnlock ? "Are you sure you want to unlock this class?" : "Are you sure you want to lock this class?";
+
+        showModal("Confirm", message, true, function () {
+            toggleClassStatus(classId, action);
+        });
+    });
+
+    function toggleClassStatus(classId, action) {
+        let url = action === "unlock" ? `/api/class/setIsActiveTrue/${classId}` : `/api/class/delete/${classId}`;
+        let method = action === "unlock" ? "PATCH" : "DELETE";
+
+        fetch(url, { method: method })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.json();
+            })
+            .then(() => {
+                let successMessage = action === "unlock" ? "Class has been unlocked!" : "Class has been locked!";
+                showModal("Success", successMessage);
+
+                let icon = document.querySelector(`.flaticon-padlock[data-id="${classId}"]`);
+                if (icon) {
+                    icon.classList.toggle("inactive");
+                    icon.classList.toggle("active");
+                }
+            })
+            .catch(error => showModal("Error", "Error: " + error.message));
+    }
+
+    function showModal(title, message, isConfirm = false, confirmCallback = null) {
+        let modalTitle = document.getElementById("modalTitle");
+        let modalMessage = document.getElementById("modalMessage");
+        let confirmBtn = document.getElementById("modalConfirmBtn");
+        let cancelBtn = document.getElementById("modalCancelBtn");
+        let okBtn = document.getElementById("modalOkBtn");
+
+        modalTitle.innerText = title;
+        modalMessage.innerText = message;
+
+        if (isConfirm) {
+            confirmBtn.classList.remove("d-none");
+            cancelBtn.classList.remove("d-none");
+            okBtn.classList.add("d-none");
+
+            confirmBtn.onclick = function () {
+                confirmCallback();
+                let modalInstance = bootstrap.Modal.getInstance(document.getElementById("genericModal"));
+                modalInstance.hide();
+            };
+        } else {
+            confirmBtn.classList.add("d-none");
+            cancelBtn.classList.add("d-none");
+            okBtn.classList.remove("d-none");
+        }
+
+        let modal = new bootstrap.Modal(document.getElementById("genericModal"));
+        modal.show();
+    }
+
+
+
+</script>
+</body>
+</html>
+
+
+
+
+
+

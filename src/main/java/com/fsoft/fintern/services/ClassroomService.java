@@ -43,7 +43,7 @@ public class ClassroomService {
         }
 
         Classroom newClass = new Classroom();
-        newClass.setclassName(classDTO.getClass_name());
+        newClass.setClassName(classDTO.getClass_name());
         newClass.setManager(manager);
 
         Classroom savedClass = class_repository.save(newClass);

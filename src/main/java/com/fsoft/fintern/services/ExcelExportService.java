@@ -85,7 +85,7 @@ public class ExcelExportService {
                 row.createCell(3).setCellValue(user.getPhone_number());
 
                 if ("INTERN".equals(user.getRole().name())) {
-                    row.createCell(4).setCellValue(user.getClassroom() != null ? user.getClassroom().getclassName() : "N/A");
+                    row.createCell(4).setCellValue(user.getClassroom() != null ? user.getClassroom().getClassName() : "N/A");
                     row.createCell(5).setCellValue(user.getGender().name());
                     row.createCell(6).setCellValue(user.getRole().name());
                 } else {
