@@ -2,6 +2,7 @@ package com.fsoft.fintern.controllers;
 
 import com.fsoft.fintern.dtos.CreateUserDTO;
 import com.fsoft.fintern.dtos.UpdateUserDTO;
+import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -69,5 +70,10 @@ public class UserRestController {
     @Operation(description = "Find user by email")
     public ResponseEntity<User> findByEmail(@PathVariable String email) throws BadRequestException {
         return this.userService.getByEmail(email);
+    }
+    @GetMapping("/users/role/{role}")
+    @Operation(description = "find user by role")
+    public ResponseEntity<List<User>> findByRole(@PathVariable Role role) throws BadRequestException {
+        return this.userService.findUserByRole(role);
     }
 }

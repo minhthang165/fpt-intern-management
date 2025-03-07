@@ -20,7 +20,7 @@ public class ClassroomRestController {
         this.classroomService = classroomService;
     }
 
-    @GetMapping("/class")
+    @GetMapping("")
     @Operation(description = "view all classroom")
     public ResponseEntity<List<Classroom>> findAll() throws BadRequestException {
         return this.classroomService.findAll();
@@ -32,7 +32,7 @@ public class ClassroomRestController {
         return this.classroomService.createClass(classroomDTO);
     }
 
-    @GetMapping("/class/{id}")
+    @GetMapping("/{id}")
     @Operation(description =  "Get Classroom by id")
     public ResponseEntity<Classroom> getById(@PathVariable int id) throws BadRequestException {
         return this.classroomService.findById(id);
@@ -41,6 +41,7 @@ public class ClassroomRestController {
     @PatchMapping("/update/{id}")
     @Operation(description = "Update class by id")
     public ResponseEntity<Classroom> update(@RequestBody ClassroomDTO classroomDTO, @PathVariable int id) throws BadRequestException  {
+
         return this.classroomService.update(id, classroomDTO);
     }
 
@@ -55,4 +56,5 @@ public class ClassroomRestController {
     public ResponseEntity<Classroom> setIsActiveTrue(@PathVariable int id) throws BadRequestException {
         return this.classroomService.setIsActiveTrue(id);
     }
+
 }

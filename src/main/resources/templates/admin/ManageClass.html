@@ -81,6 +81,62 @@
     }
 
 
+    select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #98b2da;
+        border-radius: 8px;
+        font-size: 16px;
+        background-color: white;
+        color: #333;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    select:hover {
+        border-color: #85b7ec;
+    }
+
+    select:focus {
+        outline: none;
+        border-color: #ff9800;
+        box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+    }
+
+    .custom-dropdown {
+        position: relative;
+        display: inline-block;
+        width: 200px;
+    }
+
+    .custom-dropdown select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #28a745;
+        border-radius: 8px;
+        font-size: 16px;
+        appearance: none;
+        background-color: white;
+        color: #333;
+        cursor: pointer;
+    }
+
+    .custom-dropdown::after {
+        content: "▼";
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        color: #28a745;
+        font-size: 14px;
+    }
+
+    .custom-dropdown select:focus {
+        outline: none;
+        border-color: #218838;
+    }
+</style>
+
 
 
 
@@ -116,11 +172,14 @@
                                 <div class="col-md-1 input d-flex "  style="padding-bottom: 18px; margin-left: 5px;" >
                                     <button type="submit"  class="btn element__btn border-yellow find-button manage-student-find-button mt-15" style="" >Find</button>
                                 </div>
-                                <div class="breadcrum__button">
-                                    <button class="element__btn yellow-bg" data-bs-toggle="modal" data-bs-target="#addClassModal">
-                                        Add Class +
-                                    </button>
-                                </div>
+                               <div class="new_class">
+                                   <div class="breadcrum__button">
+                                       <button class="element__btn  yellow-bg" data-bs-toggle="modal" data-bs-target="#newClassModal">
+                                           Add Class +
+                                       </button>
+                                   </div>
+                               </div>
+
                             </div>
                         </form>
                     </div>
@@ -132,12 +191,10 @@
     <!--List Classroom-->
     <section th:fragment="content">
         <div class="flex-grow-1 p-4">
-
             <h5 class="classroom-title">Classroom List</h5>
 
             <!-- Table -->
             <div class="card mt-4">
-
                 <div class="card-body">
 
                     <table>
@@ -150,10 +207,12 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="classroom : ${classroomList}">
-                            <td th:text="${classroom.className}"></td>
-                            <td th:text="${classroom.getNumber_of_interns()}"></td>
-                            <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}"></td>
+                        <tr th:each="classroom : ${classroomList}" th:id="'manager-' + ${classroom.manager.id}">
+                        <td th:text="${classroom.className}"></td>
+                            <td th:text="${classroom.getNumberOfIntern()}"></td>
+                            <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}">
+
+                            </td>
                             <!-- Nút Delete -->
                             <td th:classappend="${classroom.isActive()} ? 'active' : 'inactive'">
                                 <a href="#" th:data-id="${classroom.id}" class="toggle-class-status open-modal">
@@ -194,41 +253,87 @@
         </div>
 
 
+        <div class="modal fade" id="editClassModal" tabindex="-1" aria-labelledby="editClassModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editClassModalLabel">Edit Class</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editClassForm">
+                            <input type="hidden" id="editClassId"> <!-- Lưu ID của lớp -->
 
-<!--        <div class="modal fade" id="editClassModal" tabindex="-1" aria-labelledby="editClassModalLabel" aria-hidden="true">-->
-<!--            <div class="modal-dialog">-->
-<!--                <div class="modal-content">-->
-<!--                    <div class="modal-header">-->
-<!--                        <h5 class="modal-title" id="editClassModalLabel">Edit Class</h5>-->
-<!--                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
-<!--                    </div>-->
-<!--                    <div class="modal-body">-->
-<!--                        <form id="editClassForm">-->
-<!--                            <input type="hidden" id="editClassId">-->
+                            <div class="mb-3">
+                                <label for="editClassName" class="form-label">Class Name</label>
+                                <input type="text" class="form-control" id="editClassName" required>
+                            </div>
 
-<!--                            &lt;!&ndash; Tên lớp &ndash;&gt;-->
-<!--                            <div class="mb-3">-->
-<!--                                <label for="editClassName" class="form-label">Class Name</label>-->
-<!--                                <input type="text" class="form-control" id="editClassName" required>-->
-<!--                            </div>-->
+                            <div class="mb-3">
+                                <label for="editNumberOfInterns" class="form-label">Number of Interns</label>
+                                <input type="number" class="form-control" id="editNumberOfInterns" required min="1">
+                            </div>
 
-<!--                            &lt;!&ndash; Số lượng Intern &ndash;&gt;-->
-<!--                            <div class="mb-3">-->
-<!--                                <label for="editNumberOfInterns" class="form-label">Number of Interns</label>-->
-<!--                                <input type="number" class="form-control" id="editNumberOfInterns" required min="1">-->
-<!--                            </div>-->
-
-<!--                            <div class="modal-footer">-->
-<!--                                <button type="submit" class="btn btn-primary">Save Changes</button>-->
-<!--                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>-->
-<!--                            </div>-->
-<!--                        </form>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
+                            <label for="editManager">Select Manager:</label>
+                            <select id="editManager" name="manager" class="form-control">
+                                <option th:each="userRole : ${userRoleList}"
+                                        th:value="${userRole.id}"
+                                        th:text="${userRole.first_name + ' ' + userRole.last_name}">
+                                </option>
+                            </select>
 
 
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+            <div class="modal fade" id="newClassModal" tabindex="-1" aria-labelledby="newClassModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="newClassModalLabel">Create a new Class</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="newClassForm">
+                                <input type="hidden" id="newClassId">
+
+                                <div class="mb-3">
+                                    <label for="newClassName" class="form-label">Class Name</label>
+                                    <input type="text" class="form-control" id="newClassName" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="newNumberOfInterns" class="form-label">Number of Interns</label>
+                                    <input type="number" class="form-control" id="newNumberOfInterns" required min="1">
+                                </div>
+
+                                <label for="newManager">Select Manager:</label>
+                                <select id="newManager" name="manager" class="form-control">
+                                    <option th:each="userRole : ${userRoleList}"
+                                            th:value="${userRole.id}"
+                                            th:text="${userRole.first_name + ' ' + userRole.last_name}">
+                                    </option>
+                                </select>
+
+
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">Save a new class</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
 
 
@@ -253,7 +358,9 @@
 
 
 
+
 <script>
+
     document.addEventListener("click", function (event) {
         let icon = event.target.closest(".flaticon-padlock");
         if (!icon) return;
@@ -301,6 +408,7 @@
     }
 
     function showModal(title, message, isConfirm = false, confirmCallback = null) {
+
         let modalTitle = document.getElementById("modalTitle");
         let modalMessage = document.getElementById("modalMessage");
         let confirmBtn = document.getElementById("modalConfirmBtn");
@@ -329,6 +437,161 @@
         let modal = new bootstrap.Modal(document.getElementById("genericModal"));
         modal.show();
     }
+
+// XỬ lý khi click vào nút newCLass
+    document.addEventListener("click", function (event) {
+        let newClassButton = event.target.closest(".new_class");
+        if (!newClassButton) return;
+
+        event.preventDefault();
+
+        let addNewClassModal = new bootstrap.Modal(document.getElementById("newClassModal"));
+        addNewClassModal.show();
+    });
+
+    document.getElementById("newClassForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        let className = document.getElementById("newClassName").value;
+        let numberOfIntern = document.getElementById("newNumberOfInterns").value;
+        let managerId = document.getElementById("newManager").value;
+
+        let requestData = {
+            className: className,
+            numberOfIntern: numberOfIntern,
+            managerId: managerId
+        };
+
+        fetch(`/api/class/create`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.json();
+            })
+            .then(newClass => {
+                let row = document.getElementById(`class-${newClass.id}`);
+                if (row) {
+                    row.children[0].textContent = newClass.className;
+                    row.children[1].textContent = newClass.numberOfIntern;
+                    row.children[2].setAttribute("data-manager-id", newClass.manager.id);
+                    row.children[2].textContent = newClass.manager.firstName + " " + newClass.manager.lastName;
+                }
+
+                alert("Created a new class successfully!");
+                let newClassModal = bootstrap.Modal.getInstance(document.getElementById("newClassModal"));
+                newClassModal.hide();
+                document.getElementById("newClassForm").reset();
+            })
+            .catch(error => alert("Error Create class: " + error.message));
+    });
+
+
+
+    // Xử lý khi click vào nút Edit
+    document.addEventListener("click", function (event) {
+        let editIcon = event.target.closest(".edit-class");
+        if (!editIcon) return;
+            event.preventDefault();
+
+        let row = editIcon.closest("tr");
+        if (!row) return;
+
+        let classStatusElement = row.querySelector(".toggle-class-status");
+        if (!classStatusElement) {
+            alert("Error: Cannot find class ID.");
+            return;
+        }
+
+        let classId = classStatusElement.getAttribute("data-id");
+        if (!classId) {
+            alert("Error: Class ID is missing.");
+            return;
+        }
+
+        let className = row.children[0].textContent.trim();
+        let numberOfIntern = row.children[1].textContent.trim();
+
+        let rowId = row.id;
+        let managerId = rowId.startsWith("manager-") ? rowId.split("-")[1] : null;
+
+        if (!managerId) {
+            alert("Error: Manager ID is missing.");
+            return;
+        }
+
+        document.getElementById("editClassId").value = classId;
+        document.getElementById("editClassName").value = className;
+        document.getElementById("editNumberOfInterns").value = numberOfIntern;
+        document.getElementById("editManager").value = managerId;
+
+
+        let editModal = new bootstrap.Modal(document.getElementById("editClassModal"));
+        editModal.show();
+    });
+
+
+
+
+    document.getElementById("editClassForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+
+        let classId = document.getElementById("editClassId").value;
+        let className = document.getElementById("editClassName").value;
+        let numberOfInterns = document.getElementById("editNumberOfInterns").value;
+        let managerId = document.getElementById("editManager").value;
+
+        let requestData = {
+            className: className,
+            numberOfIntern: numberOfInterns,
+            managerId: managerId
+        };
+
+        fetch(`/api/class/update/${classId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.json();
+            })
+
+            .then(updatedClass => {
+                let row = document.getElementById(`class-${classId}`);
+                if (row) {
+                    row.children[0].textContent = updatedClass.className;
+                    row.children[1].textContent = updatedClass.numberOfIntern;
+                    row.children[2].setAttribute("data-manager-id", updatedClass.manager.id);
+                    row.children[2].textContent = updatedClass.manager.firstName + " " + updatedClass.manager.lastName;
+                }
+            })
+
+            .then(data => {
+                alert("Class updated successfully!");
+
+                let row = document.querySelector(`tr[id='manager-${classId}']`);
+                if (row) {
+                    row.children[0].textContent = className;
+                    row.children[1].textContent = numberOfInterns;
+                    row.children[2].textContent = document.querySelector(`#editManager option[value="${managerId}"]`).textContent;
+                }
+
+                let editModal = bootstrap.Modal.getInstance(document.getElementById("editClassModal"));
+                editModal.hide();
+            })
+            .catch(error => alert("Error updating class: " + error.message));
+    });
+
 
 
 
