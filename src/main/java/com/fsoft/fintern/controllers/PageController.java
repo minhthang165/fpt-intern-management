@@ -1,0 +1,12 @@
+package com.fsoft.fintern.controllers;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class PageController {
+    @GetMapping("/landing-page")
+    public String landingPage() {
+        return "landing-page";
+    }
+}
