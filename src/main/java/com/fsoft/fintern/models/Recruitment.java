@@ -44,9 +44,6 @@ public class Recruitment extends BaseModel {
     @Column(nullable = false)
     private Timestamp endTime;
 
-    @ManyToOne
-    @JoinColumn(name = "created_by", referencedColumnName = "id", insertable = false, updatable = false)
-    private User createdBy;
 
 
 
