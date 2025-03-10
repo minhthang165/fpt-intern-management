@@ -1,6 +1,8 @@
 package com.fsoft.fintern.models.Shared;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -10,27 +12,32 @@ import java.time.Instant;
 public abstract class BaseModel {
     @Column(name = "is_active")
     private boolean isActive = true;
-
-    private Timestamp created_at;
-    private Timestamp deleted_at;
-    private Timestamp updated_at;
-    private Integer created_by;
-    private Integer updated_by;
-    private Integer deleted_by;
+    @Column(name = "created_at")
+    private Timestamp createdAt;
+    @Column(name = "deleted_at")
+    private Timestamp deletedAt;
+    @Column(name = "updated_at")
+    private Timestamp updatedAt;
+    @Column(name = "created_by")
+    private Integer createdBy;
+    @Column(name = "updated_by")
+    private Integer updatedBy;
+    @Column(name = "deleted_by")
+    private Integer deletedBy;
 
     @PrePersist
     public void prePersist() {
-        this.created_at = Timestamp.from(Instant.now().plus(Duration.ofHours(7)));
+        this.createdAt = Timestamp.from(Instant.now().plus(Duration.ofHours(7)));
     }
 
     @PreUpdate
     public void preUpdate() {
-        this.updated_at = Timestamp.from(Instant.now().plus(Duration.ofHours(7)));
+        this.updatedAt = Timestamp.from(Instant.now().plus(Duration.ofHours(7)));
     }
 
     @PreRemove
     public void preRemove() {
-        this.deleted_at = Timestamp.from(Instant.now().plus(Duration.ofHours(7)));
+        this.deletedAt = Timestamp.from(Instant.now().plus(Duration.ofHours(7)));
     }
 
     public boolean isActive() {
@@ -42,50 +49,50 @@ public abstract class BaseModel {
     }
 
     public Timestamp getCreatedAt() {
-        return created_at;
+        return createdAt;
     }
 
     public void setCreatedAt(Timestamp createdAt) {
-        this.created_at = createdAt;
+        this.createdAt = createdAt;
     }
 
     public Timestamp getDeletedAt() {
-        return deleted_at;
+        return deletedAt;
     }
 
     public void setDeletedAt(Timestamp deletedAt) {
-        this.deleted_at = deletedAt;
+        this.deletedAt = deletedAt;
     }
 
     public Timestamp getUpdatedAt() {
-        return updated_at;
+        return updatedAt;
     }
 
     public void setUpdatedAt(Timestamp updatedAt) {
-        this.updated_at = updatedAt;
+        this.updatedAt = updatedAt;
     }
 
     public Integer getCreatedBy() {
-        return created_by;
+        return createdBy;
     }
 
-    public void setCreatedBy(Integer createdBy) {
-        this.created_by = createdBy;
+    public void setCreatedBy(int createdBy) {
+        this.createdBy = createdBy;
     }
 
     public Integer getUpdatedBy() {
-        return updated_by;
+        return updatedBy;
     }
 
-    public void setUpdatedBy(Integer updatedBy) {
-        this.updated_by = updatedBy;
+    public void setUpdatedBy(int updatedBy) {
+        this.updatedBy = updatedBy;
     }
 
     public Integer getDeletedBy() {
-        return deleted_by;
+        return deletedBy;
     }
 
-    public void setDeletedBy(Integer deletedBy) {
-        this.deleted_by = deletedBy;
+    public void setDeletedBy(int deletedBy) {
+        this.deletedBy = deletedBy;
     }
 }

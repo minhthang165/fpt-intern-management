@@ -40,7 +40,7 @@ public class UserService {
             throw new BadRequestException(ErrorDictionaryConstraints.CLASS_NOT_EXISTS_ID.getMessage());
         }
 
-        User existedUser = findUserByEmail(createUserDTO.getEmail());
+        User existedUser = getByEmail(createUserDTO.getEmail()).getBody();
         if (existedUser != null) {
             throw new BadRequestException(ErrorDictionaryConstraints.USERS_ALREADY_EXISTS.getMessage());
         }
@@ -67,7 +67,7 @@ public class UserService {
             throw new BadRequestException(ErrorDictionaryConstraints.CREATED_FOR_EMPLOYEE_OR_GUEST_ONLY.getMessage());
         }
 
-        User existedUser = findUserByEmail(createUserDTO.getEmail());
+        User existedUser = getByEmail(createUserDTO.getEmail()).getBody();
         if (existedUser != null) {
             throw new BadRequestException(ErrorDictionaryConstraints.USERS_ALREADY_EXISTS.getMessage());
         }
@@ -141,14 +141,5 @@ public class UserService {
         existedUser.setActive(true);
         userRepository.save(existedUser);
         return new ResponseEntity<>(existedUser, HttpStatus.OK);
-    }
-
-    private User findUserByEmail(String email) {
-        Optional<User> user = this.userRepository.findByEmail(email);
-        if (user.isPresent()) {
-            return user.get();
-        } else {
-            return null;
-        }
     }
 }

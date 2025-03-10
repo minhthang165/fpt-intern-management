@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+</head>
+<body class="bg-white">
+<input type="hidden" id="user_id" th:value="${user.id}">
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="bg-purple-300 w-16 flex flex-col items-center py-4">
+        <div class="text-blue-900 text-2xl font-bold mb-8">
+            FI
+        </div>
+        <div class="flex flex-col space-y-8">
+            <i class="fas fa-tachometer-alt text-black text-2xl">
+            </i>
+            <i class="fas fa-users text-black text-2xl">
+            </i>
+            <i class="fas fa-calendar-alt text-black text-2xl">
+            </i>
+            <i class="fas fa-comments text-black text-2xl">
+            </i>
+            <i class="fas fa-sign-out-alt text-pink-500 text-2xl mt-auto">
+            </i>
+        </div>
+    </div>
+    <!-- Main Content -->
+    <div class="flex flex-col flex-grow">
+        <!-- Header -->
+        <div class="flex items-center justify-between bg-purple-100 p-4">
+            <div class="relative w-1/2">
+                <input class="w-full p-2 rounded-full bg-white border border-gray-300" placeholder="Search" type="text"/>
+                <i class="fas fa-search absolute right-4 top-3 text-gray-400">
+                </i>
+            </div>
+            <div class="flex items-center space-x-4">
+                <i class="fas fa-bell text-black text-xl relative">
+       <span class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
+        1
+       </span>
+                </i>
+                <i class="fas fa-comments text-black text-xl">
+                </i>
+                <i class="fas fa-user-circle text-black text-xl">
+                </i>
+            </div>
+        </div>
+        <!-- Chat Section -->
+        <div class="flex flex-grow">
+            <!-- Chat List -->
+            <div class="bg-blue-100 w-1/4 p-4 left-side">
+                <div class="mb-4">
+                    <input class="w-full p-2 rounded-full bg-white border border-gray-300" placeholder="Search" type="text"/>
+                </div>
+                <div class="space-y-4">
+<!--                    <div class="flex items-center space-x-2 p-2 bg-white rounded-lg">-->
+<!--                        <img alt="User avatar" class="rounded-full" height="40" src="https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg" width="40"/>-->
+<!--                        <div>-->
+<!--                            <div class="font-bold">-->
+<!--                                Thị Nở-->
+<!--                            </div>-->
+<!--                            <div class="text-gray-500 text-sm">-->
+<!--                                Haha, too funny-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="flex items-center space-x-2 p-2">-->
+<!--                        <img alt="User avatar" class="rounded-full" height="40" src="https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg" width="40"/>-->
+<!--                        <div>-->
+<!--                            <div class="font-bold">-->
+<!--                                Thị Nam-->
+<!--                            </div>-->
+<!--                            <div class="text-gray-500 text-sm">-->
+<!--                                You: Lớp ke hang sang-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="flex items-center space-x-2 p-2">-->
+<!--                        <img alt="User avatar" class="rounded-full" height="40" src="https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg" width="40"/>-->
+<!--                        <div>-->
+<!--                            <div class="font-bold">-->
+<!--                                Thị Chuối-->
+<!--                            </div>-->
+<!--                            <div class="text-gray-500 text-sm">-->
+<!--                                Tăng mi chẻ SHi611-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="flex items-center space-x-2 p-2">-->
+<!--                        <img alt="User avatar" class="rounded-full" height="40" src="https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg" width="40"/>-->
+<!--                        <div>-->
+<!--                            <div class="font-bold">-->
+<!--                                Hội anh em Lớp xe ÉPITY-->
+<!--                            </div>-->
+<!--                            <div class="text-gray-500 text-sm">-->
+<!--                                Xuong đồi điện thoai-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+                </div>
+            </div>
+            <!-- Chat Window -->
+            <div class="flex flex-col flex-grow bg-blue-200 p-4 right-side">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <img alt="User avatar" class="rounded-full" height="40" src="https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg" width="40"/>
+                        <div>
+                            <div class="font-bold">
+                                Thị Nở
+                            </div>
+                            <div class="text-green-500 text-sm">
+                                Đang hoạt động
+                            </div>
+                        </div>
+                    </div>
+                    <i class="fas fa-ellipsis-v text-black">
+                    </i>
+                </div>
+                <div class="flex-grow space-y-4">
+                    <div class="flex items-start space-x-2">
+                        <img alt="User avatar" class="rounded-full" height="40" src="https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg" width="40"/>
+                        <div class="bg-white p-2 rounded-lg">
+                            Message content
+                        </div>
+                    </div>
+                    <div class="flex items-end justify-end space-x-2">
+                        <div class="bg-blue-400 p-2 rounded-lg">
+                            Message content
+                        </div>
+                        <img alt="User avatar" class="rounded-full" height="40" src="https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg" width="40"/>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                        <img alt="User avatar" class="rounded-full" height="40" src="https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg" width="40"/>
+                        <div class="bg-white p-2 rounded-lg">
+                            Message content
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 mt-4">
+                    <i class="fas fa-paperclip text-black text-xl">
+                    </i>
+                    <i class="fas fa-smile text-black text-xl">
+                    </i>
+                    <input class="flex-grow p-2 rounded-full bg-white border border-gray-300" placeholder="Enter Here" type="text"/>
+                    <i class="fas fa-paper-plane text-black text-xl">
+                    </i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/assets/js/messenger.js"></script>
+</body>
+</html>

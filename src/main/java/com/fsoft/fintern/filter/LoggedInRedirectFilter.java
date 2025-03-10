@@ -20,7 +20,7 @@ public class LoggedInRedirectFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
         if ((requestURI.equals("/login") || requestURI.equals("/register"))
                 && isAuthenticated()) {
-            response.sendRedirect("/");
+            response.sendRedirect("/edit");
             return;
         }
         filterChain.doFilter(request, response);

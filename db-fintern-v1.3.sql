@@ -187,12 +187,10 @@ CREATE TABLE [Conversation] ( -- room chat for each class
 
 CREATE TABLE [Message] ( -- Show the history of message, who send, send date
 	[message_id] INT PRIMARY KEY IDENTITY(1,1),
-	[sender_id] INT,
 	[conversation_id] INT,
 	[message_content] NVARCHAR(MAX),
 	[message_type] NVARCHAR(255),
-	[send_date] DATETIME,
-	[status] NVARCHAR(50) CHECK ([status] IN ('EDITED', 'DELETED', 'SENT')),
+	[status] NVARCHAR(50) CHECK ([status] IN ('EDITED', 'DELETED', 'SENT')) DEFAULT 'SENT',
     [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
     [updated_at] DATETIME DEFAULT NULL,
     [deleted_at] DATETIME DEFAULT NULL,
@@ -200,14 +198,14 @@ CREATE TABLE [Message] ( -- Show the history of message, who send, send date
     [updated_by] INT DEFAULT NULL,
     [deleted_by] INT DEFAULT NULL,
     [is_active] BIT DEFAULT 1,
-	CONSTRAINT FK_Message_Sender FOREIGN KEY ([sender_id]) REFERENCES [user]([id]),
+	CONSTRAINT FK_Message_Sender FOREIGN KEY ([created_by]) REFERENCES [user]([id]),
 	CONSTRAINT FK_Message_Receiver1 FOREIGN KEY (conversation_id) REFERENCES [Conversation]([conversation_id]),
 )
 
 CREATE TABLE [Conversation_user] ( -- Show the member and admin of the conversation
 	[user_id] INT,
 	[conversation_id] INT,
-	[isAdmin] BIT,
+	[is_admin] BIT,
 	[created_at] DATETIME NOT NULL DEFAULT GETDATE(),
     [updated_at] DATETIME DEFAULT NULL, 
     [deleted_at] DATETIME DEFAULT NULL,
@@ -431,10 +429,12 @@ GO
 
 INSERT INTO [user] ([first_name], [last_name], [email], [phone_number], [class_id], [gender], [role]) 
 VALUES 
+('FIntern', 'Admin', 'fintern.dev@gmail.com', '0703468262', NULL, 'MALE', 'ADMIN'),
 ('John', 'Doe', 'john.doe@example.com', '1234567890', NULL, 'MALE', 'ADMIN'),
 ('Jane', 'Smith', 'jane.smith@example.com', '0987654321', NULL, 'FEMALE', 'EMPLOYEE');
 
 -- Class
+GO
 INSERT INTO [Class] ([class_name], [number_of_interns] , [manager_id], [created_by]) 
 VALUES 
 ('Class A', 0, 1, 1),
@@ -467,10 +467,10 @@ VALUES
 ('Team Meeting', '/images/team_meeting.png');
 
 -- Message
-INSERT INTO [Message] ([sender_id], [conversation_id], [message_content], [message_type], [send_date], [status]) 
+INSERT INTO [Message] ([created_by], [conversation_id], [message_content], [message_type], [status]) 
 VALUES 
-(1, 1, 'Hello team!', 'TEXT', GETDATE(), 'SENT'),
-(2, 1, 'Hi! Lets discuss the project.', 'TEXT', GETDATE(), 'SENT');
+(1, 1, 'Hello team!', 'TEXT', 'SENT'),
+(2, 1, 'Hi! Lets discuss the project.', 'TEXT', 'SENT');
 
 -- Notification_entities
 INSERT INTO [Notification_entities] ([entity_name]) 
@@ -514,5 +514,3 @@ INSERT INTO [Notification_visits] ([notifier_id], [notification_id])
 VALUES 
 (3, 1),
 (4, 2);
-
-

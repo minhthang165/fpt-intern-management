@@ -1,12 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit Profile</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-</head>
+<head th:replace="include/admin-header :: head"></head>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <body class="bg-gray-100">
 <input type="hidden" id="user_id" th:value="${user_id}">
 
@@ -34,6 +30,7 @@
 <!-- Profile Information -->
 <div class="max-w-4xl mx-auto mt-8 bg-white p-8 rounded-lg shadow">
   <div class="flex justify-between items-center border-b pb-4 mb-4">
+    <a href="/logout">Logout</a>
     <h2 class="text-xl font-semibold">Profile Information</h2>
     <button onclick="window.location.href = `/edit`" class="text-gray-600 flex items-center">
       <i class="fas fa-edit mr-2"></i>
@@ -76,5 +73,6 @@
     }
   });
 </script>
+
 </body>
 </html>
