@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head th:replace="include/master-header :: head"></head>
+<style>
+    .user__dropdown {
+        display: none;
+        position: absolute;
+        top: 110%; /* Điều chỉnh vị trí */
+        right: 0;
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        width: 220px;
+        padding: 10px 0;
+        z-index: 1000;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .user__dropdown.show {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .user__dropdown ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .user__dropdown li {
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .user__dropdown li a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .user__dropdown li a:hover {
+        background: #f0f0f0;
+        border-radius: 5px;
+    }
+
+    .user__dropdown svg {
+        margin-right: 10px;
+        fill: #666;
+    }
+</style>
+<body>
+<header th:replace="include/guest-header :: header"></header>
+<section id="homeabout" class="about__area p-relative pt-150 pb-90">
+
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-xxl-6 col-xl-6 col-lg-6">
+                <div class="about__content-wrapper mb-60">
+                    <div class="section__title-wrapper mb-80">
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <span class="section__back-title">A</span>
+                        <span class="section__subtitle">ABOUT THIS EVENT</span>
+                        <h2 class="section__title">
+                            EXPERIENCE A TRUE DIGITAL
+                            <span class="text__highlight"> CONFERENCE
+                              <svg width="328" height="31" viewBox="0 0 328 31" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                 <path d="M2 29C110 8.62517 326 -19.8996 326 29" stroke="url(#paint0_linear_47_128)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                 <defs>
+                                 <linearGradient id="paint0_linear_47_1281" x1="2.50784" y1="22.0412" x2="322.486" y2="65.0473" gradientUnits="userSpaceOnUse">
+                                 <stop offset="1" stop-color="#F7426F"/>
+                                 <stop offset="1" stop-color="#F87A58"/>
+                                 </linearGradient>
+                                 </defs>
+                              </svg>
+                           </span>
+                        </h2>
+                    </div>
+                    <div class="about__content">
+                        <div class="about__text">
+                            <h4>How you transform your business as technology, consumer habits industry dynamic</h4>
+                            <p class="mb-30">Velit auctor aliquet. Aenean sollicitudin, lorem quis bibendum auctor, nisi elit consequat ipsum, nec sagittis sem nibh.</p>
+                            <p>Lorem ipsum proin gravida nibh vel velit auctor aliquet. Aeneansollicitudin, lorem quis bibendum auctonisi elit consequat ipsum nec sagittis sem nibh id elit.
+                                Duis sed odio sit amet nibh vulputate cursusa sit amet mauris. Morbi accumsan ipsum velit.” Nam nec tellus a odio tincidunt.
+                            </p>
+                        </div>
+                        <div class="about__location-info mb-80">
+                            <div class="about__location-inner">
+                                <div class="about__location-icon">
+                                    <a href="#"><i class="fa-solid fa-location-dot"></i></a>
+                                </div>
+                                <div class="about__location-address">
+                                    <h5>WHEN AND WHERE</h5>
+                                    <span>
+                                 November 9–10 <br>
+                                 The Midway SF, Zoom
+                                 </span>
+                                </div>
+                            </div>
+                            <div class="pluse__status">
+                                <span class="dot"></span>
+                                <span class="text">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="event-list.html" class="fill__btn">Join Now<i class="fa-regular fa-angle-right"></i></a>
+                </div>
+            </div>
+            <div class="col-xxl-6 col-xl-6 col-lg-6">
+                <div class="about__thumb-wrapper mb-60 p-relative">
+                    <div class="about__thumb-1 text-end w-img">
+                        <img src="../static/assets/img/about/img1.jpg" alt="image not found">
+                        <div class="panel wow"></div>
+                    </div>
+                    <div class="about__thumb-2 w-img">
+                        <img src="../static/assets/img/about/img2.jpg" alt="image not found">
+                        <div class="panel wow"></div>
+                    </div>
+                    <span class="about__play-btn">
+                        <a class="video__play-btn popup-video" href="https://www.youtube.com/watch?v=2wuEOEFGSF4"><i class="fa-solid fa-play"></i>PLAY TRAILER</a>
+                     </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<footer th:replace="~{include/master-footer :: footer}"></footer>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const userPortfolio = document.getElementById("userportfolio");
+        const userDropdown = document.querySelector(".user__dropdown");
+
+        if (userPortfolio && userDropdown) {
+            userPortfolio.addEventListener("click", function (event) {
+                userDropdown.classList.toggle("show");
+            });
+
+
+            document.addEventListener("click", function (event) {
+                if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
+                    userDropdown.classList.remove("show");
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

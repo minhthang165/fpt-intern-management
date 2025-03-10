@@ -30,17 +30,19 @@ public class AuthController {
 
         User existedUser = userService.getByEmail(email).getBody();
 
-        if(existedUser == null) {
+        if (existedUser == null) {
             userDTO.setEmail(email);
             userDTO.setFirst_name(oauth2User.getAttribute("given_name"));
             userDTO.setLast_name(oauth2User.getAttribute("family_name"));
             userDTO.setPicture(oauth2User.getAttribute("picture"));
             userDTO.setRole(Role.INTERN);
-            model.addAttribute("user", userDTO);
 
+            redirectAttributes.addFlashAttribute("tempUser", userDTO);
             return "redirect:/profile/edit";
         }
+        Integer userId = existedUser.getId();
         model.addAttribute("user", existedUser);
-        return "admin/AdminDashboard";
+        return "redirect:/home/" + userId;
     }
+
 }

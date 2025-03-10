@@ -7,13 +7,11 @@ public class RecruitmentDTO {
     private Integer salary;
     private String experience;
     private String education;
-    private String workForm; // Dùng String thay vì Enum
+    private String workForm;
     private Integer totalSlot;
     private Integer availableSlot;
     private String description;
-    private Timestamp startTime;
-    private Timestamp endTime;
-    private Integer creatorId;
+
 
 
     public String getPosition() {
@@ -72,28 +70,6 @@ public class RecruitmentDTO {
         this.description = description;
     }
 
-    public Timestamp getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(Timestamp startTime) {
-        this.startTime = startTime;
-    }
-
-    public Timestamp getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Timestamp endTime) {
-        this.endTime = endTime;
-    }
-
-    public void setCreator(Integer creator) {
-        this.creatorId = creator;
-    }
-    public Integer getCreator() {
-        return creatorId;
-    }
 
     public String getWorkForm() {
         return workForm;

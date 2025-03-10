@@ -140,23 +140,37 @@ CREATE TABLE [Recruitment] (  -- Show the positions are needed in order to the g
     [is_active] BIT DEFAULT 1
 	CONSTRAINT FK_Requirement_CreatedBy FOREIGN KEY ([created_by]) REFERENCES [user]([id]) -- admin create
 );
-
-CREATE TABLE [File] ( -- Save the file include CV from intern or report from manager 
+CREATE TABLE [File] ( -- Save the file include CV from intern or report from manager
     [id] INT PRIMARY KEY IDENTITY(1,1),
     [submitter_id] INT NOT NULL, --
     [file_type] NVARCHAR(255) NOT NULL, -- 'REPORT' or 'CV'
-    [displayName] NVARCHAR(255) NOT NULL,-- Display name is the file name user submitted -- 
+    [display_Name] NVARCHAR(255) NOT NULL,-- Display name is the file name user submitted --
     [path] NVARCHAR(255) NOT NULL,
     [size] FLOAT,
     [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
     [updated_at] DATETIME DEFAULT NULL,
     [deleted_at] DATETIME DEFAULT NULL,
-	[created_by] INT DEFAULT NULL,
+    [created_by] INT DEFAULT NULL,
     [updated_by] INT DEFAULT NULL,
     [deleted_by] INT DEFAULT NULL,
     [is_active] BIT DEFAULT 1,
-	CONSTRAINT PK_CV_Intern FOREIGN KEY ([submitter_id]) REFERENCES [user]([id])
-);
+    CONSTRAINT PK_CV_Intern FOREIGN KEY ([submitter_id]) REFERENCES [user]([id])
+    );
+CREATE TABLE [CV_Submitter] (
+    [recruitment_id] INT NOT NULL,
+    [file_id] INT NOT NULL,
+    [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
+    [updated_at] DATETIME DEFAULT NULL,
+    [deleted_at] DATETIME DEFAULT NULL,
+    [created_by] INT DEFAULT NULL,
+    [updated_by] INT DEFAULT NULL,
+    [deleted_by] INT DEFAULT NULL,
+    [is_active] BIT DEFAULT 1,
+    CONSTRAINT FK_Submitter_Id FOREIGN KEY ([submitter_id]) REFERENCES [user]([id]),
+    CONSTRAINT FK_Recruitment_Id FOREIGN KEY ([recruitment_id]) REFERENCES [Recruitment]([id]),
+    CONSTRAINT FK_File_Id FOREIGN KEY ([file_id]) REFERENCES [File]([id])
+    )
+
 
 CREATE TABLE [Conversation] ( -- room chat for each class
 	[conversation_id] INT PRIMARY KEY IDENTITY(1,1),
@@ -417,7 +431,7 @@ GO
 
 INSERT INTO [user] ([first_name], [last_name], [email], [phone_number], [class_id], [gender], [role]) 
 VALUES 
-('John', 'Doe', 'john.doe@example.com', '1234567890', NULL, 'MALE', 'ADMIN'),
+('FPT', 'SOFTWARE', 'FPT@FPT.EDU.VN.com', '1234567890', NULL, 'MALE', 'ADMIN'),
 ('Jane', 'Smith', 'jane.smith@example.com', '0987654321', NULL, 'FEMALE', 'EMPLOYEE');
 
 -- Class

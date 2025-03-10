@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Danh sách Tuyển Dụng</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    a {
+      text-decoration: none;
+      color: blue;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Danh sách Tuyển Dụng</h2>
+
+<table>
+  <thead>
+  <tr>
+    <th>Vị trí</th>
+    <th>Lương</th>
+    <th>Kinh nghiệm</th>
+    <th>Hình thức làm việc</th>
+    <th>Chi tiết</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="recruitment : ${recruitments}">
+    <td th:text="${recruitment.position}"></td>
+    <td th:text="${recruitment.salary}"></td>
+    <td th:text="${recruitment.experience}"></td>
+    <td th:text="${recruitment.workForm}"></td>
+    <td><a th:href="@{/recruitment/{id}/{user_id}(id=${recruitment.id}, user_id=${user_id})}">Xem chi tiết</a></td>
+
+
+  </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

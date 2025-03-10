@@ -96,7 +96,11 @@
 			<artifactId>google-api-services-drive</artifactId>
 			<version>v3-rev20250210-2.0.0</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>

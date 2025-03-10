@@ -22,13 +22,14 @@ public class ProfileController {
     @GetMapping("/{user_id}")
     public String profile(@PathVariable int user_id, Model model) throws BadRequestException {
         model.addAttribute("user_id", user_id);
-        return "profile";
+            return "profile";
     }
 
-    // Edit profile page
+
     @GetMapping("/edit")
     public String getInfo(@ModelAttribute("tempUser") CreateUserDTO tempUser, Model model) {
         model.addAttribute("tempUser", tempUser);
         return "edit";
     }
+
 }

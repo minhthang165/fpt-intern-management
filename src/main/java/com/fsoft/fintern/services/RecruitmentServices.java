@@ -10,7 +10,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -73,11 +72,6 @@ public class RecruitmentServices {
         newRecruitment.setTotalSlot(recruitmentDTO.getTotalSlot());
         newRecruitment.setAvailableSlot(recruitmentDTO.getAvailableSlot());
         newRecruitment.setDescription(recruitmentDTO.getDescription());
-        newRecruitment.setStartTime(recruitmentDTO.getStartTime());
-        newRecruitment.setEndTime(recruitmentDTO.getEndTime());
-        newRecruitment.setCreatedBy(recruitmentDTO.getCreator());
-
-        // Đặt giá trị mặc định nếu null
         if (recruitmentDTO.getWorkForm() == null ||
                 (!recruitmentDTO.getWorkForm().equals("PART-TIME") &&
                         !recruitmentDTO.getWorkForm().equals("FULL-TIME"))) {

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Call</title>
+    <style>
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+<div></div>
+
+<script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+<script>
+
+    window.onload = function () {
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+        const roomID = localStorage.getItem("roomID") || (Math.floor(Math.random() * 10000) + "");
+        const userID = getQueryParam("user") || localStorage.getItem("userId");
+        console.log(userID)
+        console.log(roomID)
+
+        fetch(`/api/user/users/id/${userID}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`❌ Failed to fetch user data (Status: ${response.status})`);
+                }
+                return response.json();
+            })
+            .then(user => {
+                const userName = user.first_name + " " + user.last_name;
+                const appID = 633966325;
+                const serverSecret = "2ae67889cc27b99622ba8525455bbeee";
+
+                const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+
+                const zp = ZegoUIKitPrebuilt.create(kitToken);
+                zp.joinRoom({
+                    container: document.querySelector("#root"),
+                    sharedLinks: [{
+                        name: 'Personal link',
+                        url: window.location.protocol + '//' + window.location.host + window.location.pathname + '?roomID=' + roomID,
+                    }],
+                    scenario: {
+                        mode: ZegoUIKitPrebuilt.VideoConference,
+                    },
+                    showPreJoinView: false,
+                    turnOnMicrophoneWhenJoining: false,
+                    turnOnCameraWhenJoining: false,
+                    showMyCameraToggleButton: true,
+                    showMyMicrophoneToggleButton: true,
+                    showAudioVideoSettingsButton: true,
+                    showScreenSharingButton: true,
+                    showTextChat: false,
+                    showUserList: true,
+                    maxUsers: 2,
+                    layout: "Auto",
+                    showLayoutButton: false,
+                });
+
+                localStorage.removeItem("roomID");
+            })
+
+
+    };
+</script>
+</body>
+</html>
