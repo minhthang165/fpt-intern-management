@@ -3102,7 +3102,7 @@ input[type=file] {
   display: block;
 }
 .sticky .main-menu ul li a {
-  color: var(--clr-text-20);
+  color: #0b0b0b;
 }
 .sticky .bar-icon span {
   background: var(--clr-text-20);

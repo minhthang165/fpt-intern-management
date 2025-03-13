@@ -29,6 +29,7 @@ public class SecurityConfig {
                         .anonymous()
                         .anyRequest().authenticated()
 //                        .anyRequest().permitAll()
+
                 )
                 .addFilterBefore(new LoggedInRedirectFilter(), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2

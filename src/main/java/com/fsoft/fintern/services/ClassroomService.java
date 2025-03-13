@@ -2,6 +2,7 @@ package com.fsoft.fintern.services;
 
 import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.dtos.ClassroomDTO;
+import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.Classroom;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.repositories.ClassroomRepository;
@@ -30,19 +31,20 @@ public class ClassroomService {
     }
 
     public ResponseEntity<Classroom> createClass(ClassroomDTO classDTO) throws BadRequestException {
-        Classroom existed_class = findClassroomByName(classDTO.getClass_name());
+        Classroom existed_class = findClassroomByName(classDTO.getClassName());
         if (existed_class != null) {
             throw new BadRequestException(ErrorDictionaryConstraints.CLASS_ALREADY_EXISTS.getMessage());
         }
 
         User manager = this.userRepository.findById(classDTO.getManagerId()).orElse(null);
 
-        if (manager == null) {
+        if (manager == null || manager.getRole() != Role.EMPLOYEE) {
             throw new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage());
         }
 
         Classroom newClass = new Classroom();
-        newClass.setclassName(classDTO.getClass_name());
+        newClass.setClassName(classDTO.getClassName());
+        newClass.setNumberOfIntern(classDTO.getNumberOfIntern());
         newClass.setManager(manager);
 
         Classroom savedClass = class_repository.save(newClass);
@@ -78,9 +80,24 @@ public class ClassroomService {
 
     public ResponseEntity<Classroom> update(int id, ClassroomDTO classDTO) throws BadRequestException {
         Classroom classroom = this.class_repository.findById(id).orElseThrow(()
-            -> new BadRequestException(ErrorDictionaryConstraints.CLASS_NOT_EXISTS_ID.getMessage())
+                -> new BadRequestException(ErrorDictionaryConstraints.CLASS_NOT_EXISTS_ID.getMessage())
         );
+
+        if (classDTO.getManagerId() != null) {
+            User manager = this.userRepository.findById(classDTO.getManagerId()).orElseThrow(()
+                    -> new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage())
+            );
+            BeanUtils.copyProperties(classDTO, classroom, BeanUtilsHelper.getNullPropertyNames(classDTO));
+            classroom.setClassName(classDTO.getClassName());
+            classroom.setNumberOfIntern(classDTO.getNumberOfIntern());
+            classroom.setManager(manager);
+
+        }
+
         BeanUtils.copyProperties(classDTO, classroom, BeanUtilsHelper.getNullPropertyNames(classDTO));
+        classroom.setClassName(classDTO.getClassName());
+        classroom.setNumberOfIntern(classDTO.getNumberOfIntern());
+
         this.class_repository.save(classroom);
         return new ResponseEntity<>(classroom, HttpStatus.OK);
     }

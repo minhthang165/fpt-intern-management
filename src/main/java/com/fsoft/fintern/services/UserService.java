@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class    UserService {
+public class UserService {
     private final UserRepository userRepository;
     private final ClassroomRepository classRepository;
 
@@ -94,6 +94,13 @@ public class    UserService {
         }
     }
 
+    public ResponseEntity<List<User>> findUserByRole(Role role) throws BadRequestException {
+        List<User> users = this.userRepository.findByRole(role)
+                .orElseThrow(() -> new BadRequestException(ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage()));
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+
+
     public ResponseEntity<User> getByEmail(String email) throws BadRequestException {
         User user = this.userRepository.findByEmail(email).orElse(null);
             return new ResponseEntity<>(user, HttpStatus.OK);
@@ -141,5 +148,14 @@ public class    UserService {
         existedUser.setActive(true);
         userRepository.save(existedUser);
         return new ResponseEntity<>(existedUser, HttpStatus.OK);
+    }
+
+    private User findUserByEmail(String email) {
+        Optional<User> user = this.userRepository.findByEmail(email);
+        if (user.isPresent()) {
+            return user.get();
+        } else {
+            return null;
+        }
     }
 }

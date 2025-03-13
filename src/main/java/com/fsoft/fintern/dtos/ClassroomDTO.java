@@ -1,17 +1,17 @@
 package com.fsoft.fintern.dtos;
 
-import java.util.List;
 
 public class ClassroomDTO {
-    private String class_name;
+    private String className;
+    private Integer numberOfIntern;
     private Integer managerId;
 
-    public String getClass_name() {
-        return class_name;
+    public String getClassName() {
+        return className;
     }
 
-    public void setClass_name(String class_name) {
-        this.class_name = class_name;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public Integer getManagerId() {
@@ -20,5 +20,13 @@ public class ClassroomDTO {
 
     public void setManagerId(Integer managerId) {
         this.managerId = managerId;
+    }
+
+    public Integer getNumberOfIntern() {
+        return numberOfIntern;
+    }
+
+    public void setNumberOfIntern(Integer numberOfIntern) {
+        this.numberOfIntern = numberOfIntern;
     }
 }

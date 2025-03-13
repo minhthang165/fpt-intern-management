@@ -121,11 +121,11 @@
             <div class="col-xxl-6 col-xl-6 col-lg-6">
                 <div class="about__thumb-wrapper mb-60 p-relative">
                     <div class="about__thumb-1 text-end w-img">
-                        <img src="../static/assets/img/about/img1.jpg" alt="image not found">
+                        <img src="assets/img/about/img1.jpg" alt="image not found">
                         <div class="panel wow"></div>
                     </div>
                     <div class="about__thumb-2 w-img">
-                        <img src="../static/assets/img/about/img2.jpg" alt="image not found">
+                        <img src="assets/img/about/img2.jpg" alt="image not found">
                         <div class="panel wow"></div>
                     </div>
                     <span class="about__play-btn">
@@ -147,7 +147,7 @@
                 userDropdown.classList.toggle("show");
             });
 
-
+            // Đóng dropdown khi click ra ngoài
             document.addEventListener("click", function (event) {
                 if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
                     userDropdown.classList.remove("show");

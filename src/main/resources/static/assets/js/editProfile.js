@@ -48,7 +48,8 @@ async function updateUser() {
         console.log('User created successfully:', result);
 
         // Redirect to user profile after creation
-        window.location.href = `/${result.id}`;
+        window.location.href = `/profile`;
+
 
     } catch (error) {
         console.error('Error creating user:', error);
@@ -58,10 +59,3 @@ document.querySelector('form').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent the default form submission
     updateUser();
 });
-
-
-
-
-
-
-

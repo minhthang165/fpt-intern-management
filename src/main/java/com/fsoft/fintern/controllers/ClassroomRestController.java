@@ -20,39 +20,41 @@ public class ClassroomRestController {
         this.classroomService = classroomService;
     }
 
-    @GetMapping("/class")
+    @GetMapping("")
     @Operation(description = "view all classroom")
     public ResponseEntity<List<Classroom>> findAll() throws BadRequestException {
         return this.classroomService.findAll();
     }
 
-    @PostMapping("/class/create")
+    @PostMapping("/create")
     @Operation(description = "create new class")
     public ResponseEntity<Classroom> create(@RequestBody ClassroomDTO classroomDTO) throws BadRequestException {
         return this.classroomService.createClass(classroomDTO);
     }
 
-    @GetMapping("/class/{id}")
+    @GetMapping("/{id}")
     @Operation(description =  "Get Classroom by id")
     public ResponseEntity<Classroom> getById(@PathVariable int id) throws BadRequestException {
         return this.classroomService.findById(id);
     }
 
-    @PatchMapping("/class/update/{id}")
+    @PatchMapping("/update/{id}")
     @Operation(description = "Update class by id")
     public ResponseEntity<Classroom> update(@RequestBody ClassroomDTO classroomDTO, @PathVariable int id) throws BadRequestException  {
+
         return this.classroomService.update(id, classroomDTO);
     }
 
-    @DeleteMapping("/class/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     @Operation(description = "Delete class by id")
     public ResponseEntity<Classroom> delete(@PathVariable int id) throws BadRequestException {
         return this.classroomService.delete(id);
     }
 
-    @PatchMapping("/class/setIsActiveTrue/{id}")
+    @PatchMapping("/setIsActiveTrue/{id}")
     @Operation(description = "Update IsActive True")
     public ResponseEntity<Classroom> setIsActiveTrue(@PathVariable int id) throws BadRequestException {
         return this.classroomService.setIsActiveTrue(id);
     }
+
 }
