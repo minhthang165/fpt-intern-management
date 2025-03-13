@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết Tuyển Dụng</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      color: #333;
+    }
+    p {
+      margin: 5px 0;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 15px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .back-link {
+      color: white;
+      background-color: gray;
+    }
+    .apply-btn {
+      color: white;
+      background-color: blue;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h2 th:text="${recruitment.position}"></h2>
+  <p><strong>Lương:</strong> <span th:text="${recruitment.salary}"></span></p>
+  <p><strong>Kinh nghiệm:</strong> <span th:text="${recruitment.experience}"></span></p>
+  <p><strong>Hình thức làm việc:</strong> <span th:text="${recruitment.workForm}"></span></p>
+  <p><strong>Số lượng tuyển:</strong> <span th:text="${recruitment.totalSlot}"></span></p>
+  <p><strong>Số lượng còn trống:</strong> <span th:text="${recruitment.availableSlot}"></span></p>
+  <p><strong>Mô tả:</strong> <span th:text="${recruitment.description}"></span></p>
+  <p><strong>Ngày bắt đầu:</strong> <span th:text="${recruitment.startTime}"></span></p>
+  <p><strong>Ngày kết thúc:</strong> <span th:text="${recruitment.endTime}"></span></p>
+
+  <a href="/recruitment/recruitments" class="btn back-link">🔙 Quay lại danh sách</a>
+  <button class="btn apply-btn" onclick="applyJob()">📤 Apply job</button>
+
+  <p id="message"></p>
+</div>
+
+<script>
+  function getIdsFromPath() {
+    let pathSegments = window.location.pathname.split('/');
+    let recruitmentId = pathSegments[pathSegments.length - 2];
+    let userId = pathSegments[pathSegments.length - 1];
+
+    return { recruitmentId, userId };
+  }
+
+  function applyJob() {
+    let messageEl = document.getElementById("message");
+
+
+    let {recruitmentId, userId} = getIdsFromPath();
+
+    console.log("Recruitment ID:", recruitmentId, "User ID:", userId);
+
+    if (!recruitmentId || !userId || isNaN(recruitmentId) || isNaN(userId)) {
+      messageEl.textContent = "❌ Không tìm thấy thông tin tuyển dụng hoặc người dùng.";
+      messageEl.style.color = "red";
+      return;
+    }
+
+    fetch(`/file/user/${userId}`)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error("Không tìm thấy CV của bạn!");
+              }
+              return response.json();
+            })
+            .then(file => {
+              console.log("Received file data:", file); // In ra dữ liệu file để kiểm tra
+              if (!file.id) {
+                throw new Error("CV không hợp lệ. Vui lòng tải lên CV trước khi apply!");
+              }
+
+              let cvSubmitter = {
+                recruitmentId: recruitmentId,
+                fileId: file.id
+              };
+
+              return fetch("/CVSubmitter/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(cvSubmitter)
+              });
+            })
+
+            .then(response => {
+              if (!response.ok) {
+                throw new Error("Apply thất bại. Vui lòng thử lại!");
+              }
+              return response.json();
+            })
+            .then(data => {
+              messageEl.textContent = "✅ Apply thành công!";
+              messageEl.style.color = "green";
+            })
+            .catch(error => {
+              messageEl.textContent = "❌ " + error.message;
+              messageEl.style.color = "red";
+            });
+  }
+
+</script>
+
+</body>
+</html>

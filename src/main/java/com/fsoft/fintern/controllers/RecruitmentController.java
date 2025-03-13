@@ -8,12 +8,13 @@ import com.fsoft.fintern.services.RecruitmentServices;
 import io.swagger.v3.oas.annotations.Operation;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
-@RestController
-@RequestMapping("api/recruitment")
+@Controller
+@RequestMapping("/recruitment")
 public class RecruitmentController {
     private final RecruitmentServices recruitmentServices;
 
@@ -21,21 +22,37 @@ public class RecruitmentController {
         this.recruitmentServices = recruitmentServices;
     }
 
-    @GetMapping("/recruitment")
-    @Operation(description = "View all recruitment")
-    public ResponseEntity<List<Recruitment>> findAll() throws BadRequestException {
-        return this.recruitmentServices.findAll();
+    @GetMapping("/recruitments/{user_id}")
+    public String listRecruitments(@PathVariable("user_id") int userId, Model model) {
+        ResponseEntity<List<Recruitment>> response = recruitmentServices.findAll();
+
+        model.addAttribute("user_id", userId);
+        if (response.getBody() != null) {
+            model.addAttribute("recruitments", response.getBody());
+        } else {
+            model.addAttribute("recruitments", List.of());
+        }
+
+        return "recruitment-list";
     }
+
+
+    @GetMapping("/{id}/{user_id}")
+    public String viewRecruitment(@PathVariable int id, @PathVariable int user_id, Model model) throws BadRequestException {
+        Recruitment recruitment = recruitmentServices.findById(id).getBody();
+        if (recruitment == null) {
+            throw new BadRequestException("Recruitment not found");
+        }
+        model.addAttribute("recruitment", recruitment);
+        model.addAttribute("user_id", user_id);
+        return "recruitment-detail";
+    }
+
+
     @PostMapping("/recruitment/create")
     @Operation(description = "Create a new recruitment")
     public ResponseEntity<Recruitment> create(@RequestBody RecruitmentDTO recruitmentDTO) throws BadRequestException {
         return this.recruitmentServices.create(recruitmentDTO);
-    }
-
-    @GetMapping("/recruitment/{id}")
-    @Operation(description = "Get recruitment by ID")
-    public ResponseEntity<Recruitment> findById(@PathVariable int id) throws BadRequestException {
-        return this.recruitmentServices.findById(id);
     }
 
 
@@ -59,12 +76,6 @@ public class RecruitmentController {
     }
 
 
-
-    @PatchMapping("/recruitment/setIsActiveFalse/{id}")
-    @Operation(description = "Update  IsActive False")
-    public ResponseEntity<Recruitment> setIsActiveFalse(@PathVariable int id) throws BadRequestException {
-        return this.recruitmentServices.setIsActiveFalse(id);
-    }
 
 
 }

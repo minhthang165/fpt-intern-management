@@ -3,9 +3,9 @@ package com.fsoft.fintern.dtos;
 import com.fsoft.fintern.enums.Role;
 
 public class LoginUserDTO {
+    private int id;
     private String first_name;
     private String last_name;
-    private String phone_number;
     private Integer class_id;
     private String picture;
     private Role role;
@@ -34,12 +34,12 @@ public class LoginUserDTO {
         this.picture = picture;
     }
 
-    public String getPhone_number() {
-        return phone_number;
+    public int getId() {
+        return id;
     }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Integer getClass_id() {
