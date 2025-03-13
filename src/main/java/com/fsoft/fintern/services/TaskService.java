@@ -77,7 +77,7 @@ public class TaskService {
     }
 
     public ResponseEntity<Task> createTask(TaskDTO taskDTO) throws BadRequestException {
-        Task existingTask = findTaskByName(taskDTO.getTaskName());
+        Task existingTask = this.taskRepository.findById(taskDTO.getId()).orElse(null);
         Classroom existedClass = this.classRepository.findById(taskDTO.getClassId()).orElse(null);
         User creator = this.userRepository.findById(taskDTO.getCreator()).orElse(null);
 
@@ -122,16 +122,6 @@ public class TaskService {
         existedTask.setActive(true);
         taskRepository.save(existedTask);
         return new ResponseEntity<>(existedTask, HttpStatus.OK);
-    }
-
-    private Task findTaskByName(String taskName) {
-        Optional<Task> task = this.taskRepository.findTaskByTaskName(taskName);
-
-        if (task.isPresent()) {
-            return task.get();
-        } else {
-            return null;
-        }
     }
 }
 

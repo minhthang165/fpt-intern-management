@@ -3102,6 +3102,7 @@ input[type=file] {
   display: block;
 }
 .sticky .main-menu ul li a {
+  color: var(--clr-text-20);
   color: #0b0b0b;
 }
 .sticky .bar-icon span {
@@ -3162,7 +3163,7 @@ input[type=file] {
 .main-menu ul li a {
   display: inline-block;
   font-size: 18px;
-  color: var(--clr-common-black);
+  color: var(--clr-common-white);
   padding: 46px 0;
   font-weight: var(--bd-fw-medium);
   -webkit-transition: all 0.3s ease-out 0s;
@@ -3576,7 +3577,7 @@ input[type=file] {
 .bar-icon span {
   width: 100%;
   height: 2px;
-  background: var(--clr-common-black);
+  background: var(--clr-common-white);
   display: inline-block;
 }
 .bar-icon span:nth-child(2) {

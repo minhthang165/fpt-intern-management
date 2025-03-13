@@ -327,6 +327,8 @@ i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
 }
 .flaticon-padlock:before {
     content: "\f167";
+    font-size: x-large;
+    font-weight: bolder;
 }
 .flaticon-padlock-1:before {
     content: "\f168";
@@ -336,6 +338,7 @@ i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
 }
 .flaticon-edit:before {
     content: "\f16a";
+    font-size: x-large;
     color: #f38321;
 }
 .flaticon-edit-1:before {
