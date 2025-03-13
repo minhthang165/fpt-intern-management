@@ -514,3 +514,5 @@ INSERT INTO [Notification_visits] ([notifier_id], [notification_id])
 VALUES 
 (3, 1),
 (4, 2);
+
+SELECT * FROM Message

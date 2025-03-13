@@ -33,9 +33,10 @@ public class MessageService {
         Message message = new Message();
         message.setMessageContent(messageDTO.getMessageContent());
         message.setMessageType(messageDTO.getMessageType());
-        message.setSender(userRepository.findById(messageDTO.getSenderId()).orElse(null));
+        message.setSender(userRepository.findById(messageDTO.getCreatedBy()).orElse(null));
         message.setConversation(conversationRepository.findById(messageDTO.getConversationId()).orElse(null));
         message.setStatus(MessageStatus.SENT);
+        message.setCreatedBy((messageDTO.getCreatedBy()));
         return new ResponseEntity<>(messageRepository.save(message), HttpStatus.CREATED);
     }
 

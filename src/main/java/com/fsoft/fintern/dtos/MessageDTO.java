@@ -2,7 +2,7 @@ package com.fsoft.fintern.dtos;
 
 public class MessageDTO {
     private int messageId;
-    private int senderId;
+    private Integer createdBy;
     private int conversationId;
     private String messageContent;
     private String messageType;
@@ -14,14 +14,6 @@ public class MessageDTO {
 
     public void setMessageId(int messageId) {
         this.messageId = messageId;
-    }
-
-    public int getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(int senderId) {
-        this.senderId = senderId;
     }
 
     public int getConversationId() {
@@ -54,5 +46,13 @@ public class MessageDTO {
 
     public void setMessageStatus(String messageStatus) {
         this.messageStatus = messageStatus;
+    }
+
+    public Integer getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Integer createdBy) {
+        this.createdBy = createdBy;
     }
 }

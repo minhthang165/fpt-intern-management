@@ -8,10 +8,6 @@ public class FileDTO {
         private String displayName;
         private String path;
         private Double size;
-        private Integer createdBy;
-        private Integer updatedBy;
-        private Integer deletedBy;
-        private Boolean isActive;
 
         public Integer getId() {
             return id;
@@ -59,23 +55,6 @@ public class FileDTO {
 
         public void setSize(Double size) {
             this.size = size;
-        }
-
-
-        public Integer getDeletedBy() {
-            return deletedBy;
-        }
-
-        public void setDeletedBy(Integer deletedBy) {
-            this.deletedBy = deletedBy;
-        }
-
-        public Boolean getIsActive() {
-            return isActive;
-        }
-
-        public void setIsActive(Boolean isActive) {
-            this.isActive = isActive;
         }
     }
 
