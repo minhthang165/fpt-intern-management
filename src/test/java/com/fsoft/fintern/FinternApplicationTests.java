@@ -24,7 +24,7 @@ public class FinternApplicationTests {
 		userDTO.setPicture("/home/john.doe");
 		userDTO.setGender(Gender.MALE);
 		userDTO.setPhone_number("1251251");
-		userDTO.setClassId(1); // Make sure to set a valid class_id
+		userDTO.setClassId(1);
 		userService.createIntern(userDTO);
 	}
 }

@@ -17,24 +17,22 @@
     }
   </style>
   <script>
-
-    function getUserIdFromPath() {
-      let pathSegments = window.location.pathname.split('/');
-      return pathSegments[pathSegments.length - 1];
-    }
-
-    function uploadFile(event) {
+    document.addEventListener("DOMContentLoaded", function () {
+      const uploadForm = document.getElementById("uploadForm");
+      uploadForm.addEventListener("submit", uploadFile);
+    });
+    async function uploadFile(event) {
       event.preventDefault();
-
-      let fileInput = document.getElementById("fileInput");
-      let messageEl = document.getElementById("message");
-      let loadingEl = document.getElementById("loading");
-      let fileNameEl = document.getElementById("fileName");
-      let pdfViewer = document.getElementById("pdfViewer"); // Lấy thẻ iframe
+      const userId = document.getElementById("user_id").value;
+      const fileInput = document.getElementById("fileInput");
+      const messageEl = document.getElementById("message");
+      const loadingEl = document.getElementById("loading");
+      const fileNameEl = document.getElementById("fileName");
+      const pdfViewer = document.getElementById("pdfViewer");
 
       messageEl.textContent = "";
       loadingEl.style.display = "inline";
-      pdfViewer.style.display = "none"; // Ẩn iframe trước khi upload
+      pdfViewer.style.display = "none";
 
       if (!fileInput.files.length) {
         messageEl.textContent = "❌ Vui lòng chọn một file!";
@@ -43,15 +41,12 @@
         return;
       }
 
-      let file = fileInput.files[0];
+      const file = fileInput.files[0];
       fileNameEl.textContent = `📂 Đang tải lên: ${file.name}`;
 
-      let formData = new FormData();
+      const formData = new FormData();
       formData.append("file", file);
       formData.append("Filetype", "CV");
-
-      // Lấy userId từ URL path
-      let userId = getUserIdFromPath();
 
       if (userId && !isNaN(userId)) {
         formData.append("userId", userId);
@@ -62,65 +57,55 @@
         return;
       }
 
-      fetch("/drive/uploadFileToGoogleDrive", {
-        method: "POST",
-        body: formData
-      })
-              .then(response => response.json())
-              .then(data => {
-                let message = data.success ? "✅ " + data.message : "❌ " + data.message;
-                messageEl.textContent = message;
-                messageEl.style.color = data.success ? "green" : "red";
+      try {
+        const response = await fetch("/drive/uploadFileToGoogleDrive", {
+          method: "POST",
+          body: formData
+        });
 
-                if (data.success && data.data && data.data.url) {
-                  let fileUrl = data.data.url;
+        const data = await response.json();
+        let message = data.success ? "✅ " + data.message : "❌ " + data.message;
+        messageEl.textContent = message;
+        messageEl.style.color = data.success ? "green" : "red";
 
-                  // Kiểm tra nếu file là PDF thì hiển thị trong iframe
-                  if (file.name.toLowerCase().endsWith(".pdf")) {
-                    pdfViewer.src = fileUrl;
-                    pdfViewer.style.display = "block"; // Hiển thị iframe
-                  } else {
-                    pdfViewer.style.display = "none";
-                  }
+        if (data.success && data.data && data.data.url) {
+          let fileUrl = data.data.url;
 
-                  // Thêm link mở file trên Google Drive
-                  let link = document.createElement("a");
-                  link.href = fileUrl;
-                  link.textContent = "📎 Mở file trên Google Drive";
-                  link.target = "_blank";
-                  messageEl.appendChild(document.createElement("br"));
-                  messageEl.appendChild(link);
-                }
-              })
-              .catch(error => {
-                messageEl.textContent = "❌ Lỗi khi upload!";
-                messageEl.style.color = "red";
-              })
-              .finally(() => {
-                loadingEl.style.display = "none";
-                fileNameEl.textContent = "";
-              });
+          if (file.name.toLowerCase().endsWith(".pdf")) {
+            pdfViewer.src = fileUrl;
+            pdfViewer.style.display = "block";
+          } else {
+            pdfViewer.style.display = "none";
+          }
+
+          let link = document.createElement("a");
+          link.href = fileUrl;
+          link.textContent = "📎 Mở file trên Google Drive";
+          link.target = "_blank";
+          messageEl.appendChild(document.createElement("br"));
+          messageEl.appendChild(link);
+        }
+      } catch (error) {
+        messageEl.textContent = "❌ Lỗi khi upload!";
+        messageEl.style.color = "red";
+      } finally {
+        loadingEl.style.display = "none";
+        fileNameEl.textContent = "";
+      }
     }
-
   </script>
 </head>
 <body>
-
 <h2>Upload File</h2>
-<h2>Upload File</h2>
-
+<input type="hidden" id="user_id" th:value="${user_id}">
 <form id="uploadForm" enctype="multipart/form-data">
   <input type="file" id="fileInput" required>
   <p id="fileName"></p>
-  <button type="submit" onclick="uploadFile(event)">Upload</button>
+  <button type="submit" id="uploadButton">Upload</button>
   <span id="loading">⏳ Đang tải lên...</span>
 </form>
 
 <p id="message"></p>
-
-<!-- Thêm iframe để xem file PDF -->
 <iframe id="pdfViewer" style="width:100%; height:500px; display:none;" frameborder="0"></iframe>
-
-
 </body>
-</html> 
+</html>

@@ -5,10 +5,9 @@ import com.fsoft.fintern.models.CVSubmitter;
 import com.fsoft.fintern.services.CVSubmitterService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController
 @RequestMapping("/CVSubmitter")
 public class CVController {
     private final CVSubmitterService cvSubmitterService;

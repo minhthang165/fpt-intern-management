@@ -43,7 +43,7 @@
     <td th:text="${recruitment.salary}"></td>
     <td th:text="${recruitment.experience}"></td>
     <td th:text="${recruitment.workForm}"></td>
-    <td><a th:href="@{/recruitment/{id}/{user_id}(id=${recruitment.id}, user_id=${user_id})}">Xem chi tiết</a></td>
+    <td><a th:href="@{/recruitment/{id}(id=${recruitment.id})}">Xem chi tiết</a></td>
 
 
   </tr>

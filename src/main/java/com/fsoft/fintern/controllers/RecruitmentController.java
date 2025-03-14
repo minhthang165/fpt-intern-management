@@ -1,5 +1,6 @@
 package com.fsoft.fintern.controllers;
 
+import com.fsoft.fintern.dtos.LoginUserDTO;
 import com.fsoft.fintern.dtos.RecruitmentDTO;
 import com.fsoft.fintern.dtos.TaskDTO;
 import com.fsoft.fintern.models.Recruitment;
@@ -22,11 +23,10 @@ public class RecruitmentController {
         this.recruitmentServices = recruitmentServices;
     }
 
-    @GetMapping("/recruitments/{user_id}")
-    public String listRecruitments(@PathVariable("user_id") int userId, Model model) {
+    @GetMapping("/recruitments")
+    public String listRecruitments(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) {
         ResponseEntity<List<Recruitment>> response = recruitmentServices.findAll();
-
-        model.addAttribute("user_id", userId);
+        model.addAttribute("user_id", user_id);
         if (response.getBody() != null) {
             model.addAttribute("recruitments", response.getBody());
         } else {
@@ -37,43 +37,24 @@ public class RecruitmentController {
     }
 
 
-    @GetMapping("/{id}/{user_id}")
-    public String viewRecruitment(@PathVariable int id, @PathVariable int user_id, Model model) throws BadRequestException {
+    @GetMapping("/{id}")
+    public String viewRecruitment(
+            @PathVariable int id,
+            @SessionAttribute("user") LoginUserDTO loginUserDTO,
+            Model model) throws BadRequestException {
+
         Recruitment recruitment = recruitmentServices.findById(id).getBody();
         if (recruitment == null) {
             throw new BadRequestException("Recruitment not found");
         }
+
         model.addAttribute("recruitment", recruitment);
-        model.addAttribute("user_id", user_id);
+        model.addAttribute("user_id", loginUserDTO.getId());
+
         return "recruitment-detail";
     }
 
 
-    @PostMapping("/recruitment/create")
-    @Operation(description = "Create a new recruitment")
-    public ResponseEntity<Recruitment> create(@RequestBody RecruitmentDTO recruitmentDTO) throws BadRequestException {
-        return this.recruitmentServices.create(recruitmentDTO);
-    }
-
-
-    @DeleteMapping("/recruitment/delete/{id}")
-    @Operation(description = "Delete Task by ID")
-    public ResponseEntity<Recruitment> delete(@PathVariable int id) throws BadRequestException {
-        return this.recruitmentServices.delete(id);
-    }
-
-
-    @PatchMapping("/recruitment/update/{id}")
-    @Operation(description = "Update Task by Id")
-    public ResponseEntity<Recruitment> update(@PathVariable int id, @RequestBody RecruitmentDTO recruitmentDTO) throws BadRequestException {
-        return this.recruitmentServices.update(id, recruitmentDTO);
-    }
-
-    @PatchMapping("/recruitment/setIsActiveTrue/{id}")
-    @Operation(description = "Update IsActive True")
-    public ResponseEntity<Recruitment> setIsActiveTrue(@PathVariable int id) throws BadRequestException {
-        return this.recruitmentServices.setIsActiveTrue(id);
-    }
 
 
 

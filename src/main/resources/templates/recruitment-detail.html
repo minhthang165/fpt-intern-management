@@ -43,8 +43,8 @@
 </head>
 <body>
 
+<input type="hidden" id="user_id" th:value="${user_id}">
 <div class="container">
-
   <h2 th:text="${recruitment.position}"></h2>
   <p><strong>Lương:</strong> <span th:text="${recruitment.salary}"></span></p>
   <p><strong>Kinh nghiệm:</strong> <span th:text="${recruitment.experience}"></span></p>
@@ -56,75 +56,68 @@
   <p><strong>Ngày kết thúc:</strong> <span th:text="${recruitment.endTime}"></span></p>
 
   <a href="/recruitment/recruitments" class="btn back-link">🔙 Quay lại danh sách</a>
-  <button class="btn apply-btn" onclick="applyJob()">📤 Apply job</button>
+  <button id="applyButton" class="btn apply-btn">📤 Apply job</button>
 
   <p id="message"></p>
 </div>
 
 <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("applyButton").addEventListener("click", applyJob);
+  });
+
   function getIdsFromPath() {
     let pathSegments = window.location.pathname.split('/');
-    let recruitmentId = pathSegments[pathSegments.length - 2];
-    let userId = pathSegments[pathSegments.length - 1];
-
-    return { recruitmentId, userId };
+    let recruitmentId = pathSegments[pathSegments.length - 1];
+    return { recruitmentId };
   }
 
-  function applyJob() {
+  async function applyJob() {
     let messageEl = document.getElementById("message");
-
-
-    let {recruitmentId, userId} = getIdsFromPath();
+    let { recruitmentId } = getIdsFromPath();
+    const userId = document.getElementById("user_id").value;
 
     console.log("Recruitment ID:", recruitmentId, "User ID:", userId);
-
     if (!recruitmentId || !userId || isNaN(recruitmentId) || isNaN(userId)) {
       messageEl.textContent = "❌ Không tìm thấy thông tin tuyển dụng hoặc người dùng.";
       messageEl.style.color = "red";
       return;
     }
 
-    fetch(`/file/user/${userId}`)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error("Không tìm thấy CV của bạn!");
-              }
-              return response.json();
-            })
-            .then(file => {
-              console.log("Received file data:", file); // In ra dữ liệu file để kiểm tra
-              if (!file.id) {
-                throw new Error("CV không hợp lệ. Vui lòng tải lên CV trước khi apply!");
-              }
+    try {
+      let response = await fetch(`/file/user/${userId}`);
+      if (!response.ok) {
+        throw new Error("Không tìm thấy CV của bạn!");
+      }
 
-              let cvSubmitter = {
-                recruitmentId: recruitmentId,
-                fileId: file.id
-              };
+      let file = await response.json();
+      console.log("Received file data:", file);
+      if (!file.id) {
+        throw new Error("CV không hợp lệ. Vui lòng tải lên CV trước khi apply!");
+      }
 
-              return fetch("/CVSubmitter/create", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(cvSubmitter)
-              });
-            })
+      let cvSubmitter = {
+        recruitmentId: recruitmentId,
+        fileId: file.id
+      };
 
-            .then(response => {
-              if (!response.ok) {
-                throw new Error("Apply thất bại. Vui lòng thử lại!");
-              }
-              return response.json();
-            })
-            .then(data => {
-              messageEl.textContent = "✅ Apply thành công!";
-              messageEl.style.color = "green";
-            })
-            .catch(error => {
-              messageEl.textContent = "❌ " + error.message;
-              messageEl.style.color = "red";
-            });
+      let applyResponse = await fetch("/CVSubmitter/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cvSubmitter)
+      });
+
+      if (!applyResponse.ok) {
+        throw new Error("Apply thất bại. Vui lòng thử lại!");
+      }
+
+      messageEl.textContent = "✅ Apply thành công!";
+      messageEl.style.color = "green";
+    } catch (error) {
+      messageEl.textContent = "❌ " + error.message;
+      messageEl.style.color = "red";
+    }
   }
-
 </script>
 
 </body>

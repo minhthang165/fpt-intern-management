@@ -36,7 +36,7 @@ public class DriveService {
 
     private static String getPathToGoodleCredentials() {
         String currentDirectory = System.getProperty("user.dir");
-        Path filePath = Paths.get(currentDirectory, "src", "main", "ggDrive", "Cred2.json");
+        Path filePath = Paths.get(currentDirectory, "src", "main", "ggDrive", "Cred.json");
         return filePath.toString();
     }
 

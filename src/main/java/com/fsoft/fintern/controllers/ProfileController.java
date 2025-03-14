@@ -1,35 +1,24 @@
 package com.fsoft.fintern.controllers;
-import com.fsoft.fintern.dtos.CreateUserDTO;
-import com.fsoft.fintern.models.User;
-import com.fsoft.fintern.services.UserService;
+import com.fsoft.fintern.dtos.LoginUserDTO;
 import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("profile")
+@RequestMapping("/profile")
 public class ProfileController {
 
-    private final UserService userService;
-
-    @Autowired
-    public ProfileController(UserService userService) {
-        this.userService = userService;
-    }
-
-    @GetMapping("/{user_id}")
-    public String profile(@PathVariable int user_id, Model model) throws BadRequestException {
-        model.addAttribute("user_id", user_id);
+    @GetMapping("")
+    public String profile(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) throws BadRequestException {
+        if (user_id != null) {
+            model.addAttribute("user_id", user_id);
             return "profile";
-    }
-
-
-    @GetMapping("/edit")
-    public String getInfo(@ModelAttribute("tempUser") CreateUserDTO tempUser, Model model) {
-        model.addAttribute("tempUser", tempUser);
-        return "edit";
+        }
+        else {
+            model.addAttribute("user_id", loginUserDTO.getId());
+            return "profile";
+        }
     }
 
 }
