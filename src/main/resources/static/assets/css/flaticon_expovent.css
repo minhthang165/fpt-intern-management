@@ -336,6 +336,7 @@ i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
 }
 .flaticon-edit:before {
     content: "\f16a";
+    color: #f38321;
 }
 .flaticon-edit-1:before {
     content: "\f16b";

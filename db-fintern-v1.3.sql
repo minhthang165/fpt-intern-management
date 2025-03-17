@@ -431,7 +431,7 @@ GO
 
 INSERT INTO [user] ([first_name], [last_name], [email], [phone_number], [class_id], [gender], [role]) 
 VALUES 
-('John', 'Doe', 'john.doe@example.com', '1234567890', NULL, 'MALE', 'ADMIN'),
+('FPT', 'Software', 'fintern.dev@gmail.com', '0703468262', NULL, 'MALE', 'ADMIN'),
 ('Jane', 'Smith', 'jane.smith@example.com', '0987654321', NULL, 'FEMALE', 'EMPLOYEE');
 
 -- Class
