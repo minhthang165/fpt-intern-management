@@ -39,7 +39,7 @@ public class ConversationRestController {
 
     @PatchMapping("/group/update/{conversation_id}")
     @Operation(description = "Update conversation")
-    public ResponseEntity<Conversation> updateGroup(@RequestBody ConversationDTO conversationDTO) throws BadRequestException {
-        return this.conversationService.updateConversation(conversationDTO);
+    public ResponseEntity<Conversation> updateGroup(@RequestBody ConversationDTO conversationDTO, @PathVariable int conversation_id) throws BadRequestException {
+        return this.conversationService.updateConversation(conversation_id, conversationDTO);
     }
 }
