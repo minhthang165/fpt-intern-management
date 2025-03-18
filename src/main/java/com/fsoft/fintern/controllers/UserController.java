@@ -1,5 +1,6 @@
 package com.fsoft.fintern.controllers;
 
+import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.UserService;
@@ -29,11 +30,17 @@ public class UserController {
     private UserService userService;
 
     @GetMapping()
-    public String redirectManageUserPage(Model model) throws BadRequestException {
+    public String redirectManageUserPage(Model model){
         User user = (User) model.getAttribute("user");
 
         if (user.getRole() == Role.ADMIN) {
-            return "/admin/ManageUser";
+            try {
+                ResponseEntity<List<User>> users = userService.findAll();
+                model.addAttribute("userList", users.getBody());
+                return "Admin/ManageEmployee";
+            } catch(BadRequestException e) {
+                model.addAttribute(ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage());
+            }
         }
         return "admin/AdminDashboard";
     }
