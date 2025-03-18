@@ -7,9 +7,9 @@ import com.fsoft.fintern.services.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.ui.Model;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,9 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/drive")
-public class DriveControler {
-
+public class DriveController {
     @Autowired
     private DriveService service;
 
@@ -28,7 +26,7 @@ public class DriveControler {
     private FileService fileService;
 
     @GetMapping("/upload/{userId}")
-    public String showUploadPage( @PathVariable Integer userId, Model model) {
+    public String showUploadPage(@PathVariable Integer userId, Model model) {
 
         model.addAttribute("userId", userId);
         return "upload";

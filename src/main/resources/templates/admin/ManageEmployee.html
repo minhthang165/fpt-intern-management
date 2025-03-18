@@ -25,7 +25,7 @@
     }
     .breadcrum__button{
         display: flex;
-        padding-left: 120px;
+        padding-left: 25px;
     }
     .search__bar input {
         border: 1px solid #ccc;
@@ -51,6 +51,13 @@
     .inactive {
         color: red; /* Màu đỏ khi lớp bị khóa */
     }
+
+    .upload-box {
+        border: 2px dashed orange;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+    }
 </style>
 <body class="body-area">
     <th:block  th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
@@ -67,22 +74,19 @@
                                 <nav>
                                     <ul>
                                         <li><span><a href="authenticate">Dashboard</a></span></li>
-                                        <li class="active"><span>Manage Student</span></li>
+                                        <li class="active"><span>Manage Employee</span></li>
                                     </ul>
                                 </nav>
                             </div>
                         </div>
                         <div class="search_add d-flex justify-content-between align-items-center">
-                            <form method="get" action="">
-                                <div class="search_add d-flex justify-content-between align-items-center">
-                                    <div class="search__bar d-flex">
-                                        <input type="text" id="searchValue" name="searchValue" placeholder="Search by..." aria-label="Search students"/>
-                                    </div>
-                                    <div class="col-md-1 input d-flex "  style="padding-bottom: 18px; margin-left: 5px;" >
-                                        <button type="submit"  class="btn element__btn border-yellow find-button manage-student-find-button mt-15" style="margin-top: 15px" >Import</button>
-                                    </div>
+                            <div class="new_class">
+                                <div class="breadcrum__button">
+                                    <button class="element__btn  border-red" data-bs-toggle="modal" data-bs-target="#importModal">
+                                        Import Excel
+                                    </button>
                                 </div>
-                            </form>
+                            </div>
                             <div class="new_class">
                                 <div class="breadcrum__button">
                                     <button class="element__btn  yellow-bg" data-bs-toggle="modal" data-bs-target="#addUserModal">
@@ -249,12 +253,49 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary" onclick="addUser()">Add User</button>
+                            <button type="button" class="btn btn-warning" onclick="addUser()">Add User</button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!--  Modal Import Data -->
+            <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="importModalLabel">Import Data From Excel</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Make sure the data matches the format of the sample template</p>
+                            <div class="upload-box text-center border border-dashed p-4" id="dropZone" style="border-radius: 10px;">
+                                <input type="file" id="fileInput" hidden>
+                                <label for="fileInput" class="d-block cursor-pointer">
+                                    <img src="assets/img/icon/upload-icon.png" alt="Upload" width="50">
+                                    <p class="mt-2">Drag and drop or select<br>to upload data files</p>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-link" id="downloadTemplate">Download Template</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-warning" id="uploadFile">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toast Notification -->
+            <div class="toast-container position-fixed top-0 end-0 p-3">
+                <div id="notificationToast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body" id="notificationMessage">
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
 
         </section>
     </th:block>
@@ -348,6 +389,7 @@
                 document.getElementById("editUserId").value = user.id;
                 document.getElementById("editFullName").value = user.first_name + " " + user.last_name;
                 document.getElementById("editEmail").value = user.email;
+                document.getElementById("editPhoneNumber").value = user.phone_number;
                 document.getElementById("editGender").value = user.gender;
                 document.getElementById("editRole").value = user.role;
 
@@ -414,8 +456,6 @@
             })
             .catch(error => console.error("Error updating user:", error));
     }
-
-
 
     function addUser() {
         let fullNameInput = document.getElementById("addUserName");
@@ -487,6 +527,79 @@
         let errorMessages = document.querySelectorAll(".invalid-feedback");
         errorMessages.forEach(error => error.remove());
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const fileInput = document.getElementById("fileInput");
+        const dropZone = document.getElementById("dropZone");
+        const fileNameText = document.getElementById("fileName");
+        const uploadBtn = document.getElementById("uploadFile");
+        const downloadTemplateBtn = document.getElementById("downloadTemplate");
+        const notificationToastEl = document.getElementById("notificationToast");
+        const notificationMessage = document.getElementById("notificationMessage");
+        const toastBootstrap = new bootstrap.Toast(notificationToastEl, { delay: 3000 });
+
+        let selectedFile = null;
+
+        // Click to select file
+        fileInput.addEventListener("change", function (event) {
+            selectedFile = event.target.files[0];
+            fileNameText.textContent = selectedFile ? `File đã chọn: ${selectedFile.name}` : "";
+        });
+
+        // Drag & Drop file
+        dropZone.addEventListener("dragover", function (event) {
+            event.preventDefault();
+            dropZone.classList.add("border-primary");
+        });
+
+        dropZone.addEventListener("dragleave", function () {
+            dropZone.classList.remove("border-primary");
+        });
+
+        dropZone.addEventListener("drop", function (event) {
+            event.preventDefault();
+            dropZone.classList.remove("border-primary");
+
+            if (event.dataTransfer.files.length) {
+                selectedFile = event.dataTransfer.files[0];
+                fileNameText.textContent = `File đã chọn: ${selectedFile.name}`;
+            }
+        });
+
+        // Upload file
+        uploadBtn.addEventListener("click", function () {
+            if (!selectedFile) {
+                alert("Please choose a file before uploading");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+
+            fetch("/api/excel/import", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    notificationMessage.textContent = data.message;
+                    toastBootstrap.show();
+
+                    if (data.status === 200 && data.result !== "No new data added") {
+                        setTimeout(() => window.location.reload(), 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error("Upload error:", error);
+                    alert("Error occurs when uploading file: " + error.message);
+                });
+        });
+
+        // Download template file
+        downloadTemplateBtn.addEventListener("click", function () {
+            window.location.href = "/assets/excel-template/Template-Employee.xlsx";
+        });
+    });
 
 </script>
 </body>

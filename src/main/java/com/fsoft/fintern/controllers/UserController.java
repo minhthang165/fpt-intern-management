@@ -30,16 +30,23 @@ public class UserController {
     private UserService userService;
 
     @GetMapping()
-    public String redirectManageUserPage(Model model){
+    public String redirectManageUserPage(String role, Model model){
         User user = (User) model.getAttribute("user");
 
         if (user.getRole() == Role.ADMIN) {
             try {
                 ResponseEntity<List<User>> users = userService.findAll();
                 model.addAttribute("userList", users.getBody());
+                model.addAttribute("selectedRole", role);
+
+                if ("intern".equalsIgnoreCase(role)) {
+                    return "Admin/ManageIntern";
+                } else if ("employee".equalsIgnoreCase(role)) {
+                    return "Admin/ManageEmployee";
+                }
                 return "Admin/ManageEmployee";
-            } catch(BadRequestException e) {
-                model.addAttribute(ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage());
+            } catch (BadRequestException e) {
+                model.addAttribute("errorMessage", ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage());
             }
         }
         return "admin/AdminDashboard";

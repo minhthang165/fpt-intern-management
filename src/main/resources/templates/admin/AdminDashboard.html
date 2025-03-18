@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="include/master-header :: head"></head>
 <body class="body-area">
-    <th:block th:replace="~{include/user-header :: sidebar(~{::content})}">
+    <th:block th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
     <!--header breadcrumb area-->
         <div class="app__slide-wrapper" th:fragment="content">
             <div class="breadcrumb__area">

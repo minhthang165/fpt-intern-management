@@ -31,9 +31,21 @@ public class ExcelImportService {
         this.classroomRepository = classroomRepository;
     }
 
-    public void importUsers(MultipartFile file) throws IOException {
+    public int importUsers(MultipartFile file) throws IOException {
         List<User> users = readExcel(file);
-        userRepository.saveAll(users);
+        List<User> newUsers = new ArrayList<>();
+
+        for (User user : users) {
+            if (!userRepository.existsByEmail(user.getEmail())) { 
+                newUsers.add(user);
+            }
+        }
+
+        if (!newUsers.isEmpty()) {
+            userRepository.saveAll(newUsers);
+        }
+
+        return newUsers.size();
     }
 
     private List<User> readExcel(MultipartFile file) throws IOException {

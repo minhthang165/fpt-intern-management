@@ -41,9 +41,13 @@ public class AuthController {
             return "redirect:/login"; // User creation failed, redirect to login
         }
 
-        // Convert user to DTO and store in session
-        LoginUserDTO loginUserDTO = convertToLoginUserDTO(user);
-        model.addAttribute("user", loginUserDTO);
+        if (user.getRole() == Role.ADMIN) {
+            model.addAttribute("user", user);
+        } else {
+            // Convert user to DTO and store in session
+            LoginUserDTO loginUserDTO = convertToLoginUserDTO(user);
+            model.addAttribute("user", loginUserDTO);
+        }
 
         return user.getRole() == Role.ADMIN ? "admin/AdminDashboard" : "redirect:/profile";
     }
