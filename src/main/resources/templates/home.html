@@ -80,7 +80,7 @@
 
     function showCallNotification(roomID, callerID) {
         let userid = localStorage.getItem("userId");
-        fetch(`/api/user/users/id/${userid}`)
+        fetch(`/api/user/${userid}`)
             .then(response => {
                 if (!response.ok) throw new Error("❌ Failed to fetch caller info");
                 return response.json();
