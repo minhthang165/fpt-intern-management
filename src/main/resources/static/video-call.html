@@ -27,7 +27,7 @@
         console.log(userID)
         console.log(roomID)
 
-        fetch(`/api/user/users/id/${userID}`)
+        fetch(`/api/user/${userID}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`❌ Failed to fetch user data (Status: ${response.status})`);

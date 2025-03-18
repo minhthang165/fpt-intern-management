@@ -39,4 +39,10 @@ public class ConversationUserRestController {
     public ResponseEntity<ConversationUser> addUserToGroup(@RequestBody ConversationUserDTO conversationUserDTO) throws BadRequestException {
         return this.conversationUserService.addUserToConversation(conversationUserDTO);
     }
+
+    @DeleteMapping("/{conversationId}/users/{userId}")
+    public ResponseEntity<ConversationUser> removeUser(@PathVariable int conversationId, @PathVariable int userId) {
+        return this.conversationUserService.removeAUserFromConversation(conversationId, userId);
+    }
+
 }

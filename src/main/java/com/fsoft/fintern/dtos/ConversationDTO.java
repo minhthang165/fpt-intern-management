@@ -2,24 +2,24 @@ package com.fsoft.fintern.dtos;
 
 public class ConversationDTO {
     private int conversation_id;
-    private String conversation_name;
-    private String conversation_avatar;
+    private String conversationName;
+    private String conversationAvatar;
     private boolean is_Active;
 
     public String getConversation_avatar() {
-        return conversation_avatar;
+        return conversationAvatar;
     }
 
     public void setConversation_avatar(String conversation_avatar) {
-        this.conversation_avatar = conversation_avatar;
+        this.conversationAvatar = conversation_avatar;
     }
 
     public String getConversation_name() {
-        return conversation_name;
+        return conversationName;
     }
 
     public void setConversation_name(String conversation_name) {
-        this.conversation_name = conversation_name;
+        this.conversationName = conversation_name;
     }
 
     public int getConversation_id() {

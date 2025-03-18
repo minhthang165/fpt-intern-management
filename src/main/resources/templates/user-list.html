@@ -26,7 +26,7 @@
   console.log("✅ User ID:", userId);
 
   function fetchUsers() {
-    fetch('/api/user/users')
+    fetch('/api/user/')
             .then(response => response.json())
             .then(users => {
               const userListDiv = document.getElementById("users-list");

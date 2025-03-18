@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const id = document.getElementById("user_id").value; // Get the user ID
 
     try {
-        const response = await fetch(`/api/user/users/id/` + id); // Fetch user data
+        const response = await fetch(`/api/user/` + id); // Fetch user data
         if (!response.ok) throw new Error("User not found");
 
         const user = await response.json(); // Convert response to JSON

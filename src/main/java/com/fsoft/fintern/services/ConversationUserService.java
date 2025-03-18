@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ConversationUserService {
@@ -68,4 +69,12 @@ public class ConversationUserService {
         return new ResponseEntity<>(conversations, HttpStatus.OK);
     }
 
+    public ResponseEntity<ConversationUser> removeAUserFromConversation(int conversationId, int user_id) {
+        ConversationUserId id = new ConversationUserId(conversationId, user_id);
+        ConversationUser conversationUser = this.conversationUserRepository.findById(id).orElse(null);
+        if (conversationUser != null) {
+            this.conversationUserRepository.delete(conversationUser);
+        } else throw new RuntimeException("User not found");
+        return new ResponseEntity<>(conversationUser, HttpStatus.OK);
+    }
 }

@@ -25,7 +25,7 @@ public class SecurityConfig {
                         .requestMatchers("/logout", "/login", "/register")
                         .anonymous()
                         .anyRequest().authenticated()
-//                        .anyRequest().permitAll()
+                        //.anyRequest().permitAll()
 
                 )
                 .addFilterBefore(new LoggedInRedirectFilter(), UsernamePasswordAuthenticationFilter.class)

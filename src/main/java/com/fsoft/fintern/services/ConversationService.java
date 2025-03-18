@@ -5,12 +5,15 @@ import com.fsoft.fintern.models.Conversation;
 import com.fsoft.fintern.repositories.ClassroomRepository;
 import com.fsoft.fintern.repositories.ConversationRepository;
 import com.fsoft.fintern.repositories.UserRepository;
+import com.fsoft.fintern.utils.BeanUtilsHelper;
 import org.apache.coyote.BadRequestException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ConversationService {
@@ -43,16 +46,18 @@ public class ConversationService {
         else return new ResponseEntity<>(conversations, HttpStatus.OK);
     }
 
-    public ResponseEntity<Conversation> updateConversation(ConversationDTO conversationDTO) throws BadRequestException {
-        Conversation conversation = this.conversationRepository.findById(conversationDTO.getConversation_id()).orElse(null);
+    public ResponseEntity<Conversation> updateConversation(int conversation_id, ConversationDTO conversationDTO) throws BadRequestException {
+        Conversation conversation = this.conversationRepository.findById(conversation_id).orElse(null);
+
         if (conversation == null) {
-            throw new BadRequestException("Conversation with id " + conversationDTO.getConversation_id() + " not found");
+            throw new BadRequestException("Conversation with id " + conversation_id + " not found");
         }
-        else {
-            conversation.setConversationName(conversationDTO.getConversation_name());
-            conversation.setConversationAvatar(conversationDTO.getConversation_avatar());
-            return new ResponseEntity<>(this.conversationRepository.save(conversation), HttpStatus.OK);
-        }
+
+        Optional.ofNullable(conversationDTO.getConversation_name()).ifPresent(conversation::setConversationName);
+        Optional.ofNullable(conversationDTO.getConversation_avatar()).ifPresent(conversation::setConversationAvatar);
+        Optional.of(conversationDTO.isIs_Active()).ifPresent(conversation::setActive);
+
+        return new ResponseEntity<>(this.conversationRepository.save(conversation), HttpStatus.OK);
     }
 
     //Soft Delete (is_Active false)

@@ -1,67 +1,103 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="include/admin-header :: head"></head>
+<html lang="en">
+<head th:replace="include/master-header :: head"></head>
+<style>
+  .user__dropdown {
+    display: none;
+    position: absolute;
+    top: 110%; /* Điều chỉnh vị trí */
+    right: 0;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    width: 220px;
+    padding: 10px 0;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .user__dropdown.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .user__dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .user__dropdown li {
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+  }
+
+  .user__dropdown li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .user__dropdown li a:hover {
+    background: #f0f0f0;
+    border-radius: 5px;
+  }
+
+  .user__dropdown svg {
+    margin-right: 10px;
+    fill: #666;
+  }
+</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <body class="bg-gray-100">
-<input type="hidden" id="user_id" th:value="${user_id}">
+<header th:replace="include/guest-header :: header"></header>
+<section id="homeabout" class="about__area p-relative pt-150 pb-90">
+  <input type="hidden" id="user_id" th:value="${user_id}">
 
-<!-- Navbar -->
-<div class="bg-gray-200 p-4 flex justify-between items-center">
-  <div class="flex items-center">
-    <button class="text-white bg-purple-600 p-2 rounded-full">
-      <i class="fas fa-bars"></i>
-    </button>
-    <input class="ml-4 p-2 rounded-full bg-white border border-gray-300" placeholder="Search" type="text"/>
-    <button class="ml-2 text-white bg-purple-600 p-2 rounded-full">
-      <i class="fas fa-search"></i>
-    </button>
-  </div>
-  <div class="flex items-center">
-    <button class="relative text-gray-600">
-      <i class="fas fa-bell"></i>
-    </button>
-    <button class="ml-4 text-gray-600">
-      <i class="fas fa-user-circle"></i>
-    </button>
-  </div>
-</div>
-
-<!-- Profile Information -->
-<div class="max-w-4xl mx-auto mt-8 bg-white p-8 rounded-lg shadow">
-  <div class="flex justify-between items-center border-b pb-4 mb-4">
-    <a href="/logout">Logout</a>
-    <h2 class="text-xl font-semibold">Profile Information</h2>
-    <button onclick="window.location.href = `/edit`" class="text-gray-600 flex items-center">
-      <i class="fas fa-edit mr-2"></i>
-      Edit Profile
-    </button>
-  </div>
-  <div class="flex">
-    <div class="w-2/5 flex flex-col items-center">
-      <img id="profile_picture" class="rounded-full mb-4" height="100" width="100"/>
-      <div class="text-left w-full">
-        <p class="font-semibold">Name: <span id="full_name"></span></p>
-        <p class="mt-2 font-semibold">Email: <span id="email"></span></p>
-        <p class="mt-2 font-semibold">Phone Number: <span id="phone"></span></p>
-        <p class="mt-2 font-semibold">MY CV</p>
-        <button class="mt-2 bg-purple-200 text-purple-600 p-2 rounded flex items-center">
-          <i class="fas fa-upload mr-2"></i>
-          Upload My CV
-        </button>
+  <!-- Profile Information -->
+  <div class="max-w-4xl mx-auto mt-8 bg-white p-8 rounded-lg shadow">
+    <div class="flex justify-between items-center border-b pb-4 mb-4">
+      <a href="/logout">Logout</a>
+      <h2 class="text-xl font-semibold">Profile Information</h2>
+      <button onclick="window.location.href = `/edit`" class="text-gray-600 flex items-center">
+        <i class="fas fa-edit mr-2"></i>
+        Edit Profile
+      </button>
+    </div>
+    <div class="flex">
+      <div class="w-2/5 flex flex-col items-center">
+        <img id="profile_picture" class="rounded-full mb-4" height="100" width="100"/>
+        <div class="text-left w-full">
+          <p class="font-semibold">Name: <span id="full_name"></span></p>
+          <p class="mt-2 font-semibold">Email: <span id="email"></span></p>
+          <p class="mt-2 font-semibold">Phone Number: <span id="phone"></span></p>
+          <p class="mt-2 font-semibold">MY CV</p>
+          <button class="mt-2 bg-purple-200 text-purple-600 p-2 rounded flex items-center">
+            <i class="fas fa-upload mr-2"></i>
+            Upload My CV
+          </button>
+        </div>
+      </div>
+      <div class="w-3/5 border-l pl-4">
+        <!-- Additional content can go here -->
       </div>
     </div>
-    <div class="w-3/5 border-l pl-4">
-      <!-- Additional content can go here -->
-    </div>
   </div>
-</div>
-
+</section>
+<footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
   document.addEventListener("DOMContentLoaded", async function () {
     const id = document.getElementById("user_id").value;
     try {
-      const response = await fetch(`/api/user/users/id/` + id);
+      const response = await fetch(`/api/user/` + id);
       if (!response.ok) throw new Error("User not found");
       const user = await response.json();
       document.getElementById("profile_picture").src = user.avatar_path;
@@ -71,8 +107,22 @@
     } catch (error) {
       console.error("Error fetching user:", error);
     }
+    const userPortfolio = document.getElementById("userportfolio");
+    const userDropdown = document.querySelector(".user__dropdown");
+
+    if (userPortfolio && userDropdown) {
+      userPortfolio.addEventListener("click", function (event) {
+        userDropdown.classList.toggle("show");
+      });
+
+      // Đóng dropdown khi click ra ngoài
+      document.addEventListener("click", function (event) {
+        if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
+          userDropdown.classList.remove("show");
+        }
+      });
+    }
   });
 </script>
-
 </body>
 </html>
