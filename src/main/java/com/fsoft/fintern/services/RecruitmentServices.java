@@ -66,19 +66,13 @@ public class RecruitmentServices {
     public ResponseEntity<Recruitment> create(RecruitmentDTO recruitmentDTO) throws BadRequestException {
         Recruitment newRecruitment = new Recruitment();
         newRecruitment.setPosition(recruitmentDTO.getPosition());
-        newRecruitment.setSalary(recruitmentDTO.getSalary());
-        newRecruitment.setExperience(recruitmentDTO.getExperience());
-        newRecruitment.setEducation(recruitmentDTO.getEducation());
+        newRecruitment.setExperience_requirement(recruitmentDTO.getExperienceRequirement());
+        newRecruitment.setLanguage(recruitmentDTO.getLanguage());
+        newRecruitment.setMin_GPA(recruitmentDTO.getMinGPA());
         newRecruitment.setTotalSlot(recruitmentDTO.getTotalSlot());
-        newRecruitment.setAvailableSlot(recruitmentDTO.getAvailableSlot());
         newRecruitment.setDescription(recruitmentDTO.getDescription());
-        if (recruitmentDTO.getWorkForm() == null ||
-                (!recruitmentDTO.getWorkForm().equals("PART-TIME") &&
-                        !recruitmentDTO.getWorkForm().equals("FULL-TIME"))) {
-            newRecruitment.setWorkForm("PART-TIME");
-        } else {
-            newRecruitment.setWorkForm(recruitmentDTO.getWorkForm());
-        }
+        newRecruitment.setStartTime(recruitmentDTO.getStartTime());
+        newRecruitment.setEndTime(recruitmentDTO.getEndTime());
 
         Recruitment savedRecruitment = this.recruitRepository.save(newRecruitment);
         return new ResponseEntity<>(savedRecruitment, HttpStatus.CREATED);

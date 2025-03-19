@@ -8,7 +8,6 @@ import java.sql.Timestamp;
 @Table(name = "Recruitment")
 public class Recruitment extends BaseModel {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
@@ -17,23 +16,17 @@ public class Recruitment extends BaseModel {
     @Column(nullable = false, length = 255)
     private String position;
 
+    @Column(nullable = false, length = 255)
+    private String experience_requirement;
+
+    @Column(length = 255)
+    private String language;
+
     @Column(nullable = false)
-    private Integer salary;
-
-    @Column(nullable = false, length = 255)
-    private String experience;
-
-    @Column(nullable = false, length = 255)
-    private String education;
-
-    @Column(name = "work_form", nullable = false, length = 50)
-    private String workForm; // Dùng String thay vì Enum
+    private Float min_GPA;
 
     @Column(nullable = false)
     private Integer totalSlot;
-
-    @Column(nullable = false)
-    private Integer availableSlot;
 
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
@@ -44,24 +37,7 @@ public class Recruitment extends BaseModel {
     @Column(nullable = false)
     private Timestamp endTime;
 
-
-
-
-    // Constructor mặc định
-    public Recruitment() {
-        this.workForm = "PART-TIME"; // Đặt giá trị mặc định
-    }
-
-    // Getter và Setter
-    public String getWorkForm() {
-        return workForm;
-    }
-
-    public void setWorkForm(String workForm) {
-        this.workForm = workForm;
-    }
-
-    // Getters và Setters
+    // Getters and Setters
     public Integer getId() {
         return id;
     }
@@ -78,30 +54,29 @@ public class Recruitment extends BaseModel {
         this.position = position;
     }
 
-    public Integer getSalary() {
-        return salary;
+    public String getExperience_requirement() {
+        return experience_requirement;
     }
 
-    public void setSalary(Integer salary) {
-        this.salary = salary;
+    public void setExperience_requirement(String experience_requirement) {
+        this.experience_requirement = experience_requirement;
     }
 
-    public String getExperience() {
-        return experience;
+    public String getLanguage() {
+        return language;
     }
 
-    public void setExperience(String experience) {
-        this.experience = experience;
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
-    public String getEducation() {
-        return education;
+    public Float getMin_GPA() {
+        return min_GPA;
     }
 
-    public void setEducation(String education) {
-        this.education = education;
+    public void setMin_GPA(Float min_GPA) {
+        this.min_GPA = min_GPA;
     }
-
 
     public Integer getTotalSlot() {
         return totalSlot;
@@ -109,14 +84,6 @@ public class Recruitment extends BaseModel {
 
     public void setTotalSlot(Integer totalSlot) {
         this.totalSlot = totalSlot;
-    }
-
-    public Integer getAvailableSlot() {
-        return availableSlot;
-    }
-
-    public void setAvailableSlot(Integer availableSlot) {
-        this.availableSlot = availableSlot;
     }
 
     public String getDescription() {
@@ -142,5 +109,4 @@ public class Recruitment extends BaseModel {
     public void setEndTime(Timestamp endTime) {
         this.endTime = endTime;
     }
-    }
-
+}

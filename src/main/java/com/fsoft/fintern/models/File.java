@@ -4,7 +4,7 @@ import com.fsoft.fintern.models.Shared.BaseModel;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "[File]") // Giữ nguyên tên bảng như trong database
+@Table(name = "[File]")
 public class File extends BaseModel {
 
     @Id
@@ -15,17 +15,11 @@ public class File extends BaseModel {
     @JoinColumn(name = "submitter_id", nullable = false)
     private User submitter;
 
-    @Column(name = "file_type", nullable = false)
-    private String fileType;
-
     @Column(name = "display_Name", nullable = false)
     private String displayName;
 
     @Column(name = "path", nullable = false)
     private String path;
-
-    @Column(name = "size")
-    private Double size;
 
     public Integer getId() {
         return id;
@@ -41,14 +35,6 @@ public class File extends BaseModel {
 
     public void setSubmitter(User submitter) {
         this.submitter = submitter;
-    }
-
-    public String getFileType() {
-        return fileType;
-    }
-
-    public void setFileType(String fileType) {
-        this.fileType = fileType;
     }
 
     public String getDisplayName() {
@@ -67,11 +53,4 @@ public class File extends BaseModel {
         this.path = path;
     }
 
-    public Double getSize() {
-        return size;
-    }
-
-    public void setSize(Double size) {
-        this.size = size;
-    }
 }

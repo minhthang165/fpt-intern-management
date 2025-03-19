@@ -3,9 +3,11 @@ package com.fsoft.fintern.controllers;
 import com.fsoft.fintern.dtos.FileDTO;
 import com.fsoft.fintern.models.File;
 import com.fsoft.fintern.models.Recruitment;
+import com.fsoft.fintern.repositories.FileRepository;
 import com.fsoft.fintern.services.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.apache.coyote.BadRequestException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +27,11 @@ public class FileControler {
         public ResponseEntity<List<File>> findAll() throws BadRequestException {
             return this.fileService.findAll();
         }
-
+        @GetMapping("/file/path/{id}")
+        @Operation(description = "Get file path by ID")
+        public ResponseEntity<String> getPathByFileId(@PathVariable int id) {
+            return fileService.getPathByFileId(id);
+        }
         @PostMapping("/file/create")
         @Operation(description = "Create a new file")
         public ResponseEntity<File> create(@RequestBody FileDTO fileDTO) throws BadRequestException {
@@ -55,7 +61,10 @@ public class FileControler {
     public ResponseEntity<File> findCVByUserId(@PathVariable Integer userId) {
         return fileService.findCVByUserId(userId);
     }
-
+    @GetMapping("/user/{userId}/all")
+    public ResponseEntity<List<File>> findCVsByUserId(@PathVariable Integer userId) {
+        return fileService.findCVsByUserId(userId);
+    }
 }
 
 

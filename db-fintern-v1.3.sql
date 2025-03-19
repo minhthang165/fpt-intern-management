@@ -73,6 +73,7 @@ CREATE TABLE [Class] ( -- Class for each intern to join in
     [id] INT PRIMARY KEY IDENTITY(1,1),
     [class_name] NVARCHAR(255) NOT NULL,
 	[number_of_interns] INT DEFAULT 0,
+	[status] NVARCHAR(50) DEFAULT 'ENDED' CHECK ([status] IN ('NOT STARTED', 'ON GOING', 'ENDED')), 
 	[manager_id] INT NOT NULL,
     [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
     [updated_at] DATETIME DEFAULT NULL,
@@ -121,13 +122,11 @@ CREATE TABLE [Attendance] ( -- check attendance for each class
 
 CREATE TABLE [Recruitment] (  -- Show the positions are needed in order to the guest can view and apply their CV
     [id] INT PRIMARY KEY IDENTITY(1,1),
-    [position] NVARCHAR(255) NOT NULL,
-	[salary] INT NOT NULL,
-	[experience] NVARCHAR(255) NOT NULL,
-	[education] NVARCHAR(255) NOT NULL,
-	[work_form] NVARCHAR(50) NOT NULL CHECK (work_form IN ('PART-TIME', 'FULL-TIME')),
+    [position] NVARCHAR(255) NOT NULL,-- BA SE JAVA .NET KS NODE.JS AI ... DATA--
+	[experience-requiment] NVARCHAR(255) NOT NULL, --JAVA .NET --
+	[language] NVARCHAR(255), --english japanese--
+	[min_GPA] FLOAT,
     [total_slot] INT NOT NULL,
-    [available_slot] INT NOT NULL,
 	[description] NVARCHAR(MAX),
 	[start_time] DATETIME NOT NULL,
 	[end_time] DATETIME NOT NULL,
@@ -143,10 +142,8 @@ CREATE TABLE [Recruitment] (  -- Show the positions are needed in order to the g
 CREATE TABLE [File] ( -- Save the file include CV from intern or report from manager
     [id] INT PRIMARY KEY IDENTITY(1,1),
     [submitter_id] INT NOT NULL, --
-    [file_type] NVARCHAR(255) NOT NULL, -- 'REPORT' or 'CV'
     [display_Name] NVARCHAR(255) NOT NULL,-- Display name is the file name user submitted --
     [path] NVARCHAR(255) NOT NULL,
-    [size] FLOAT,
     [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
     [updated_at] DATETIME DEFAULT NULL,
     [deleted_at] DATETIME DEFAULT NULL,
@@ -156,9 +153,12 @@ CREATE TABLE [File] ( -- Save the file include CV from intern or report from man
     [is_active] BIT DEFAULT 1,
     CONSTRAINT PK_CV_Intern FOREIGN KEY ([submitter_id]) REFERENCES [user]([id])
     );
-CREATE TABLE [CV_Submitter] (
+CREATE TABLE [CV_Info] (
     [recruitment_id] INT NOT NULL,
     [file_id] INT NOT NULL,
+	[gpa] FLOAT NOT NULL,
+	[education] NVARCHAR(255) NOT NULL,
+	[skill] NVARCHAR(255) NOT NULL,
     [created_at] DATETIME NOT NULL DEFAULT GETDATE(),
     [updated_at] DATETIME DEFAULT NULL,
     [deleted_at] DATETIME DEFAULT NULL,
@@ -166,10 +166,11 @@ CREATE TABLE [CV_Submitter] (
     [updated_by] INT DEFAULT NULL,
     [deleted_by] INT DEFAULT NULL,
     [is_active] BIT DEFAULT 1,
-    CONSTRAINT FK_Submitter_Id FOREIGN KEY ([submitter_id]) REFERENCES [user]([id]),
     CONSTRAINT FK_Recruitment_Id FOREIGN KEY ([recruitment_id]) REFERENCES [Recruitment]([id]),
     CONSTRAINT FK_File_Id FOREIGN KEY ([file_id]) REFERENCES [File]([id])
     )
+
+
 
 
 CREATE TABLE [Conversation] ( -- room chat for each class

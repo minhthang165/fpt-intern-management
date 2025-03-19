@@ -59,7 +59,7 @@ public class DriveService {
                     .setFields("id, webViewLink")
                     .execute();
 
-            String url = "https://drive.google.com/uc?export=view&id=" + uploadedFile.getId();
+            String url = "https://drive.google.com/file/d/" + uploadedFile.getId()+"/preview";
             System.out.println("Uploaded File URL: " + url);
             file.delete();
 

@@ -4,15 +4,13 @@ import java.sql.Timestamp;
 
 public class RecruitmentDTO {
     private String position;
-    private Integer salary;
-    private String experience;
-    private String education;
-    private String workForm;
+    private String experienceRequirement;
+    private String language;
+    private Float minGPA;
     private Integer totalSlot;
-    private Integer availableSlot;
     private String description;
-
-
+    private Timestamp startTime;
+    private Timestamp endTime;
 
     public String getPosition() {
         return position;
@@ -22,28 +20,28 @@ public class RecruitmentDTO {
         this.position = position;
     }
 
-    public Integer getSalary() {
-        return salary;
+    public String getExperienceRequirement() {
+        return experienceRequirement;
     }
 
-    public void setSalary(Integer salary) {
-        this.salary = salary;
+    public void setExperienceRequirement(String experienceRequirement) {
+        this.experienceRequirement = experienceRequirement;
     }
 
-    public String getExperience() {
-        return experience;
+    public String getLanguage() {
+        return language;
     }
 
-    public void setExperience(String experience) {
-        this.experience = experience;
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
-    public String getEducation() {
-        return education;
+    public Float getMinGPA() {
+        return minGPA;
     }
 
-    public void setEducation(String education) {
-        this.education = education;
+    public void setMinGPA(Float minGPA) {
+        this.minGPA = minGPA;
     }
 
     public Integer getTotalSlot() {
@@ -54,14 +52,6 @@ public class RecruitmentDTO {
         this.totalSlot = totalSlot;
     }
 
-    public Integer getAvailableSlot() {
-        return availableSlot;
-    }
-
-    public void setAvailableSlot(Integer availableSlot) {
-        this.availableSlot = availableSlot;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -70,11 +60,19 @@ public class RecruitmentDTO {
         this.description = description;
     }
 
-
-    public String getWorkForm() {
-        return workForm;
+    public Timestamp getStartTime() {
+        return startTime;
     }
-    public void setWorkForm(String workForm) {
-        this.workForm = workForm;
+
+    public void setStartTime(Timestamp startTime) {
+        this.startTime = startTime;
+    }
+
+    public Timestamp getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Timestamp endTime) {
+        this.endTime = endTime;
     }
 }

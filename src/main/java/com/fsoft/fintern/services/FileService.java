@@ -38,22 +38,44 @@ public class FileService {
 
         File newFile = new File();
         newFile.setSubmitter(submitter);
-        newFile.setFileType(fileDTO.getFileType());
         newFile.setDisplayName(fileDTO.getDisplayName());
         newFile.setPath(fileDTO.getPath());
-        newFile.setSize(fileDTO.getSize());
 
 
         File savedFile = fileRepository.save(newFile);
         return new ResponseEntity<>(savedFile, HttpStatus.CREATED);
     }
+    public ResponseEntity<String> getPathByFileId(int fileId) {
+        Optional<File> file = fileRepository.findById(fileId);
+        return file.map(value -> new ResponseEntity<>(value.getPath(), HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
 
     public ResponseEntity<File> findCVByUserId(Integer userId) {
-        Optional<File> file = fileRepository.findBySubmitterIdAndFileType(userId, "CV");
+        Optional<File> file = fileRepository.findBySubmitterId(userId);
 
         return file.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+    public ResponseEntity<List<File>> findCVsByUserId(Integer userId) {
+        List<File> files = fileRepository.findAllBySubmitterId(userId);
+
+        if (files.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        // Nếu database không có display_name, dùng fileName hoặc logic tùy chỉnh
+        files.forEach(file -> {
+            if (file.getDisplayName() == null) {
+                file.setDisplayName(file.getDisplayName()); // Fallback về fileName
+                // Hoặc: file.setDisplayName("CV " + file.getId() + " - " + file.getFileName());
+            }
+        });
+
+        return new ResponseEntity<>(files, HttpStatus.OK);
+    }
+
+
 
     public ResponseEntity<File> findById(int id) {
         Optional<File> file = fileRepository.findById(id);

@@ -12,11 +12,11 @@ public class HomeController {
     public String home(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) {
         if (user_id != null) {
             model.addAttribute("user_id", user_id);
-            return "home";
+            return "landing-page";
         }
         else {
             model.addAttribute("user_id", loginUserDTO.getId());
-            return "home";
+            return "landing-page";
         }
     }
 }

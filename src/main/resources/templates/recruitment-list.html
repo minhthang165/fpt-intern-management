@@ -4,51 +4,99 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Danh sách Tuyển Dụng</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/assets/img/favicon.png">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/assets/css/fontawesome-pro.css">
+  <link rel="stylesheet" href="/assets/css/main.css">
   <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
+
+    body { background: #f8f9fa; }
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
+    .job-card {
+      display: flex;
+      align-items: center;
+      border: 2px solid #e3342f;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      position: relative;
+      margin-bottom: 20px;
     }
-    th {
-      background-color: #f4f4f4;
+
+    .job-card img {
+      width: 150px; /* Logo to hơn */
+      height: 150px;
+      object-fit: contain;
+      margin-right: 20px;
+      border: 3px solid #e3342f; /* Đóng khung logo */
+      border-radius: 10px;
+      padding: 5px;
+      background: #fff;
     }
-    a {
+
+    .job-card .info {
+      flex: 1;
+      background: #f1f1f1; /* Màu nền nhẹ cho phần thông tin */
+      padding: 15px;
+      border-radius: 10px;
+      border: 2px solid #e3342f; /* Đóng khung */
+    }
+
+    .job-card h2 {
+      color: #e3342f;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .job-card p {
+      color: #333;
+      margin: 5px 0;
+    }
+
+    .job-card .btn-detail {
+      margin-left: 20px;
+      padding: 10px 15px;
+      background: #28a745;
+      color: #fff;
+      border-radius: 5px;
       text-decoration: none;
-      color: blue;
+      font-weight: bold;
+      transition: 0.3s;
     }
+
+    .job-card .btn-detail:hover {
+      background: #218838;
+    }
+    .btn-detail:hover { background: #218838; }
   </style>
 </head>
 <body>
 
-<h2>Danh sách Tuyển Dụng</h2>
+<div class="container">
+  <h1 class="text-center text-primary">Danh sách Tuyển Dụng</h1>
+  <div th:each="recruitment : ${recruitments}" class="job-card">
+    <img class="logo-black" src="/assets/img/sign/FPT_logo_2010.svg" alt="image not found" />
 
-<table>
-  <thead>
-  <tr>
-    <th>Vị trí</th>
-    <th>Lương</th>
-    <th>Kinh nghiệm</th>
-    <th>Hình thức làm việc</th>
-    <th>Chi tiết</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr th:each="recruitment : ${recruitments}">
-    <td th:text="${recruitment.position}"></td>
-    <td th:text="${recruitment.salary}"></td>
-    <td th:text="${recruitment.experience}"></td>
-    <td th:text="${recruitment.workForm}"></td>
-    <td><a th:href="@{/recruitment/{id}(id=${recruitment.id})}">Xem chi tiết</a></td>
+    <div class="info">
+      <h2 th:text="${recruitment.position}"></h2>
+      <p><strong>GPA Tối thiểu:</strong> <span th:text="${recruitment.min_GPA}"></span></p>
+      <p><strong>Ngôn ngữ:</strong> <span th:text="${recruitment.language}"></span></p>
+      <p><strong>Kinh nghiệm yêu cầu:</strong> <span th:text="${recruitment.experience_requirement}"></span></p>
+      <p><strong>Số lượng tuyển:</strong> <span th:text="${recruitment.totalSlot}"></span></p>
+    </div>
 
-
-  </tr>
-  </tbody>
-</table>
-
+    <a class="btn-detail" th:href="@{/recruitment/{id}(id=${recruitment.id})}">Xem chi tiết</a>
+  </div>
+</div>
+<script src="/assets/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

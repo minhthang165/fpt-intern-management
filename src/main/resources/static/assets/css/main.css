@@ -3162,17 +3162,17 @@ input[type=file] {
 .main-menu ul li a {
   display: inline-block;
   font-size: 18px;
-  color: var(--clr-common-white);
+  color: #ff9900; /* Màu cam */
   padding: 46px 0;
   font-weight: var(--bd-fw-medium);
-  -webkit-transition: all 0.3s ease-out 0s;
-  -moz-transition: all 0.3s ease-out 0s;
-  -ms-transition: all 0.3s ease-out 0s;
-  -o-transition: all 0.3s ease-out 0s;
   transition: all 0.3s ease-out 0s;
   text-transform: capitalize;
   line-height: 1;
 }
+.main-menu ul li a:hover {
+  color: #ff6600;
+}
+
 .main-menu ul li .submenu {
   position: absolute;
   top: 120%;

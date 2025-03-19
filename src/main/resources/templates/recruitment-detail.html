@@ -7,37 +7,95 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
     .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .header img {
+      max-width: 100px;
+      height: auto;
+      position: absolute;
+      right: 0;
+      top: 0;
     }
     h2 {
-      color: #333;
+      color: #2c3e50;
+      font-size: 28px;
+      margin: 0;
     }
     p {
-      margin: 5px 0;
+      color: #333;
+      font-size: 18px;
+      margin: 15px 0;
+    }
+    .description {
+      background: #ecf0f1;
+      padding: 15px;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    .btn-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
     }
     .btn {
       display: inline-block;
-      margin-top: 15px;
-      padding: 10px 15px;
+      padding: 15px 25px;
       text-decoration: none;
       border-radius: 5px;
       font-weight: bold;
-      cursor: pointer;
+      transition: 0.3s;
+      font-size: 18px;
     }
     .back-link {
+      background-color: #95a5a6;
       color: white;
-      background-color: gray;
+    }
+    .back-link:hover {
+      background-color: #7f8c8d;
     }
     .apply-btn {
+      background-color: #3498db;
       color: white;
-      background-color: blue;
+      font-size: 20px;
+    }
+    .apply-btn:hover {
+      background-color: #2980b9;
+    }
+    #message {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .cv-select-container {
+      margin: 15px 0;
+    }
+    #cvSelect {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
@@ -45,18 +103,27 @@
 
 <input type="hidden" id="user_id" th:value="${user_id}">
 <div class="container">
-  <h2 th:text="${recruitment.position}"></h2>
-  <p><strong>Lương:</strong> <span th:text="${recruitment.salary}"></span></p>
-  <p><strong>Kinh nghiệm:</strong> <span th:text="${recruitment.experience}"></span></p>
-  <p><strong>Hình thức làm việc:</strong> <span th:text="${recruitment.workForm}"></span></p>
+  <div class="header">
+    <h2 th:text="${recruitment.position}"></h2>
+    <img src="/assets/img/sign/FPT_logo_2010.svg" alt="Company Logo">
+  </div>
+  <p><strong>Kinh nghiệm yêu cầu:</strong> <span th:text="${recruitment.experience_requirement}"></span></p>
+  <p><strong>Ngôn ngữ yêu cầu:</strong> <span th:text="${recruitment.language}"></span></p>
   <p><strong>Số lượng tuyển:</strong> <span th:text="${recruitment.totalSlot}"></span></p>
-  <p><strong>Số lượng còn trống:</strong> <span th:text="${recruitment.availableSlot}"></span></p>
-  <p><strong>Mô tả:</strong> <span th:text="${recruitment.description}"></span></p>
-  <p><strong>Ngày bắt đầu:</strong> <span th:text="${recruitment.startTime}"></span></p>
-  <p><strong>Ngày kết thúc:</strong> <span th:text="${recruitment.endTime}"></span></p>
+  <p class="description"><strong>Mô tả:</strong> <span th:text="${recruitment.description}"></span></p>
 
-  <a href="/recruitment/recruitments" class="btn back-link">🔙 Quay lại danh sách</a>
-  <button id="applyButton" class="btn apply-btn">📤 Apply job</button>
+  <!-- Ô chọn CV -->
+  <div class="cv-select-container">
+    <label for="cvSelect"><strong>Chọn CV:</strong></label>
+    <select id="cvSelect">
+      <option value="">-- Chọn CV để apply --</option>
+    </select>
+  </div>
+
+  <div class="btn-container">
+    <a href="/recruitment/recruitments" class="btn back-link">🔙 Quay lại danh sách</a>
+    <button id="applyButton" class="btn apply-btn">📤 Apply job</button>
+  </div>
 
   <p id="message"></p>
 </div>
@@ -64,56 +131,120 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("applyButton").addEventListener("click", applyJob);
+    loadCVList();
   });
 
   function getIdsFromPath() {
     let pathSegments = window.location.pathname.split('/');
     let recruitmentId = pathSegments[pathSegments.length - 1];
+    console.log("Extracted recruitmentId:", recruitmentId);
     return { recruitmentId };
+  }
+
+  async function loadCVList() {
+    const userId = document.getElementById("user_id").value;
+    const cvSelect = document.getElementById("cvSelect");
+
+    try {
+      console.log("Fetching CV list for userId:", userId);
+      let response = await fetch(`/file/user/${userId}/all`);
+      console.log("CV list API response status:", response.status);
+
+      if (!response.ok) {
+        throw new Error("Không thể tải danh sách CV!");
+      }
+
+      let cvList = await response.json();
+      console.log("Received CV list:", cvList);
+
+      cvSelect.innerHTML = '<option value="">-- Chọn CV để apply --</option>';
+
+      cvList.forEach(cv => {
+        let option = document.createElement("option");
+        option.value = cv.id;
+        console.log("CV object:", cv); // Debug dữ liệu
+        option.text = cv.displayName || cv.fileName || `CV ${cv.id}`; // Ưu tiên displayName
+        option.dataset.driveLink = cv.path || cv.driveLink || ""; // Linh hoạt với path/driveLink
+        cvSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error loading CV list:", error);
+      cvSelect.innerHTML = '<option value="">Không có CV nào</option>';
+    }
   }
 
   async function applyJob() {
     let messageEl = document.getElementById("message");
     let { recruitmentId } = getIdsFromPath();
     const userId = document.getElementById("user_id").value;
+    const cvSelect = document.getElementById("cvSelect");
+    const selectedCV = cvSelect.options[cvSelect.selectedIndex];
 
-    console.log("Recruitment ID:", recruitmentId, "User ID:", userId);
+    console.log("User ID:", userId);
+    console.log("Recruitment ID:", recruitmentId);
+    console.log("Selected CV ID:", selectedCV.value);
+
     if (!recruitmentId || !userId || isNaN(recruitmentId) || isNaN(userId)) {
       messageEl.textContent = "❌ Không tìm thấy thông tin tuyển dụng hoặc người dùng.";
       messageEl.style.color = "red";
       return;
     }
 
+    if (!selectedCV.value) {
+      messageEl.textContent = "❌ Vui lòng chọn một CV để apply!";
+      messageEl.style.color = "red";
+      return;
+    }
+
     try {
-      let response = await fetch(`/file/user/${userId}`);
-      if (!response.ok) {
-        throw new Error("Không tìm thấy CV của bạn!");
+      const fileId = selectedCV.value;
+      let driveLink = selectedCV.dataset.driveLink;
+
+      // Nếu driveLink không có trong dataset, fetch từ /file/file/path/{fileId}
+      if (!driveLink) {
+        console.log("No driveLink in dataset, fetching from API for fileId:", fileId);
+        let pathResponse = await fetch(`/file/file/path/${fileId}`);
+        console.log("File path API response status:", pathResponse.status);
+
+        if (!pathResponse.ok) {
+          throw new Error("Không tìm thấy đường dẫn CV!");
+        }
+        driveLink = await pathResponse.text();
       }
 
-      let file = await response.json();
-      console.log("Received file data:", file);
-      if (!file.id) {
-        throw new Error("CV không hợp lệ. Vui lòng tải lên CV trước khi apply!");
+      console.log("Selected fileId:", fileId);
+      console.log("Selected driveLink:", driveLink);
+
+      if (!driveLink || driveLink === "undefined") {
+        throw new Error("Đường dẫn CV không hợp lệ!");
       }
 
-      let cvSubmitter = {
-        recruitmentId: recruitmentId,
-        fileId: file.id
-      };
+      const formData = new FormData();
+      formData.append("driveLink", driveLink);
+      formData.append("fileId", fileId);
+      formData.append("recruitmentId", recruitmentId);
 
-      let applyResponse = await fetch("/CVSubmitter/create", {
+      console.log("Sending data:", { driveLink, fileId, recruitmentId });
+
+      let applyResponse = await fetch("/cv/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cvSubmitter)
+        body: formData
       });
 
+      console.log("Apply API response status:", applyResponse.status);
+
       if (!applyResponse.ok) {
-        throw new Error("Apply thất bại. Vui lòng thử lại!");
+        const errorText = await applyResponse.text();
+        throw new Error(`Apply thất bại: ${errorText}`);
       }
+
+      let applyData = await applyResponse.text();
+      console.log("Apply response data:", applyData);
 
       messageEl.textContent = "✅ Apply thành công!";
       messageEl.style.color = "green";
     } catch (error) {
+      console.error("Error:", error);
       messageEl.textContent = "❌ " + error.message;
       messageEl.style.color = "red";
     }

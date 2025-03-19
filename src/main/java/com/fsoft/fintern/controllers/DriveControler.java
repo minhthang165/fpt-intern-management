@@ -51,10 +51,10 @@ public class DriveControler {
         ResDTO res = service.uploadFileToDrive(tempFile, fileType);
         FileDTO fileDTO = new FileDTO();
         fileDTO.setSubmitterId(userId);
-        fileDTO.setFileType("CV");
+
         fileDTO.setDisplayName(file.getOriginalFilename());
         fileDTO.setPath(res.getUrl());
-        fileDTO.setSize((double) file.getSize());
+
 
         fileService.createFile(fileDTO);
 
