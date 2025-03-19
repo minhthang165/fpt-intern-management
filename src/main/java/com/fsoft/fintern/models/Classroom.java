@@ -1,5 +1,6 @@
     package com.fsoft.fintern.models;
 
+    import com.fsoft.fintern.enums.ClassStatus;
     import com.fsoft.fintern.models.Shared.BaseModel;
     import jakarta.persistence.*;
     import org.springframework.beans.factory.annotation.Value;
@@ -20,11 +21,23 @@
         @Column(name = "number_of_interns", columnDefinition = "INT DEFAULT 0")
         private Integer numberOfIntern = (Integer) 0;
 
+        @Enumerated(EnumType.STRING)
+        @Column(name = "status", nullable = true, length = 50,  columnDefinition = "NVARCHAR(50) DEFAULT 'NOT_STARTED' CHECK ([status] IN ('NOT_STARTED', 'ON_GOING', 'ENDED'))")
+        private ClassStatus status;
+
         @OneToOne
         @JoinColumn(name = "manager_id",
                 referencedColumnName = "id")
-
         private User manager;
+
+
+        public ClassStatus getStatus() {
+            return status;
+        }
+
+        public void setStatus(ClassStatus status) {
+            this.status = status;
+        }
 
         public User getManager() {
             return manager;

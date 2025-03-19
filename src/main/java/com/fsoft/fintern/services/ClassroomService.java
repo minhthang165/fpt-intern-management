@@ -45,6 +45,7 @@ public class ClassroomService {
         Classroom newClass = new Classroom();
         newClass.setClassName(classDTO.getClassName());
         newClass.setNumberOfIntern(classDTO.getNumberOfIntern());
+        newClass.setStatus(classDTO.getStatus());
         newClass.setManager(manager);
 
         Classroom savedClass = class_repository.save(newClass);
@@ -88,16 +89,13 @@ public class ClassroomService {
                     -> new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage())
             );
             BeanUtils.copyProperties(classDTO, classroom, BeanUtilsHelper.getNullPropertyNames(classDTO));
-            classroom.setClassName(classDTO.getClassName());
-            classroom.setNumberOfIntern(classDTO.getNumberOfIntern());
             classroom.setManager(manager);
 
+            this.class_repository.save(classroom);
+            return new ResponseEntity<>(classroom, HttpStatus.OK);
         }
 
         BeanUtils.copyProperties(classDTO, classroom, BeanUtilsHelper.getNullPropertyNames(classDTO));
-        classroom.setClassName(classDTO.getClassName());
-        classroom.setNumberOfIntern(classDTO.getNumberOfIntern());
-
         this.class_repository.save(classroom);
         return new ResponseEntity<>(classroom, HttpStatus.OK);
     }

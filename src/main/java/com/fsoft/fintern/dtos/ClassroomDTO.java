@@ -1,10 +1,21 @@
 package com.fsoft.fintern.dtos;
 
 
+import com.fsoft.fintern.enums.ClassStatus;
+
 public class ClassroomDTO {
     private String className;
     private Integer numberOfIntern;
     private Integer managerId;
+    private ClassStatus status;
+
+    public ClassStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ClassStatus status) {
+        this.status = status;
+    }
 
     public String getClassName() {
         return className;

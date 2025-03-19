@@ -3,7 +3,6 @@
 <head th:replace="include/master-header :: head"></head>
 
 <style>
-
     table {
         width: 100%;
         border-collapse: collapse;
@@ -172,6 +171,8 @@
                                 <div class="col-md-1 input d-flex "  style="padding-bottom: 18px; margin-left: 5px;" >
                                     <button type="submit"  class="btn element__btn border-yellow find-button manage-student-find-button mt-15" style="" >Find</button>
                                 </div>
+                            </div>
+                        </form>
                                <div class="new_class">
                                    <div class="breadcrum__button">
                                        <button class="element__btn  yellow-bg" data-bs-toggle="modal" data-bs-target="#newClassModal">
@@ -179,9 +180,6 @@
                                        </button>
                                    </div>
                                </div>
-
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -203,6 +201,7 @@
                             <th>Class Name</th>
                             <th>Number of Interns</th>
                             <th>Manager</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                         </thead>
@@ -211,7 +210,7 @@
                         <td th:text="${classroom.className}"></td>
                             <td th:text="${classroom.getNumberOfIntern()}"></td>
                             <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}">
-
+                            <td th:text="${classroom.getStatus()}"></td>
                             </td>
                             <!-- Nút Delete -->
                             <td th:classappend="${classroom.isActive()} ? 'active' : 'inactive'">
@@ -224,7 +223,6 @@
                                 <a href="#" class="edit-class-status">
                                     <i class="flaticon-edit edit-class" style="cursor: pointer; color: blue;"></i>
                                 </a>
-
                             </td>
                         </tr>
                         </tbody>
@@ -274,6 +272,15 @@
                                 <input type="number" class="form-control" id="editNumberOfInterns" required min="1">
                             </div>
 
+                            <div class="mb-3">
+                                <label for="editStatus" class="form-label">Status</label>
+                                <select class="form-control" id="editStatus" required>
+                                    <option value="NOT_STARTED">NOT_STARTED</option>
+                                    <option value="ON_GOING">ON_GOING</option>
+                                    <option value="ENDED">ENDED</option>
+                                </select>
+                            </div>
+
                             <label for="editManager">Select Manager:</label>
                             <select id="editManager" name="manager" class="form-control">
                                 <option th:each="userRole : ${userRoleList}"
@@ -293,9 +300,7 @@
             </div>
         </div>
 
-
-
-            <div class="modal fade" id="newClassModal" tabindex="-1" aria-labelledby="newClassModalLabel" aria-hidden="true">
+        <div class="modal fade" id="newClassModal" tabindex="-1" aria-labelledby="newClassModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -335,9 +340,6 @@
                 </div>
             </div>
 
-
-
-
         <div class="pagination">
             <button>&lt;</button>
             <button class="active">1</button>
@@ -347,20 +349,9 @@
             <button>&gt;</button>
         </div>
     </section>
-
-
-
-
-
 </th:block>
-
 <footer th:replace="~{include/master-footer :: footer}"></footer>
-
-
-
-
 <script>
-
     document.addEventListener("click", function (event) {
         let icon = event.target.closest(".flaticon-padlock");
         if (!icon) return;
@@ -516,7 +507,7 @@
 
         let className = row.children[0].textContent.trim();
         let numberOfIntern = row.children[1].textContent.trim();
-
+        let status = row.children[3].textContent.trim();
         let rowId = row.id;
         let managerId = rowId.startsWith("manager-") ? rowId.split("-")[1] : null;
 
@@ -528,6 +519,7 @@
         document.getElementById("editClassId").value = classId;
         document.getElementById("editClassName").value = className;
         document.getElementById("editNumberOfInterns").value = numberOfIntern;
+        document.getElementById("editStatus").value = status;
         document.getElementById("editManager").value = managerId;
 
 
@@ -542,15 +534,16 @@
         event.preventDefault();
         event.stopPropagation();
 
-
         let classId = document.getElementById("editClassId").value;
         let className = document.getElementById("editClassName").value;
         let numberOfInterns = document.getElementById("editNumberOfInterns").value;
+        let status = document.getElementById("editStatus").value;
         let managerId = document.getElementById("editManager").value;
 
         let requestData = {
             className: className,
             numberOfIntern: numberOfInterns,
+            status: status,
             managerId: managerId
         };
 
@@ -567,34 +560,11 @@
             })
 
             .then(updatedClass => {
-                let row = document.getElementById(`class-${classId}`);
-                if (row) {
-                    row.children[0].textContent = updatedClass.className;
-                    row.children[1].textContent = updatedClass.numberOfIntern;
-                    row.children[2].setAttribute("data-manager-id", updatedClass.manager.id);
-                    row.children[2].textContent = updatedClass.manager.firstName + " " + updatedClass.manager.lastName;
-                }
-            })
-
-            .then(data => {
                 alert("Class updated successfully!");
-
-                let row = document.querySelector(`tr[id='manager-${classId}']`);
-                if (row) {
-                    row.children[0].textContent = className;
-                    row.children[1].textContent = numberOfInterns;
-                    row.children[2].textContent = document.querySelector(`#editManager option[value="${managerId}"]`).textContent;
-                }
-
-                let editModal = bootstrap.Modal.getInstance(document.getElementById("editClassModal"));
-                editModal.hide();
+                location.reload();
             })
             .catch(error => alert("Error updating class: " + error.message));
     });
-
-
-
-
 </script>
 </body>
 </html>

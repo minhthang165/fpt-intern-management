@@ -49,7 +49,6 @@ public class UpdateUserDTO {
 
     public void setGender(Gender gender) {
         this.gender = gender;
-
     }
 
     public Role getRole() {
