@@ -20,7 +20,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/drive")
-public class DriveControler {
+public class DriveController {
 
     @Autowired
     private DriveService service;

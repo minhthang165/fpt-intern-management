@@ -15,7 +15,7 @@ public class CVInfoService {
     }
 
     @Transactional
-    public CVInfo create(CV_InfoId id, Float gpa, String skill, String education) {
+    public CVInfo create(CV_InfoId id, Double gpa, String skill, String education) {
         if (cvInfoRepo.existsById(id)) {
             throw new RuntimeException("CV đã tồn tại!");
         }

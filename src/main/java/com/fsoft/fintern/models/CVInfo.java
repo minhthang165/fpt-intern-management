@@ -11,7 +11,7 @@ public class CVInfo extends BaseModel {
     private CV_InfoId id;
 
     @Column(nullable = false)
-    private Float gpa;
+    private Double gpa;
 
     @Column(nullable = false, length = 255)
     private String skill;
@@ -27,11 +27,11 @@ public class CVInfo extends BaseModel {
         this.id = id;
     }
 
-    public Float getGpa() {
+    public Double getGpa() {
         return gpa;
     }
 
-    public void setGpa(Float gpa) {
+    public void setGpa(Double gpa) {
         this.gpa = gpa;
     }
 
@@ -51,3 +51,4 @@ public class CVInfo extends BaseModel {
         this.education = education;
     }
 }
+

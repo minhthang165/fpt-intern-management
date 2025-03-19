@@ -1,6 +1,6 @@
 package com.fsoft.fintern.services;
 
-import com.fsoft.fintern.models.CV_Info;
+import com.fsoft.fintern.models.CVInfo;
 import com.fsoft.fintern.models.EmbedableID.CV_InfoId;
 import com.fsoft.fintern.repositories.CVInfoRepository;
 import net.sourceforge.tess4j.Tesseract;
@@ -9,16 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.regex.*;
-
-
 
 @Service
 public class OCR_Service {
@@ -50,20 +46,19 @@ public class OCR_Service {
         }
 
         text = cleanText(text);
-        Map<String, List<String>> cvData = extractCVInfo(text);
-
-        // Lưu vào database
-        saveToDatabase(cvData);
-
-        return cvData;
+        return extractCVInfo(text);
     }
 
-    private void saveToDatabase(Map<String, List<String>> cvData) {
-        CV_Info cvInfo = new CV_Info();
-        CV_InfoId cvInfoId = new CV_InfoId(1, 1);
+    public void saveToDatabase(Map<String, List<String>> cvData, int fileId, int recruitmentId) {
+        CVInfo cvInfo = new CVInfo();
+
+        // Sử dụng fileId và recruitmentId từ controller thay vì hardcode
+        CV_InfoId cvInfoId = new CV_InfoId(recruitmentId, fileId);
         cvInfo.setId(cvInfoId);
+
+        // Lấy GPA và chuyển đổi
         if (!cvData.get("GPA").isEmpty()) {
-            String gpaStr = cvData.get("GPA").get(0);
+            String gpaStr = cvData.get("GPA").get(0); // "8.0/10" hoặc "3.2/4"
             try {
                 String[] gpaParts = gpaStr.split("/");
                 Double gpaValue = Double.parseDouble(gpaParts[0]);
@@ -78,21 +73,21 @@ public class OCR_Service {
                 cvInfo.setGpa(0.0);
             }
         } else {
-            cvInfo.setGpa(0.0);
+            cvInfo.setGpa(0.0); // Giá trị mặc định nếu không có GPA
         }
 
         // Lấy Education
         if (!cvData.get("Education").isEmpty()) {
             cvInfo.setEducation(cvData.get("Education").get(0));
         } else {
-            cvInfo.setEducation("");
+            cvInfo.setEducation(""); // Giá trị mặc định nếu không có Education
         }
 
-
+        // Lấy Skills (chuyển list thành chuỗi, phân tách bằng dấu phẩy)
         if (!cvData.get("Skills").isEmpty()) {
             cvInfo.setSkill(String.join(", ", cvData.get("Skills")));
         } else {
-            cvInfo.setSkill("");
+            cvInfo.setSkill(""); // Giá trị mặc định nếu không có Skills
         }
 
         // Lưu vào database

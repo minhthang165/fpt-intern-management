@@ -1,6 +1,6 @@
 package com.fsoft.fintern.controllers;
 
-import com.fsoft.fintern.services.OCRService;
+import com.fsoft.fintern.services.OCR_Service;
 import net.sourceforge.tess4j.TesseractException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,8 @@ import java.util.Map;
 public class CVController {
 
     @Autowired
-    private OCRService ocrService;
+    private OCR_Service ocrService;
+
     @PostMapping("/save")
     public ResponseEntity<?> saveCVInfo(@RequestParam String driveLink,
                                         @RequestParam int fileId,
