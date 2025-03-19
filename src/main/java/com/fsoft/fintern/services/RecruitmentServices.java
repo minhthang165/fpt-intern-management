@@ -65,24 +65,29 @@ public class RecruitmentServices {
 
     public ResponseEntity<Recruitment> create(RecruitmentDTO recruitmentDTO) throws BadRequestException {
         Recruitment newRecruitment = new Recruitment();
+
+        newRecruitment.setName(recruitmentDTO.getName());
         newRecruitment.setPosition(recruitmentDTO.getPosition());
-        newRecruitment.setSalary(recruitmentDTO.getSalary());
-        newRecruitment.setExperience(recruitmentDTO.getExperience());
-        newRecruitment.setEducation(recruitmentDTO.getEducation());
+        newRecruitment.setExperienceRequirement(recruitmentDTO.getExperience());
+        newRecruitment.setLanguage(recruitmentDTO.getLanguage());
         newRecruitment.setTotalSlot(recruitmentDTO.getTotalSlot());
-        newRecruitment.setAvailableSlot(recruitmentDTO.getAvailableSlot());
         newRecruitment.setDescription(recruitmentDTO.getDescription());
-        if (recruitmentDTO.getWorkForm() == null ||
-                (!recruitmentDTO.getWorkForm().equals("PART-TIME") &&
-                        !recruitmentDTO.getWorkForm().equals("FULL-TIME"))) {
-            newRecruitment.setWorkForm("PART-TIME");
+        newRecruitment.setEndTime(recruitmentDTO.getEndTime());
+
+
+        if (recruitmentDTO.getMinGPA() == null || recruitmentDTO.getMinGPA() < 0.0) {
+            newRecruitment.setMinGPA(0.0f);
         } else {
-            newRecruitment.setWorkForm(recruitmentDTO.getWorkForm());
+            newRecruitment.setMinGPA(recruitmentDTO.getMinGPA());
         }
 
+
         Recruitment savedRecruitment = this.recruitRepository.save(newRecruitment);
-        return new ResponseEntity<>(savedRecruitment, HttpStatus.CREATED);
+
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedRecruitment);
     }
+
     public ResponseEntity<Recruitment> setIsActiveTrue(int id) throws BadRequestException {
         Recruitment existedRecruitment = this.recruitRepository.findById(id).orElse(null);
         if (existedRecruitment == null) {

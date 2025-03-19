@@ -1,60 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-<head th:replace="include/master-header :: head"></head>
-<style>
-    .user__dropdown {
-        display: none;
-        position: absolute;
-        top: 110%; /* Điều chỉnh vị trí */
-        right: 0;
-        background: #fff;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        border-radius: 8px;
-        width: 220px;
-        padding: 10px 0;
-        z-index: 1000;
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>FIntern</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-style-mode" content="1">
+    <!-- Place favicon.ico in the root directory -->
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/img/favicon.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- CSS here -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/meanmenu.min.css">
+    <link rel="stylesheet" href="/assets/css/animate.css">
+    <link rel="stylesheet" href="/assets/css/metisMenu.min.css">
+    <link rel="stylesheet" href="/assets/css/swiper-bundle.min.css">
+    <link rel="stylesheet" href="/assets/css/slick.css">
+    <link rel="stylesheet" href="/assets/css/backtotop.css">
+    <link rel="stylesheet" href="/assets/css/magnific-popup.css">
+    <link rel="stylesheet" href="/assets/css/flaticon_expovent.css">
+    <link rel="stylesheet" href="/assets/css/fontawesome-pro.css">
+    <link rel="stylesheet" href="/assets/css/spacing.css">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .user__dropdown {
+            display: none;
+            position: absolute;
+            top: 110%;
+            right: 0;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            width: 220px;
+            padding: 10px 0;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
 
-    .user__dropdown.show {
-        display: block;
-        opacity: 1;
-        transform: translateY(0);
-    }
+        .user__dropdown.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-    .user__dropdown ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+        .user__dropdown ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-    .user__dropdown li {
-        padding: 10px 15px;
-        display: flex;
-        align-items: center;
-    }
+        .user__dropdown li {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+        }
 
-    .user__dropdown li a {
-        text-decoration: none;
-        color: #333;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        width: 100%;
-    }
+        .user__dropdown li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
 
-    .user__dropdown li a:hover {
-        background: #f0f0f0;
-        border-radius: 5px;
-    }
+        .user__dropdown li a:hover {
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
 
-    .user__dropdown svg {
-        margin-right: 10px;
-        fill: #666;
-    }
-</style>
+        .user__dropdown svg {
+            margin-right: 10px;
+            fill: #666;
+        }
+    </style>
+</head>
+
 <body>
 <header th:replace="include/guest-header :: header"></header>
 <section id="homeabout" class="about__area p-relative pt-150 pb-90">
@@ -64,6 +88,13 @@
             <div class="col-xxl-6 col-xl-6 col-lg-6">
                 <div class="about__content-wrapper mb-60">
                     <div class="section__title-wrapper mb-80">
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <p>Hello World</p>
+                        <p>Hello World</p>
                         <span class="section__back-title">A</span>
                         <span class="section__subtitle">ABOUT THIS EVENT</span>
                         <h2 class="section__title">
@@ -108,17 +139,17 @@
                             </div>
                         </div>
                     </div>
-                    <a href="event-list.html" class="fill__btn">Join Now<i class="fa-regular fa-angle-right"></i></a>
+                    <a href="" class="fill__btn">Join Now<i class="fa-regular fa-angle-right"></i></a>
                 </div>
             </div>
             <div class="col-xxl-6 col-xl-6 col-lg-6">
                 <div class="about__thumb-wrapper mb-60 p-relative">
                     <div class="about__thumb-1 text-end w-img">
-                        <img src="assets/img/about/img1.jpg" alt="image not found">
+                        <img src="/assets/img/about/img1.jpg" alt="image not found">
                         <div class="panel wow"></div>
                     </div>
                     <div class="about__thumb-2 w-img">
-                        <img src="assets/img/about/img2.jpg" alt="image not found">
+                        <img src="/assets/img/about/img2.jpg" alt="image not found">
                         <div class="panel wow"></div>
                     </div>
                     <span class="about__play-btn">
@@ -130,6 +161,9 @@
     </div>
 </section>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="/assets/js/WebSocket.js" ></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const userPortfolio = document.getElementById("userportfolio");
@@ -140,7 +174,7 @@
                 userDropdown.classList.toggle("show");
             });
 
-            // Đóng dropdown khi click ra ngoài
+
             document.addEventListener("click", function (event) {
                 if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
                     userDropdown.classList.remove("show");
