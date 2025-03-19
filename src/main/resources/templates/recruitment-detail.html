@@ -107,9 +107,10 @@
     <h2 th:text="${recruitment.position}"></h2>
     <img src="/assets/img/sign/FPT_logo_2010.svg" alt="Company Logo">
   </div>
-  <p><strong>Kinh nghiệm yêu cầu:</strong> <span th:text="${recruitment.experience_requirement}"></span></p>
+  <p><strong>Kinh nghiệm yêu cầu:</strong> <span th:text="${recruitment.experienceRequirement}"></span></p>
   <p><strong>Ngôn ngữ yêu cầu:</strong> <span th:text="${recruitment.language}"></span></p>
   <p><strong>Số lượng tuyển:</strong> <span th:text="${recruitment.totalSlot}"></span></p>
+  <p><strong>thời gian đóng :</strong> <span th:text="${recruitment.endTime}"></span></p>
   <p class="description"><strong>Mô tả:</strong> <span th:text="${recruitment.description}"></span></p>
 
   <!-- Ô chọn CV -->

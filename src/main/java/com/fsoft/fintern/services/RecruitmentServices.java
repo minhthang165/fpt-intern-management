@@ -65,18 +65,29 @@ public class RecruitmentServices {
 
     public ResponseEntity<Recruitment> create(RecruitmentDTO recruitmentDTO) throws BadRequestException {
         Recruitment newRecruitment = new Recruitment();
+
+        newRecruitment.setName(recruitmentDTO.getName());
         newRecruitment.setPosition(recruitmentDTO.getPosition());
-        newRecruitment.setExperience_requirement(recruitmentDTO.getExperienceRequirement());
+        newRecruitment.setExperienceRequirement(recruitmentDTO.getExperience());
         newRecruitment.setLanguage(recruitmentDTO.getLanguage());
-        newRecruitment.setMin_GPA(recruitmentDTO.getMinGPA());
         newRecruitment.setTotalSlot(recruitmentDTO.getTotalSlot());
         newRecruitment.setDescription(recruitmentDTO.getDescription());
-        newRecruitment.setStartTime(recruitmentDTO.getStartTime());
         newRecruitment.setEndTime(recruitmentDTO.getEndTime());
 
+
+        if (recruitmentDTO.getMinGPA() == null || recruitmentDTO.getMinGPA() < 0.0) {
+            newRecruitment.setMinGPA(0.0f);
+        } else {
+            newRecruitment.setMinGPA(recruitmentDTO.getMinGPA());
+        }
+
+
         Recruitment savedRecruitment = this.recruitRepository.save(newRecruitment);
-        return new ResponseEntity<>(savedRecruitment, HttpStatus.CREATED);
+
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedRecruitment);
     }
+
     public ResponseEntity<Recruitment> setIsActiveTrue(int id) throws BadRequestException {
         Recruitment existedRecruitment = this.recruitRepository.findById(id).orElse(null);
         if (existedRecruitment == null) {

@@ -3,14 +3,32 @@ package com.fsoft.fintern.dtos;
 import java.sql.Timestamp;
 
 public class RecruitmentDTO {
+    private Integer id;
+    private String name;
     private String position;
-    private String experienceRequirement;
+    private String experience;
     private String language;
     private Float minGPA;
     private Integer totalSlot;
+    private Integer availableSlot;
     private String description;
-    private Timestamp startTime;
     private Timestamp endTime;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getPosition() {
         return position;
@@ -20,12 +38,12 @@ public class RecruitmentDTO {
         this.position = position;
     }
 
-    public String getExperienceRequirement() {
-        return experienceRequirement;
+    public String getExperience() {
+        return experience;
     }
 
-    public void setExperienceRequirement(String experienceRequirement) {
-        this.experienceRequirement = experienceRequirement;
+    public void setExperience(String experience) {
+        this.experience = experience;
     }
 
     public String getLanguage() {
@@ -52,20 +70,20 @@ public class RecruitmentDTO {
         this.totalSlot = totalSlot;
     }
 
+    public Integer getAvailableSlot() {
+        return availableSlot;
+    }
+
+    public void setAvailableSlot(Integer availableSlot) {
+        this.availableSlot = availableSlot;
+    }
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Timestamp getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(Timestamp startTime) {
-        this.startTime = startTime;
     }
 
     public Timestamp getEndTime() {
