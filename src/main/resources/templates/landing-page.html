@@ -1,345 +1,973 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head th:replace="include/master-header :: head"></head>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-<style>
-    .carousel-inner {
-        padding: 20px;
-        background: white;
-    }
-
-
-    .carousel-inner img {
-        width: 100%;
-        height: 100%;
-
-    }
-    .carousel-indicators .active {
-        opacity: 1;
-        background-color: #cc5500;
-        bottom: -50px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FINTERN - Professional Internship Program</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/img/logo/logo-fpt-small.svg">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-    .event-content {
-        padding: 20px;
-        text-align: left;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            line-height: 1.6;
+            background-color: #fff;
+        }
 
-    .event-content h5 {
-        font-size: 1.5rem;
-        color: #ff6600;
-    }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
 
-    .event-content p {
-        font-size: 1rem;
-        color: #333;
-    }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
 
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-    .img-fluid {
-        border-radius: 10px;
-    }
+        /* Header styles */
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .custom-control {
-        width: 50px;
-        height: 50px;
-        background-color: orange;
-        border-radius: 50%;
-        top: 50%;
-        transform: translateY(-50%);
-        opacity: 1;
-    }
+        .logo {
+            width: 150px;
+            height: auto;
+        }
 
-    .custom-control span {
-        filter: invert(1);
-    }
+        nav {
+            display: none;
+        }
 
+        @media (min-width: 768px) {
+            nav {
+                display: flex;
+                gap: 24px;
+            }
+        }
 
-    .event-image img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 0 auto;
-    }
+        nav a {
+            color: #4b5563;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
 
-    .carousel-item img {
-        max-height: 700px;
-        width: 200%;
-        object-fit: contain;
-    }
+        nav a:hover {
+            color: #ea580c;
+        }
 
-    .custom-control {
-        width: 60px;
-        height: 60px;
-        background-color: orange;
-        border-radius: 50%;
-        top: 50%;
-        transform: translateY(-50%);
-        opacity: 1;
-    }
+        .user-account {
+            position: relative;
+        }
 
-    .image-banner {
-        width: 100%;
-        height: 300px;
-        overflow: hidden;
-        margin-bottom: 30px;
-    }
+        .user-account-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #4b5563;
+            font-family: inherit;
+            font-weight: 500;
+        }
 
-    .image-banner img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .container-fluid {
-        border-radius: 0 !important;
-        padding: 0;
-        margin: 0;
-        width: 100%;
-    }
+        .user-account-btn:hover {
+            color: #ea580c;
+        }
 
-    .event-section {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        background: linear-gradient(to right, #0f172a, #1e293b);
-        color: white;
-        padding: 70px;
-        border-radius: 8px;
-    }
-    .event-image {
-        flex: 1;
-        text-align: center;
-    }
-    .event-image img {
-        max-width: 100%;
-        border-radius: 8px;
-    }
-    .event-info {
-        flex: 1;
-        padding: 20px;
-    }
-    .event-info h2 {
-        font-size: 28px;
-        font-weight: bold;
-    }
-    .event-info p {
-        font-size: 18px;
-        margin-top: 10px;
-    }
-    .highlight {
-        font-size: 30px;
-        font-weight: bold;
-        color: #facc15;
-    }
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 110%;
+            right: 0;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            width: 220px;
+            padding: 10px 0;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
 
-    a {
-        text-decoration: none;
-        color: inherit;
-    }
+        .user-dropdown.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
 
+        .user-dropdown ul {
+            list-style: none;
+        }
 
-    .user__dropdown {
-        display: none;
-        position: absolute;
-        top: 110%;
-        right: 0;
-        background: #fff;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        border-radius: 8px;
-        width: 220px;
-        padding: 10px 0;
-        z-index: 1000;
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
+        .user-dropdown li {
+            padding: 10px 15px;
+        }
 
-    .user__dropdown.show {
-        display: block;
-        opacity: 1;
-        transform: translateY(0);
-    }
+        .user-dropdown li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #333;
+            font-weight: 500;
+            padding: 5px;
+            border-radius: 5px;
+        }
 
-    .user__dropdown ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+        .user-dropdown li a:hover {
+            background: #f0f0f0;
+        }
 
-    .user__dropdown li {
-        padding: 10px 15px;
-        display: flex;
-        align-items: center;
-    }
+        /* Hero banner styles */
+        .hero-banner {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
 
-    .user__dropdown li a {
-        text-decoration: none;
-        color: #333;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        width: 100%;
-    }
+        .hero-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-    .user__dropdown li a:hover {
-        background: #f0f0f0;
-        border-radius: 5px;
-    }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.6), transparent);
+            display: flex;
+            align-items: center;
+        }
 
-    .user__dropdown svg {
-        margin-right: 10px;
-        fill: #666;
-    }
-</style>
+        .hero-content {
+            color: white;
+            max-width: 600px;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+        }
+
+        .hero-description {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background-color: #ea580c;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #c2410c;
+        }
+
+        .btn-rounded {
+            border-radius: 9999px;
+        }
+
+        /* About section styles */
+        .section {
+            padding: 80px 0;
+        }
+
+        .section-subtitle {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #ea580c;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .section-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        .highlight {
+            position: relative;
+            color: #ea580c;
+        }
+
+        .highlight-underline {
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+        }
+
+        .about-subtitle {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 16px;
+        }
+
+        .about-description {
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+        }
+
+        @media (min-width: 768px) {
+            .flex-row {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+
+        .col-half {
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .col-half {
+                width: 50%;
+            }
+        }
+
+        .image-wrapper {
+            position: relative;
+        }
+
+        .image-main {
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .image-secondary {
+            position: absolute;
+            bottom: -24px;
+            left: -24px;
+            width: 66%;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 0;
+        }
+
+        .video-btn {
+            position: absolute;
+            bottom: -16px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            background-color: #ea580c;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            transition: background-color 0.3s;
+        }
+
+        .video-btn:hover {
+            background-color: #c2410c;
+        }
+
+        /* Carousel styles */
+        .bg-gray {
+            background-color: #f9fafb;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .carousel-container {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .carousel-inner {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            height: 500px;
+        }
+
+        .carousel-item {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .carousel-item.active {
+            opacity: 1;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .carousel-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #d1d5db;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .carousel-indicator.active {
+            background-color: #ea580c;
+        }
+
+        .carousel-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            background-color: #ea580c;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            border: none;
+            transition: background-color 0.3s;
+        }
+
+        .carousel-control:hover {
+            background-color: #c2410c;
+        }
+
+        .carousel-control-prev {
+            left: 16px;
+        }
+
+        .carousel-control-next {
+            right: 16px;
+        }
+
+        /* Stats section styles */
+        .bg-gradient {
+            background: linear-gradient(to right, #0f172a, #1e293b);
+            color: white;
+        }
+
+        .stats-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .stats-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 32px;
+        }
+
+        @media (min-width: 768px) {
+            .stats-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .stat-item {
+            padding: 16px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #facc15;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #d1d5db;
+        }
+
+        .text-gray {
+            color: #9ca3af;
+        }
+
+        .mt-6 {
+            margin-top: 24px;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        /* Footer styles */
+        .footer {
+            background-color: #111827;
+            color: white;
+            padding: 48px 0;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+        }
+
+        @media (min-width: 768px) {
+            .footer-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .footer-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .footer-text {
+            color: #9ca3af;
+        }
+
+        .footer-links {
+            list-style: none;
+            margin-top: 16px;
+        }
+
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+
+        .footer-links a {
+            color: #9ca3af;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .social-link {
+            color: #9ca3af;
+            transition: color 0.3s;
+        }
+
+        .social-link:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            margin-top: 40px;
+            padding-top: 24px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        /* Video modal */
+        .video-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .video-modal.show {
+            display: flex;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+    </style>
+</head>
 <body>
-<header th:replace="include/guest-header :: header"></header>
-<section id="homeabout" class="about__area p-relative pt-150 pb-90">
-    <div class="container-fluid ">
-        <div class="image-banner">
-            <img src="/assets/img/event/DanangCampus.png" alt="FPT Event">
+<!-- Header -->
+<header>
+    <div class="container header-container">
+        <div class="logo">
+            <a href="landing-page.html">
+                <img src="assets/img/logo/logo-fpt.png" alt="logo not found">
+            </a>
+        </div>
+        <div class="user-account">
+            <button id="userportfolio" class="user-account-btn">
+                Account
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
+                </svg>
+            </button>
+            <div class="user-dropdown">
+                <ul>
+                    <li>
+                        <a href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/logout">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
+</header>
+
+<!-- Hero Banner -->
+<div class="hero-banner">
+    <img src="assets/img/event/landing-page-banner.jpg" alt="FPT Danang Campus">
+    <div class="hero-overlay">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Shape Your Future with FINTERN</h1>
+                <p class="hero-description">Professional internship opportunities for FPT University students</p>
+                <button class="btn btn-primary btn-rounded">
+                    Apply Now
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14"></path>
+                        <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- About Section -->
+<section class="section">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-xl-6 col-lg-6 text-center mx-auto">
-            <div class="about__content-wrapper mb-60">
-                       <div class="section__title-wrapper mb-80">
-                        <span class="section__back-title">A</span>
-                        <span class="section__subtitle">ABOUT THIS INTERSHIP</span>
-                        <h2 class="section__title">
-                            Get into a Professional Career!
-                            <span class="text__highlight"> FINTERN
-                              <svg width="328" height="31" viewBox="0 0 328 31" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                 <path d="M2 29C110 8.62517 326 -19.8996 326 29" stroke="url(#paint0_linear_47_128)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                                 <defs>
-                                 <linearGradient id="paint0_linear_47_1281" x1="2.50784" y1="22.0412" x2="322.486" y2="65.0473" gradientUnits="userSpaceOnUse">
-                                 <stop offset="1" stop-color="#F7426F"/>
-                                 <stop offset="1" stop-color="#F87A58"/>
-                                 </linearGradient>
-                                 </defs>
-                              </svg>
-                           </span>
-                        </h2>
-                    </div>
-                    <div class="about__content">
-                        <div class="about__text">
-                            <h4>Cơ hội để phát triển bản thân, nâng cao kỹ năng và tạo nền tảng vững chắc cho sự nghiệp</h4>
-                            <p class="mb-30">FIntern là chương trình thực tập dành cho sinh viên FPT University, giúp bạn tiếp cận môi trường làm việc chuyên nghiệp, rèn luyện kỹ năng và có cơ hội trở thành nhân viên chính thức tại FPT Software.
-                            </p>
-                        </div>
-                    </div>
-                    <a href="event-list.html" class="fill__btn">Join Now<i class="fa-regular fa-angle-right flaticon-job"></i></a>
-                </div>
+        <div class="flex-row">
+            <div class="col-half">
+                <div class="section-subtitle">ABOUT THIS INTERNSHIP</div>
+                <h2 class="section-title">
+                    Get into a Professional Career!
+                    <span class="highlight">
+                            FINTERN
+                            <svg class="highlight-underline" width="328" height="10" viewBox="0 0 328 31" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 29C110 8.62517 326 -19.8996 326 29" stroke="url(#paint0_linear_47_128)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                <defs>
+                                    <linearGradient id="paint0_linear_47_1281" x1="2.50784" y1="22.0412" x2="322.486" y2="65.0473" gradientUnits="userSpaceOnUse">
+                                        <stop offset="1" stop-color="#F7426F"/>
+                                        <stop offset="1" stop-color="#F87A58"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </span>
+                </h2>
+                <h4 class="about-subtitle">
+                    Cơ hội để phát triển bản thân, nâng cao kỹ năng và tạo nền tảng vững chắc cho sự nghiệp
+                </h4>
+                <p class="about-description">
+                    FIntern là chương trình thực tập dành cho sinh viên FPT University, giúp bạn tiếp cận môi trường làm việc chuyên nghiệp, rèn luyện kỹ năng và có cơ hội trở thành nhân viên chính thức tại FPT Software.
+                </p>
+                <a href="event-list.html" class="btn btn-primary">
+                    Join Now
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                </a>
             </div>
-            <div class="col-xl-6 col-lg-6 text-center mx-auto">
-            <div class="about__thumb-wrapper mb-60 p-relative">
-                    <div class="about__thumb-1 text-end w-img">
-                        <img src="assets/img/event/event_paracel3.jpg" alt="image not found">
-                        <div class="panel wow"></div>
-                    </div>
-                    <div class="about__thumb-2 w-img">
-                        <img src="assets/img/event/event-paracel6.png" alt="image not found">
-                        <div class="panel wow"></div>
-                    </div>
-                    <span class="about__play-btn">
-                        <a class="video__play-btn popup-video" href="https://youtu.be/MlLRo-GpHO4"><i class="fa-solid fa-play"></i>Introduction Video</a>
-                     </span>
+            <div class="col-half">
+                <div class="image-wrapper">
+                    <img src="assets/img/event/event-paracel6.png" alt="FPT Event" class="image-main">
+                    <img src="assets/img/event/event_paracel3.jpg" alt="FPT Event" class="image-secondary">
+                    <a href="#" class="video-btn" id="videoBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
-
-
     </div>
+</section>
 
-    <section>
-        <div id="eventCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-indicators">
-                <button type="button" data-bs-target="#eventCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                <button type="button" data-bs-target="#eventCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                <button type="button" data-bs-target="#eventCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-            </div>
+<!-- Image Carousel -->
+<section class="section bg-gray">
+    <div class="container">
+        <h2 class="section-title text-center">Our Events</h2>
+        <div class="carousel-container">
             <div class="carousel-inner">
-                <!-- Slide 1 -->
                 <div class="carousel-item active">
-                    <div class="align-items-center">
-                            <img src="/assets/img/event/event_paracel1.jpg" class="img-fluid rounded" alt="FPT Event">
-                        </div>
-                    </div>
-
-                <!-- Slide 2 -->
-                <div class="carousel-item">
-                        <div class="align-items-center">
-                            <img src="/assets/img/event/event_paracel2.jpg" class="img-fluid rounded" alt="FPT Event">
-                        </div>
+                    <img src="/assets/img/event/event_paracel1.jpg" alt="FPT Event">
                 </div>
-
-                <!-- Slide 3 -->
                 <div class="carousel-item">
-                    <div class="row align-items-center">
-                            <img src="/assets/img/event/event_paracel5.png" class="img-fluid rounded" alt="FPT Event">
-                        </div>
+                    <img src="/assets/img/event/event_paracel2.jpg" alt="FPT Event">
+                </div>
+                <div class="carousel-item">
+                    <img src="/assets/img/event/event_paracel5.png" alt="FPT Event">
                 </div>
             </div>
-
-            <!-- Nút điều hướng -->
-            <button class="carousel-control-prev custom-control" type="button" data-bs-target="#eventCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
+            <div class="carousel-indicators">
+                <button class="carousel-indicator active" data-slide="0"></button>
+                <button class="carousel-indicator" data-slide="1"></button>
+                <button class="carousel-indicator" data-slide="2"></button>
+            </div>
+            <button class="carousel-control carousel-control-prev">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m15 18-6-6 6-6"></path>
+                </svg>
             </button>
-            <button class="carousel-control-next custom-control" type="button" data-bs-target="#eventCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
+            <button class="carousel-control carousel-control-next">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m9 18 6-6-6-6"></path>
+                </svg>
             </button>
         </div>
-    </section>
-
+    </div>
 </section>
-<section class="event-section container-fluid mt-3">
 
-    <div class="row">
-        <div class="col-md-6 p-0">
-            <div class="event-image">
-                <img th:src="@{/assets/img/event/FPT-Danang-_-FComplex.jpg}" alt="Event Image" class="img-fluid w-100 h-100">
+<!-- Stats Section -->
+<section class="section bg-gradient">
+    <div class="container">
+        <div class="flex-row">
+            <div class="col-half">
+                <img src="assets/img/event/fpt-section.jpg" alt="FPT Complex" class="stats-image">
             </div>
-        </div>
-        <div class="col-md-6 p-5 d-flex align-items-center">
-            <div class="event-info">
-                <h2 style="color: white;">We empower the global digital transformation</h2>
-                <p style="color: #ccc;"><span class="highlight" style="color: white;">$1B</span> in Revenue (FY 2023)</p>
-                <p style="color: #ccc;"><span class="highlight" style="color: white;">1999</span> Established Year</p>
-                <p style="color: #ccc;"><span class="highlight" style="color: white;">30,000+</span> Employees</p>
-                <p style="color: #ccc;"><span class="highlight" style="color: white;">1,100+</span> Clients (96 are Fortune Global 500 Companies)</p>
-                <p><em style="color: #ccc;">As of July 2024</em></p>
+            <div class="col-half">
+                <h2 class="stats-title">We empower the global digital transformation</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">$1B</div>
+                        <div class="stat-label">in Revenue (FY 2023)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">1999</div>
+                        <div class="stat-label">Established Year</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">30,000+</div>
+                        <div class="stat-label">Employees</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">1,100+</div>
+                        <div class="stat-label">Clients (96 are Fortune Global 500 Companies)</div>
+                    </div>
+                </div>
+                <p class="text-gray mt-6 italic">As of July 2024</p>
             </div>
         </div>
     </div>
 </section>
 
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div>
+                <h3 class="footer-title">FPT FINTERN</h3>
+                <p class="footer-text">Empowering students to build their future in technology.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            <div>
+                <h4 class="footer-title">Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Events</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-title">Contact</h4>
+                <ul class="footer-links">
+                    <li>FPT Software, Da Nang</li>
+                    <li>Email: fintern@fpt.edu.vn</li>
+                    <li>Phone: +84 123 456 789</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-title">Programs</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Software Development</a></li>
+                    <li><a href="#">Data Science</a></li>
+                    <li><a href="#">AI & Machine Learning</a></li>
+                    <li><a href="#">Cloud Computing</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 FPT FINTERN. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
 
+<!-- Video Modal -->
+<div class="video-modal" id="videoModal">
+    <div class="video-container">
+        <button class="close-modal" id="closeModal">Close</button>
+        <div class="video-wrapper">
+            <iframe src="/placeholder.svg" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
 
-
-<footer th:replace="include/guest-footer :: footer"></footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // User dropdown functionality
     document.addEventListener("DOMContentLoaded", function () {
         const userPortfolio = document.getElementById("userportfolio");
-        const userDropdown = document.querySelector(".user__dropdown");
+        const userDropdown = document.querySelector(".user-dropdown");
 
         if (userPortfolio && userDropdown) {
             userPortfolio.addEventListener("click", function (event) {
                 userDropdown.classList.toggle("show");
+                event.stopPropagation();
             });
 
-            // Đóng dropdown khi click ra ngoài
+            // Close dropdown when clicking outside
             document.addEventListener("click", function (event) {
                 if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
                     userDropdown.classList.remove("show");
+                }
+            });
+        }
+
+        // Carousel functionality
+        const carouselItems = document.querySelectorAll('.carousel-item');
+        const indicators = document.querySelectorAll('.carousel-indicator');
+        const prevBtn = document.querySelector('.carousel-control-prev');
+        const nextBtn = document.querySelector('.carousel-control-next');
+        let currentSlide = 0;
+        const totalSlides = carouselItems.length;
+
+        function showSlide(index) {
+            // Hide all slides
+            carouselItems.forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Deactivate all indicators
+            indicators.forEach(indicator => {
+                indicator.classList.remove('active');
+            });
+
+            // Show the selected slide and activate indicator
+            carouselItems[index].classList.add('active');
+            indicators[index].classList.add('active');
+
+            // Update current slide index
+            currentSlide = index;
+        }
+
+        // Add click event to indicators
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                showSlide(index);
+            });
+        });
+
+        // Previous button click
+        prevBtn.addEventListener('click', () => {
+            let newIndex = currentSlide - 1;
+            if (newIndex < 0) newIndex = totalSlides - 1;
+            showSlide(newIndex);
+        });
+
+        // Next button click
+        nextBtn.addEventListener('click', () => {
+            let newIndex = currentSlide + 1;
+            if (newIndex >= totalSlides) newIndex = 0;
+            showSlide(newIndex);
+        });
+
+        // Auto slide every 5 seconds
+        setInterval(() => {
+            let newIndex = currentSlide + 1;
+            if (newIndex >= totalSlides) newIndex = 0;
+            showSlide(newIndex);
+        }, 5000);
+
+        // Video modal functionality
+        const videoBtn = document.getElementById('videoBtn');
+        const videoModal = document.getElementById('videoModal');
+        const closeModal = document.getElementById('closeModal');
+        const videoIframe = document.querySelector('.video-wrapper iframe');
+
+        if (videoBtn && videoModal && closeModal) {
+            videoBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                videoIframe.src = "https://www.youtube.com/embed/MlLRo-GpHO4";
+                videoModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            });
+
+            closeModal.addEventListener('click', function() {
+                videoModal.classList.remove('show');
+                videoIframe.src = "";
+                document.body.style.overflow = '';
+            });
+
+            // Close modal when clicking outside the video container
+            videoModal.addEventListener('click', function(e) {
+                if (e.target === videoModal) {
+                    videoModal.classList.remove('show');
+                    videoIframe.src = "";
+                    document.body.style.overflow = '';
                 }
             });
         }

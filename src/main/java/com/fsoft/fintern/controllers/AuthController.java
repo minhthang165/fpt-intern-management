@@ -49,7 +49,7 @@ public class AuthController {
             model.addAttribute("user", loginUserDTO);
         }
 
-        return user.getRole() == Role.ADMIN ? "admin/AdminDashboard" : "redirect:/profile";
+        return user.getRole() == Role.ADMIN ? "admin/AdminDashboard" : "redirect:/landing-page";
     }
 
     private User createNewUser(OAuth2User oauth2User) {
