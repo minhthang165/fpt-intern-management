@@ -40,26 +40,43 @@
       background-color: blue;
     }
   </style>
-</head>
-<body>
 
-<div class="container">
+  <div class="schedule__blog-item mb-30">
+    <div class="schedule__content">
+      <div class="schedule__blog-meta">
+        <div class="news__meta-status">
+          <span><i class="flaticon-user"></i></span>
+          <span>Andru Hebo</span>
+        </div>
+        <div class="news__meta-status">
+          <span><i class="flaticon-clock"></i></span>
+          <span>9:00am- 5:00 pm</span>
+        </div>
+      </div>
+      <h5 class="schedule__blog-title"><a href="event-list.html">Nasa Space Apps Challenge kicks off in Bangladesh</a></h5>
+      <div class="schedule__blog-location">
+        <div class="news__meta-status">
+          <span><i class="flaticon-placeholder"></i></span>
+          <span>California(CA), 92677</span>
+        </div>
+      </div>
+    </div>
+    <div class="schedule__blog-thumb w-img">
+      <div class="schedule__tag-post">
+        <div class="event__tag-item">
+          <span><a href="event-details.html">Hall 03</a></span>
+        </div>
+        <div class="event__tag-item">
+          <span><a href="event-details.html">10 Seat Available</a></span>
+        </div>
+      </div>
+      <a href="event-details.html">
+        <img src="assets/img/blog/schedule/01.jpg" alt="image not found">
+      </a>
+    </div>
+  </div>
 
-  <h2 th:text="${recruitment.position}"></h2>
-  <p><strong>Lương:</strong> <span th:text="${recruitment.salary}"></span></p>
-  <p><strong>Kinh nghiệm:</strong> <span th:text="${recruitment.experience}"></span></p>
-  <p><strong>Hình thức làm việc:</strong> <span th:text="${recruitment.workForm}"></span></p>
-  <p><strong>Số lượng tuyển:</strong> <span th:text="${recruitment.totalSlot}"></span></p>
-  <p><strong>Số lượng còn trống:</strong> <span th:text="${recruitment.availableSlot}"></span></p>
-  <p><strong>Mô tả:</strong> <span th:text="${recruitment.description}"></span></p>
-  <p><strong>Ngày bắt đầu:</strong> <span th:text="${recruitment.startTime}"></span></p>
-  <p><strong>Ngày kết thúc:</strong> <span th:text="${recruitment.endTime}"></span></p>
 
-  <a href="/recruitment/recruitments" class="btn back-link">🔙 Quay lại danh sách</a>
-  <button class="btn apply-btn" onclick="applyJob()">📤 Apply job</button>
-
-  <p id="message"></p>
-</div>
 
 <script>
   function getIdsFromPath() {
