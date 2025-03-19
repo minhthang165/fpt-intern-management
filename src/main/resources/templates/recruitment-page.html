@@ -1,148 +1,357 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chi tiết Tuyển Dụng</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    }
-    h2 {
-      color: #333;
-    }
-    p {
-      margin: 5px 0;
-    }
-    .btn {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 10px 15px;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .back-link {
-      color: white;
-      background-color: gray;
-    }
-    .apply-btn {
-      color: white;
-      background-color: blue;
-    }
-  </style>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="include/master-header :: head"></head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <div class="schedule__blog-item mb-30">
-    <div class="schedule__content">
-      <div class="schedule__blog-meta">
-        <div class="news__meta-status">
-          <span><i class="flaticon-user"></i></span>
-          <span>Andru Hebo</span>
-        </div>
-        <div class="news__meta-status">
-          <span><i class="flaticon-clock"></i></span>
-          <span>9:00am- 5:00 pm</span>
+<style>
+  .carousel-inner {
+    padding: 20px;
+    background: white;
+  }
+
+
+  .carousel-inner img {
+    width: 100%;
+    height: 100%;
+
+  }
+  .carousel-indicators .active {
+    opacity: 1;
+    background-color: #cc5500;
+    bottom: -50px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .event-content {
+    padding: 20px;
+    text-align: left;
+  }
+
+  .event-content h5 {
+    font-size: 1.5rem;
+    color: #ff6600;
+  }
+
+  .event-content p {
+    font-size: 1rem;
+    color: #333;
+  }
+
+
+  .img-fluid {
+    border-radius: 10px;
+  }
+
+
+  .custom-control {
+    width: 50px;
+    height: 50px;
+    background-color: orange;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 1;
+  }
+
+  .custom-control span {
+    filter: invert(1);
+  }
+
+
+  .event-image img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .carousel-item img {
+    max-height: 700px;
+    width: 200%;
+    object-fit: contain;
+  }
+
+  .custom-control {
+    width: 60px;
+    height: 60px;
+    background-color: orange;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 1;
+  }
+
+  .image-banner {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    margin-bottom: 30px;
+  }
+
+  .image-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .container-fluid {
+    border-radius: 0 !important;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+
+  .event-section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to right, #0f172a, #1e293b);
+    color: white;
+    padding: 70px;
+    border-radius: 8px;
+  }
+  .event-image {
+    flex: 1;
+    text-align: center;
+  }
+  .event-image img {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+  .event-info {
+    flex: 1;
+    padding: 20px;
+  }
+  .event-info h2 {
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .event-info p {
+    font-size: 18px;
+    margin-top: 10px;
+  }
+  .highlight {
+    font-size: 30px;
+    font-weight: bold;
+    color: #facc15;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+
+  .user__dropdown {
+    display: none;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    width: 220px;
+    padding: 10px 0;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .user__dropdown.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .user__dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .user__dropdown li {
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+  }
+
+  .user__dropdown li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .user__dropdown li a:hover {
+    background: #f0f0f0;
+    border-radius: 5px;
+  }
+
+  .user__dropdown svg {
+    margin-right: 10px;
+    fill: #666;
+  }
+  .recruitment-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+  }
+
+
+  .recruitment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(255, 104, 104, 0.2);
+  }
+
+
+  .recruitment-image {
+    position: relative;
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+  }
+
+  .recruitment-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px 12px 0 0;
+    transition: transform 0.3s ease;
+  }
+
+  .recruitment-image img:hover {
+    transform: scale(1.05);
+  }
+
+  .badge {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+
+
+  .badge.bg-dark {
+    top: 10px;
+    left: 10px;
+  }
+
+  .badge.bg-primary {
+    top: 50px;
+    left: 10px;
+  }
+
+
+  .card-title a {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    transition: color 0.3s ease;
+  }
+
+  .card-title a:hover {
+    color: #ff6b6b;
+  }
+
+
+  .btn-gradient {
+    background: linear-gradient(45deg, #ff6b6b, #f06595);
+    color: white;
+    border: none;
+    transition: all 0.3s ease-in-out;
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border-radius: 30px;
+    text-transform: uppercase;
+  }
+
+  .btn-hover:hover {
+    background: linear-gradient(45deg, #f06595, #ff6b6b);
+    transform: translateY(-2px);
+    box-shadow: 0px 4px 10px rgba(255, 107, 107, 0.5);
+  }
+</style>
+<body>
+<header th:include="include/guest-header :: header"></header>
+
+
+  <section class="recruitment-list">
+    <section id="" class="about__area p-relative pt-150 pb-90">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4 col-sm-6 mb-4" th:each="recruitment : ${recruitments}">
+            <div class="card recruitment-card shadow-sm p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted">
+              <strong>Position:</strong> <span th:text="${recruitment.getPosition()}"></span>
+            </span>
+                <span class="text-muted">
+              <strong>Publish Date:</strong> <span th:text="${#dates.format(recruitment.getCreatedAt(), 'dd-MM-yyyy')}"></span>
+            </span>
+              </div>
+              <h5 class="card-title">
+                <a href="#" th:text="${recruitment.getName()}"></a>
+              </h5>
+              <p class="text-muted"><i class="fas fa-map-marker-alt"></i>
+                <span th:text="${recruitment.getTotalSlot()}"></span> Total slot
+              </p>
+              <div class="position-relative recruitment-image">
+                <img th:src="@{/assets/img/event/default_Recruitment.jpg}" class="card-img-top img-fluid" alt="Recruitment Image">
+                <div class="position-absolute top-0 start-0 m-2">
+              <span class="badge bg-dark px-2 py-1">
+                <strong></strong> <span th:text="${recruitment.getLanguage()}"></span>
+              </span>
+                  <span class="badge bg-primary px-2 py-1 mt-1">
+                <strong></strong> <span th:text="${recruitment.getExperienceRequirement()}"></span>
+              </span>
+                </div>
+              </div>
+              <div class="card-body text-end mt-2">
+                <a th:href="@{/recruitment/{id}(id=${recruitment.getId()})}"
+                   class="btn btn-gradient btn-hover fw-bold text-uppercase px-4 py-2 rounded-pill">
+                  VIEW DETAIL
+                </a>
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
-      <h5 class="schedule__blog-title"><a href="event-list.html">Nasa Space Apps Challenge kicks off in Bangladesh</a></h5>
-      <div class="schedule__blog-location">
-        <div class="news__meta-status">
-          <span><i class="flaticon-placeholder"></i></span>
-          <span>California(CA), 92677</span>
-        </div>
-      </div>
-    </div>
-    <div class="schedule__blog-thumb w-img">
-      <div class="schedule__tag-post">
-        <div class="event__tag-item">
-          <span><a href="event-details.html">Hall 03</a></span>
-        </div>
-        <div class="event__tag-item">
-          <span><a href="event-details.html">10 Seat Available</a></span>
-        </div>
-      </div>
-      <a href="event-details.html">
-        <img src="assets/img/blog/schedule/01.jpg" alt="image not found">
-      </a>
-    </div>
-  </div>
+    </section>
+  </section>
 
 
 
+
+
+<footer th:replace="include/guest-footer :: footer"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  function getIdsFromPath() {
-    let pathSegments = window.location.pathname.split('/');
-    let recruitmentId = pathSegments[pathSegments.length - 2];
-    let userId = pathSegments[pathSegments.length - 1];
+  document.addEventListener("DOMContentLoaded", function () {
+    const userPortfolio = document.getElementById("userportfolio");
+    const userDropdown = document.querySelector(".user__dropdown");
 
-    return { recruitmentId, userId };
-  }
+    if (userPortfolio && userDropdown) {
+      userPortfolio.addEventListener("click", function (event) {
+        userDropdown.classList.toggle("show");
+      });
 
-  function applyJob() {
-    let messageEl = document.getElementById("message");
-
-
-    let {recruitmentId, userId} = getIdsFromPath();
-
-    console.log("Recruitment ID:", recruitmentId, "User ID:", userId);
-
-    if (!recruitmentId || !userId || isNaN(recruitmentId) || isNaN(userId)) {
-      messageEl.textContent = "❌ Không tìm thấy thông tin tuyển dụng hoặc người dùng.";
-      messageEl.style.color = "red";
-      return;
+      // Đóng dropdown khi click ra ngoài
+      document.addEventListener("click", function (event) {
+        if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
+          userDropdown.classList.remove("show");
+        }
+      });
     }
-
-    fetch(`/file/user/${userId}`)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error("Không tìm thấy CV của bạn!");
-              }
-              return response.json();
-            })
-            .then(file => {
-              console.log("Received file data:", file); // In ra dữ liệu file để kiểm tra
-              if (!file.id) {
-                throw new Error("CV không hợp lệ. Vui lòng tải lên CV trước khi apply!");
-              }
-
-              let cvSubmitter = {
-                recruitmentId: recruitmentId,
-                fileId: file.id
-              };
-
-              return fetch("/CVSubmitter/create", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(cvSubmitter)
-              });
-            })
-
-            .then(response => {
-              if (!response.ok) {
-                throw new Error("Apply thất bại. Vui lòng thử lại!");
-              }
-              return response.json();
-            })
-            .then(data => {
-              messageEl.textContent = "✅ Apply thành công!";
-              messageEl.style.color = "green";
-            })
-            .catch(error => {
-              messageEl.textContent = "❌ " + error.message;
-              messageEl.style.color = "red";
-            });
-  }
-
+  });
 </script>
-
 </body>
 </html>
