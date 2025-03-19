@@ -2,7 +2,6 @@ package com.fsoft.fintern.services;
 import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.dtos.RecruitmentDTO;
 import com.fsoft.fintern.models.Recruitment;
-import com.fsoft.fintern.models.Task;
 import com.fsoft.fintern.repositories.RecruitRepository;
 import com.fsoft.fintern.utils.BeanUtilsHelper;
 import org.apache.coyote.BadRequestException;
@@ -17,11 +16,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class RecruitmentServices {
+public class RecruitmentService {
     private final RecruitRepository recruitRepository;
-    private RecruitmentServices userRepository;
+    private RecruitmentService userRepository;
 
-    public RecruitmentServices(RecruitRepository recruitRepository) {
+    public RecruitmentService(RecruitRepository recruitRepository) {
         this.recruitRepository = recruitRepository;
     }
     public ResponseEntity<Recruitment> findById(int id) throws BadRequestException {
@@ -65,24 +64,30 @@ public class RecruitmentServices {
 
     public ResponseEntity<Recruitment> create(RecruitmentDTO recruitmentDTO) throws BadRequestException {
         Recruitment newRecruitment = new Recruitment();
+
+        newRecruitment.setName(recruitmentDTO.getName());
         newRecruitment.setPosition(recruitmentDTO.getPosition());
-        newRecruitment.setSalary(recruitmentDTO.getSalary());
-        newRecruitment.setExperience(recruitmentDTO.getExperience());
-        newRecruitment.setEducation(recruitmentDTO.getEducation());
+        newRecruitment.setExperienceRequirement(recruitmentDTO.getExperience());
+        newRecruitment.setLanguage(recruitmentDTO.getLanguage());
         newRecruitment.setTotalSlot(recruitmentDTO.getTotalSlot());
-        newRecruitment.setAvailableSlot(recruitmentDTO.getAvailableSlot());
         newRecruitment.setDescription(recruitmentDTO.getDescription());
-        if (recruitmentDTO.getWorkForm() == null ||
-                (!recruitmentDTO.getWorkForm().equals("PART-TIME") &&
-                        !recruitmentDTO.getWorkForm().equals("FULL-TIME"))) {
-            newRecruitment.setWorkForm("PART-TIME");
+        newRecruitment.setEndTime(recruitmentDTO.getEndTime());
+
+
+        if (recruitmentDTO.getMinGPA() == null || recruitmentDTO.getMinGPA() < 0.0) {
+            newRecruitment.setMinGPA(0.0f);
         } else {
-            newRecruitment.setWorkForm(recruitmentDTO.getWorkForm());
+            newRecruitment.setMinGPA(recruitmentDTO.getMinGPA());
         }
 
+
         Recruitment savedRecruitment = this.recruitRepository.save(newRecruitment);
-        return new ResponseEntity<>(savedRecruitment, HttpStatus.CREATED);
+
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedRecruitment);
     }
+
+
     public ResponseEntity<Recruitment> setIsActiveTrue(int id) throws BadRequestException {
         Recruitment existedRecruitment = this.recruitRepository.findById(id).orElse(null);
         if (existedRecruitment == null) {
@@ -96,21 +101,6 @@ public class RecruitmentServices {
         recruitRepository.save(existedRecruitment);
         return new ResponseEntity<>(existedRecruitment, HttpStatus.OK);
     }
-    public ResponseEntity<Recruitment> setIsActiveFalse(int id) throws BadRequestException {
-        Recruitment existedRecruitment = this.recruitRepository.findById(id).orElse(null);
-        if (existedRecruitment == null) {
-            throw new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage());
-        }
-        if (!existedRecruitment.isActive()) {
-            throw new BadRequestException("This object is already false");
-        }
-
-        existedRecruitment.setActive(false);
-        recruitRepository.save(existedRecruitment);
-
-        return new ResponseEntity<>(existedRecruitment, HttpStatus.OK);
-    }
-
 
 
 }

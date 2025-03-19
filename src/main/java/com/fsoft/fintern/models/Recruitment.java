@@ -8,66 +8,49 @@ import java.sql.Timestamp;
 @Table(name = "Recruitment")
 public class Recruitment extends BaseModel {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false, nullable = false)
     private Integer id;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "name", nullable = false, length = 255)
+    private String name;
+
+    @Column(name = "position", nullable = false, length = 255)
     private String position;
 
-    @Column(nullable = false)
-    private Integer salary;
+    @Column(name = "experience_requirement", nullable = false, length = 255)
+    private String experienceRequirement;
 
-    @Column(nullable = false, length = 255)
-    private String experience;
+    @Column(name = "language", length = 255)
+    private String language;
 
-    @Column(nullable = false, length = 255)
-    private String education;
+    @Column(name = "min_GPA")
+    private Float minGPA;
 
-    @Column(name = "work_form", nullable = false, length = 50)
-    private String workForm; // Dùng String thay vì Enum
-
-    @Column(nullable = false)
+    @Column(name = "total_slot", nullable = false)
     private Integer totalSlot;
 
-    @Column(nullable = false)
-    private Integer availableSlot;
-
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    @Column(nullable = false)
-    private Timestamp startTime;
-
-    @Column(nullable = false)
+    @Column(name = "end_time", nullable = false)
     private Timestamp endTime;
 
-
-
-
-    // Constructor mặc định
-    public Recruitment() {
-        this.workForm = "PART-TIME"; // Đặt giá trị mặc định
-    }
-
-    // Getter và Setter
-    public String getWorkForm() {
-        return workForm;
-    }
-
-    public void setWorkForm(String workForm) {
-        this.workForm = workForm;
-    }
-
-    // Getters và Setters
     public Integer getId() {
         return id;
     }
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPosition() {
@@ -78,30 +61,29 @@ public class Recruitment extends BaseModel {
         this.position = position;
     }
 
-    public Integer getSalary() {
-        return salary;
+    public String getExperienceRequirement() {
+        return experienceRequirement;
     }
 
-    public void setSalary(Integer salary) {
-        this.salary = salary;
+    public void setExperienceRequirement(String experienceRequirement) {
+        this.experienceRequirement = experienceRequirement;
     }
 
-    public String getExperience() {
-        return experience;
+    public String getLanguage() {
+        return language;
     }
 
-    public void setExperience(String experience) {
-        this.experience = experience;
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
-    public String getEducation() {
-        return education;
+    public Float getMinGPA() {
+        return minGPA;
     }
 
-    public void setEducation(String education) {
-        this.education = education;
+    public void setMinGPA(Float minGPA) {
+        this.minGPA = minGPA;
     }
-
 
     public Integer getTotalSlot() {
         return totalSlot;
@@ -109,14 +91,6 @@ public class Recruitment extends BaseModel {
 
     public void setTotalSlot(Integer totalSlot) {
         this.totalSlot = totalSlot;
-    }
-
-    public Integer getAvailableSlot() {
-        return availableSlot;
-    }
-
-    public void setAvailableSlot(Integer availableSlot) {
-        this.availableSlot = availableSlot;
     }
 
     public String getDescription() {
@@ -127,14 +101,6 @@ public class Recruitment extends BaseModel {
         this.description = description;
     }
 
-    public Timestamp getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(Timestamp startTime) {
-        this.startTime = startTime;
-    }
-
     public Timestamp getEndTime() {
         return endTime;
     }
@@ -142,5 +108,5 @@ public class Recruitment extends BaseModel {
     public void setEndTime(Timestamp endTime) {
         this.endTime = endTime;
     }
-    }
+}
 

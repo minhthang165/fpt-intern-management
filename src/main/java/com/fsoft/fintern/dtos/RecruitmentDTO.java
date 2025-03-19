@@ -3,16 +3,32 @@ package com.fsoft.fintern.dtos;
 import java.sql.Timestamp;
 
 public class RecruitmentDTO {
+    private Integer id;
+    private String name;
     private String position;
-    private Integer salary;
     private String experience;
-    private String education;
-    private String workForm;
+    private String language;
+    private Float minGPA;
     private Integer totalSlot;
     private Integer availableSlot;
     private String description;
+    private Timestamp endTime;
 
+    public Integer getId() {
+        return id;
+    }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getPosition() {
         return position;
@@ -20,14 +36,6 @@ public class RecruitmentDTO {
 
     public void setPosition(String position) {
         this.position = position;
-    }
-
-    public Integer getSalary() {
-        return salary;
-    }
-
-    public void setSalary(Integer salary) {
-        this.salary = salary;
     }
 
     public String getExperience() {
@@ -38,12 +46,20 @@ public class RecruitmentDTO {
         this.experience = experience;
     }
 
-    public String getEducation() {
-        return education;
+    public String getLanguage() {
+        return language;
     }
 
-    public void setEducation(String education) {
-        this.education = education;
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public Float getMinGPA() {
+        return minGPA;
+    }
+
+    public void setMinGPA(Float minGPA) {
+        this.minGPA = minGPA;
     }
 
     public Integer getTotalSlot() {
@@ -70,11 +86,11 @@ public class RecruitmentDTO {
         this.description = description;
     }
 
-
-    public String getWorkForm() {
-        return workForm;
+    public Timestamp getEndTime() {
+        return endTime;
     }
-    public void setWorkForm(String workForm) {
-        this.workForm = workForm;
+
+    public void setEndTime(Timestamp endTime) {
+        this.endTime = endTime;
     }
 }
