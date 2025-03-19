@@ -1,15 +1,8 @@
 package com.fsoft.fintern.models;
 
-import com.fsoft.fintern.models.CompositeKey.ConversationUserId;
+import com.fsoft.fintern.models.EmbedableID.ConversationUserId;
 import com.fsoft.fintern.models.Shared.BaseModel;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.Instant;
 
 @Entity
 @Table(name = "Conversation_user", schema = "dbo")

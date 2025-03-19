@@ -1,6 +1,6 @@
 package com.fsoft.fintern.repositories;
 
-import com.fsoft.fintern.models.CompositeKey.ConversationUserId;
+import com.fsoft.fintern.models.EmbedableID.ConversationUserId;
 import com.fsoft.fintern.models.Conversation;
 import com.fsoft.fintern.models.ConversationUser;
 import com.fsoft.fintern.models.User;

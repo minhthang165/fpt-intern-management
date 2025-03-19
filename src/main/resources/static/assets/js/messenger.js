@@ -5,7 +5,7 @@ var typeChat = "user";
 var messages;
 var conversationAvatar = null;
 var conversationName = null;
-var conversationMember;
+var conversationMember = {};
 var back = null;
 var rightSide = null;
 var leftSide = null;
@@ -19,6 +19,8 @@ var deleteAttach = null;
 var listUserAdd = [];
 var listUserDelete = [];
 var numberMember = 0;
+var selectedRecipientId = null;
+var conversation_list = [];
 
 document.addEventListener("DOMContentLoaded", async function () {
     await loadConversation(user_id);
@@ -55,7 +57,7 @@ async function loadConversation(user_id) {
         if (!response.ok) {
             throw new Error("Failed to fetch conversations");
         }
-        let conversation_list = await response.json();
+        conversation_list = await response.json();
         renderHtmlConversation(conversation_list);
     } catch (error) {
         console.log("Error fetching conversation", error);
@@ -85,9 +87,21 @@ function renderHtmlConversation(conversation_list) {
 }
 
 function setConversation(element) {
+    document.getElementById('messengerBox').innerHTML = ''; // Clear UI
+    conversationId = null;
+    conversationName = '';
+    conversationAvatar = '';
+    conversationMember = [];
+    messages = [];
     conversationId = element.getAttribute('data-id');
     conversationName = element.getAttribute(`data-conversationName`);
     conversationAvatar = element.getAttribute(`data-conversationAvatar`);
+    selectedRecipientId = element.getAttribute('data-track-user-id');
+    let existingConversation = conversation_list.find(conver => conver.conversationName === conversationName);
+    if (existingConversation) {
+        conversationId = existingConversation.id;
+    }
+    console.log("Thanh cong");
     // New chat section
     var rightSide = `
     <div class="flex flex-col flex-grow pb-1" data-id="${conversationId}">
@@ -120,7 +134,7 @@ function setConversation(element) {
                 <ul class="w-100 flex bottom-full list-file space-x-2 absolute"></ul>
                 <input class="flex-grow p-2 rounded-full bg-white border border-gray-300" id="message" placeholder="Enter Here" type="text"/>
             </div>
-        <i class="fas fa-paper-plane text-black text-xl" onclick="sendMessage(event)"></i>
+        <i class="fas fa-paper-plane text-black text-xl" onclick="conversationId ? sendMessage() : startNewConversation(this)"></i>
     </div>
 </div>
 `;
@@ -129,16 +143,16 @@ function setConversation(element) {
     // Select the div and append the HTML
     document.getElementById('messengerBox').innerHTML = rightSide;
 
-    // After adding the HTML, load messages
-    loadMessages(conversationId);
-
-    // Load member in group (store at client's side)
-    conversationMember = loadMember(conversationId);
+    if (conversationId != null) {
+        // After adding the HTML, load messages
+        loadMessages(conversationId);
+        // Load member in group (store at client's side)
+        conversationMember = loadMember(conversationId);
+    }
 
     //Handle file upload
     displayFiles();
 }
-
 
 //------------------------------------------ HTML RENDER HANDLE ----------------------------------------------
 
@@ -214,7 +228,6 @@ function scrollToLatestMessage() {
     });
 }
 
-
 function printMessage(payload) {
     var message = JSON.parse(payload.body);
     var currentChat = document.getElementById('chat');
@@ -280,8 +293,7 @@ async function loadMessages(conversationId) {
     }
 }
 
-function sendMessage(e) {
-    e.preventDefault();
+function sendMessage() {
 
     var inputText = document.getElementById("message").value;
     if (inputText !== '') {
@@ -443,22 +455,22 @@ function toggleModal(option) {
                 modal.remove();
             }
             break;
-        case 'showMembers':
-            let membersContainer = document.getElementById("chat-members");
-            membersContainer.innerHTML = "";
-            conversationMember.forEach(member => {
-                let memberItem = `
-                    <div class="flex align-middle w-auto items-center p-2">
-                        <img class="w-14 rounded-full" src=${member.avatar_path} alt="">
-                        <span class="ml-2">${member.first_name} ${member.last_name}</span>
-                    </div>
-                    `
-                ;
-                membersContainer.innerHTML += memberItem;
-            });
+            case 'showMembers':
+                let membersContainer = document.getElementById("chat-members");
+                membersContainer.innerHTML = "";
+                conversationMember.forEach(member => {
+                    let memberItem = `
+                        <div class="flex align-middle w-auto items-center p-2" data-track-user-id="${member.id}" data-conversationName="${member.first_name} ${member.last_name}" data-conversationAvatar="${member.avatar_path}" onclick="if (${member.id} != user_id) setConversation(this);">
+                            <img class="w-14 rounded-full" src=${member.avatar_path} alt="">
+                            <span class="ml-2">${member.first_name} ${member.last_name}</span>
+                        </div>
+                        `
+                    ;
+                    membersContainer.innerHTML += memberItem;
+                });
 
-            membersContainer.classList.toggle("hidden");
-            break;
+                membersContainer.classList.toggle("hidden");
+                break;
         case 'showMediaFiles':
             let mediaContainer = document.getElementById("media-files");
             mediaContainer.innerHTML = "";
@@ -562,9 +574,9 @@ function toggleConversationInfo() {
             </div>
            </div>
            <div class="mt-6">
-            <div onclick="toggleModal('showMembers')">
+            <div>
                  <div>
-                     <div class="flex justify-between items-center">
+                     <div class="flex justify-between items-center" onclick="toggleModal('showMembers')">
                         <p class="text-sm">
                             Chat members
                         </p>
@@ -594,4 +606,76 @@ function toggleConversationInfo() {
             </div>`
         container.innerHTML += conversationInfoBox;
     }
+}
+
+async function startNewConversation(element) {
+    //CREATE NEW CONVERSATION ONLY IF CONVERSATION IS NOT HAVE IN DATABASE YET, ELSE SET CONVERSATION
+    //FIRST MESSAGE, SET THE SENT BUTTON CALL CREATE NEW CONVERSATION AND ADD CONVERSATION USER
+    //ELSE SENT LIKE NORMAL CONVERSATION
+    let chatListContainer = document.querySelector(".space-y-4");
+    let tempConversation = {
+        conversation_name: conversationName,
+        conversation_avatar: conversationAvatar
+    };
+
+    let response = await fetch('/api/conversation/group/create', {
+        method: 'POST',
+        body: JSON.stringify(tempConversation),
+        headers: {
+            "Content-Type": "application/json; charset=UTF-8"
+        }
+    });
+
+    if (!response.ok) {
+        console.error("Failed to create conversation");
+        return;
+    }
+
+    let conversationData = await response.json();
+    conversationId = conversationData.id;
+
+    // Step 2: Add current user to the conversation
+    await fetch('/api/conversation-user/add-user', {
+        method: 'POST',
+        body: JSON.stringify({
+            conversation_id: conversationId,
+            user_id: user_id,
+            admin: false
+        }),
+        headers: {
+            "Content-Type": "application/json; charset=UTF-8"
+        }
+    });
+
+    // Step 3: Add the clicked user to the conversation
+    await fetch('/api/conversation-user/add-user', {
+        method: 'POST',
+        body: JSON.stringify({
+            conversation_id: conversationId,
+            user_id: selectedRecipientId,
+            admin: false
+        }),
+        headers: {
+            "Content-Type": "application/json; charset=UTF-8"
+        }
+    })
+    ;
+
+    let conversationHTML = `    
+                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" data-id="${conversationData.id}" data-conversationName="${conversationData.conversationName}" data-conversationAvatar="${conversationData.conversationAvatar}" onclick="setConversation(this)">
+                    <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationData.conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" width="40"/>
+                    <div>
+                        <div class="font-bold">${conversationData.conversationName}</div>
+                        <div class="text-gray-500 text-sm">${conversationData.last_message || "No messages yet"}</div>
+                    </div>
+                </div>
+            `;
+    chatListContainer.innerHTML += conversationHTML;
+
+    // Step 4: Update the send button to send messages normally
+    let sendButton = document.querySelector(".fa-paper-plane");
+    sendButton.onclick = function(event) {
+        sendMessage();
+    };
+    await sendMessage();
 }

@@ -8,21 +8,29 @@ import com.fsoft.fintern.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("api/user")
 public class UserRestController {
     private final UserService userService;
-  
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     @Autowired
     public UserRestController(UserService userService) {
         this.userService = userService;
     }
+
 
     @GetMapping("")
     @Operation(description = "view all user")
@@ -71,9 +79,50 @@ public class UserRestController {
     public ResponseEntity<User> findByEmail(@PathVariable String email) throws BadRequestException {
         return this.userService.getByEmail(email);
     }
+
     @GetMapping("/users/role/{role}")
     @Operation(description = "find user by role")
     public ResponseEntity<List<User>> findByRole(@PathVariable Role role) throws BadRequestException {
         return this.userService.findUserByRole(role);
     }
+
+    // Ban a user for a specified duration
+    @PostMapping("/ban/{userId}")
+    public ResponseEntity<String> banUser(@PathVariable int userId, @RequestBody Map<String, Long> request) {
+        Long durationInSeconds = request.get("duration");
+        String key = "banned_user:" + userId;
+        redisTemplate.opsForValue().set(key, "banned", durationInSeconds, TimeUnit.SECONDS);
+        return ResponseEntity.ok("User " + userId + " has been banned for " + durationInSeconds + " seconds.");
+    }
+
+    //Get banned information
+    @GetMapping("/get-status/{userId}")
+    public ResponseEntity<Map<String, Object>> checkBanStatus(@PathVariable int userId) {
+        String key = "banned_user:" + userId;
+        Boolean isBanned = redisTemplate.hasKey(key);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("userId", userId);
+        response.put("isBanned", isBanned);
+
+        if (isBanned != null && isBanned) {
+            // Get the remaining time
+            Long remainingTime = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+            response.put("duration", remainingTime != null ? remainingTime : 0);
+        } else {
+            response.put("duration", 0);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/unban/{userId}")
+    public ResponseEntity<String> unbanUser(@PathVariable int userId) {
+        String key = "banned_user:" + userId;
+        redisTemplate.opsForHash().delete("banned_users", String.valueOf(userId));
+        redisTemplate.delete(key);
+        return ResponseEntity.ok("User " + userId + " has been unbanned.");
+    }
+
+
 }

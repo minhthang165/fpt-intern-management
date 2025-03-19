@@ -10,6 +10,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -22,6 +23,9 @@ import org.springframework.web.bind.annotation.*;
 @SessionAttributes("user")
 @RequestMapping("authenticate")
 public class AuthController {
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     private UserService userService;
@@ -41,15 +45,15 @@ public class AuthController {
             return "redirect:/login"; // User creation failed, redirect to login
         }
 
-        if (user.getRole() == Role.ADMIN) {
-            model.addAttribute("user", user);
-        } else {
-            // Convert user to DTO and store in session
-            LoginUserDTO loginUserDTO = convertToLoginUserDTO(user);
-            model.addAttribute("user", loginUserDTO);
+        if (redisTemplate.opsForValue().get("banned_user:"+user.getId()) != null) {
+            return "redirect:/logout";
         }
 
-        return user.getRole() == Role.ADMIN ? "admin/AdminDashboard" : "redirect:/profile";
+        // Convert user to DTO and store in session
+        LoginUserDTO loginUserDTO = convertToLoginUserDTO(user);
+        model.addAttribute("user", loginUserDTO);
+
+        return user.getRole() == Role.ADMIN ? "redirect:/manage-user" : "redirect:/profile";
     }
 
     private User createNewUser(OAuth2User oauth2User) {

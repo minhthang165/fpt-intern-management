@@ -106,16 +106,25 @@
                 <!-- Table -->
                 <div class="card mt-4">
                     <div class="card-body">
-                        <table>
+                        <div class="d-flex align-items-center mb-3">
+                            <input type="text" id="searchInput" class="form-control"
+                                   style="width: 250px; margin-right: 10px;"
+                                   placeholder="Search interns..." onkeyup="filterTable()">
+                            <button class="btn btn-outline-primary btn-sm" onclick="sortTable(0)">Sort by Name</button>
+                            <button class="btn btn-outline-primary btn-sm mx-2" onclick="sortTable(2)">Sort by Phone</button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="sortTable(4)">Sort by Role</button>
+                        </div>
+
+                        <table id="userTable" class="table table-striped">
                             <thead>
-                                <tr>
-                                    <th>Full Name</th>
-                                    <th>Email</th>
-                                    <th>Phone number</th>
-                                    <th>Gender</th>
-                                    <th>Role</th>
-                                    <th>Action</th>
-                                </tr>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Phone number</th>
+                                <th>Gender</th>
+                                <th>Role</th>
+                                <th>Action</th>
+                            </tr>
                             </thead>
                             <tbody>
                             <tr th:each="user : ${userList}" th:if="${user.role.name()== 'EMPLOYEE'}">
@@ -124,15 +133,15 @@
                                 <td th:text="${user.phone_number}"></td>
                                 <td th:text="${user.gender}"></td>
                                 <td th:text="${user.role}"></td>
-                                <!--Nút Delete-->
                                 <td th:classappend="${user.isActive()} ? 'active' : 'inactive'">
                                     <a href="#" th:data-id="${user.id}" class="toggle-class-status open-modal">
-                                        <i th:data-id="${user.id}"
+                                        <i th:data-id="${user.id}" th:data-user-email="${user.email}"
                                            th:class="${user.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"
-                                           onclick="toggleActiveStatus(this, event)">
+                                           onclick="showModal()">
                                         </i>
                                     </a>
-                                    <a href="#" class="edit-user-modal" th:data-id="${user.id}" onclick="openEditUserModal(this, event)">
+                                    <a href="#" class="edit-user-modal" th:data-id="${user.id}"
+                                       onclick="openEditUserModal(this, event)">
                                         <i class="flaticon-edit edit-user-modal" style="cursor: pointer"></i>
                                     </a>
                                 </td>
@@ -144,19 +153,27 @@
             </div>
 
 
-            <!-- Open Confirm modal -->
+            <!-- Lock/Unlock User Modal -->
             <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="modalTitle">Title</h5>
+                            <h5 class="modal-title" id="modalTitle"></h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body" id="modalMessage">Message here...</div>
+                        <div class="modal-body">
+                            <p id="modalMessage"></p>
+                            <div id="lockInputs" class="d-none">
+                                <label for="lockReason" class="form-label">Reason for Lock:</label>
+                                <textarea id="lockReason" class="form-control" rows="2"></textarea>
+                                <label for="lockDuration" class="form-label mt-2">Lock Duration (in days):</label>
+                                <input type="number" id="lockDuration" class="form-control" min="1">
+                            </div>
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary d-none" id="modalCancelBtn" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary d-none" id="modalConfirmBtn">Yes</button>
-                            <button type="button" class="btn btn-success d-none" id="modalOkBtn" data-bs-dismiss="modal">OK</button>
+                            <button type="button" class="btn btn-primary d-none" id="modalConfirmBtn">Confirm</button>
+                            <button type="button" class="btn btn-primary" id="modalOkBtn" data-bs-dismiss="modal">OK</button>
                         </div>
                     </div>
                 </div>
@@ -302,14 +319,16 @@
 
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
-    document.addEventListener("click", function (event) {
-        let icon = event.target.closest(".flaticon-padlock");
+    document.addEventListener("click", async function (event) {
+        let icon = event.target.closest(".flaticon-padlock"); // Get the clicked padlock icon
         if (!icon) return;
 
         event.preventDefault();
         event.stopPropagation();
 
         let userId = icon.getAttribute("data-id");
+        let userEmail = icon.getAttribute("data-user-email"); // Get user email
+
         if (!userId) {
             showModal("Error", "Missing user ID!");
             return;
@@ -317,46 +336,71 @@
 
         let isUnlock = icon.classList.contains("inactive");
         let action = isUnlock ? "unlock" : "lock";
-        let message = isUnlock ? "Are you sure you want to unlock this user?" : "Are you sure you want to lock this user?";
+        let duration;
+        if (isUnlock) {
+            let response = await fetch(`/get-status/${userId}`)
+                .then(response => response.json())
+                .then(duration = response.duration)
+        }
+        let message = isUnlock
+            ? `Are you sure you want to unlock this user? \n This user has been banned for ${duration}`
+            : `Provide details for locking this user.`;
 
-        showModal("Confirm", message, true, function () {
-            toggleUserStatus(userId, action);
-        });
+        showModal("Lock User", message, !isUnlock, function () {
+            let reason = document.getElementById("lockReason").value;
+            let duration = document.getElementById("lockDuration").value;
+            toggleUserStatus(userId, userEmail, action, reason, duration); // Pass userEmail
+        }, !isUnlock);
     });
 
-    function toggleUserStatus(userId, action) {
-        let url = action === "unlock" ? `api/user/setIsActiveTrue/${userId}` : `api/user/delete/${userId}`;
-        let method = action === "unlock" ? "PATCH" : "DELETE";
+    function toggleUserStatus(userId, userEmail, action, reason = "", duration = "") {
+        let url = `api/user/${action === "unlock" ? "unban" : "ban"}/${userId}`;
+        let method = action === "unlock" ? "DELETE" : "POST";
+        let body = action === "unlock" ? null : JSON.stringify({duration});
 
-        fetch(url, { method: method })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text); });
-                }
-                return response.json();
-            })
+        fetch(url, {
+            method,
+            headers: {"Content-Type": "application/json"},
+            body
+        })
+            .then(response => response.ok ? response.text() : response.text().then(text => {
+                throw new Error(text);
+            }))
             .then(() => {
-                let successMessage = action === "unlock" ? "User has been unlocked!" : "User has been locked!";
-                showModal("Success", successMessage);
-
-                let icon = document.querySelector(`.flaticon-padlock[data-id="${userId}"]`);
-                if (icon) {
-                    icon.classList.toggle("inactive");
-                    icon.classList.toggle("active");
+                if (action === "lock") {
+                    fetch("api/email/send-mail", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({
+                            recipient: userEmail,  // Use extracted email
+                            msgBody: reason,
+                            subject: `Your account has been banned for ${duration} seconds`,
+                            attachment: null
+                        })
+                    });
                 }
+
+                showModal("Success", `User has been ${action}ed!`);
+                let icon = document.querySelector(`.flaticon-padlock[data-id="${userId}"]`);
+                if (icon) icon.classList.toggle("inactive", action === "unlock");
+                if (icon) icon.classList.toggle("active", action !== "unlock");
             })
-            .catch(error => showModal("Error", "Error: " + error.message));
+            .catch(error => showModal("Error", `Error: ${error.message}`));
     }
 
-    function showModal(title, message, isConfirm = false, confirmCallback = null) {
+
+    function showModal(title, message, isConfirm = false, confirmCallback = null, showInputs = false) {
+        let modalElement = document.getElementById("genericModal");
         let modalTitle = document.getElementById("modalTitle");
         let modalMessage = document.getElementById("modalMessage");
         let confirmBtn = document.getElementById("modalConfirmBtn");
         let cancelBtn = document.getElementById("modalCancelBtn");
         let okBtn = document.getElementById("modalOkBtn");
+        let lockInputs = document.getElementById("lockInputs");
 
         modalTitle.innerText = title;
         modalMessage.innerText = message;
+        lockInputs.classList.toggle("d-none", !showInputs);
 
         if (isConfirm) {
             confirmBtn.classList.remove("d-none");
@@ -364,8 +408,8 @@
             okBtn.classList.add("d-none");
 
             confirmBtn.onclick = function () {
-                confirmCallback();
-                let modalInstance = bootstrap.Modal.getInstance(document.getElementById("genericModal"));
+                if (confirmCallback) confirmCallback();
+                let modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
                 modalInstance.hide();
             };
         } else {
@@ -374,8 +418,8 @@
             okBtn.classList.remove("d-none");
         }
 
-        let modal = new bootstrap.Modal(document.getElementById("genericModal"));
-        modal.show();
+        let modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+        modalInstance.show();
     }
 
     function openEditUserModal(element, event) {
@@ -600,6 +644,45 @@
             window.location.href = "/assets/excel-template/Template-Employee.xlsx";
         });
     });
+
+    function filterTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("userTable");
+        let rows = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let match = false;
+
+            for (let j = 0; j < cells.length - 1; j++) {
+                if (cells[j].textContent.toLowerCase().includes(input)) {
+                    match = true;
+                    break;
+                }
+            }
+            rows[i].style.display = match ? "" : "none";
+        }
+    }
+
+    function sortTable(columnIndex) {
+        let table = document.getElementById("userTable");
+        let rows = Array.from(table.rows).slice(1);
+        let isAscending = table.getAttribute("data-sort") !== "asc";
+
+        rows.sort((rowA, rowB) => {
+            let cellA = rowA.cells[columnIndex].textContent.trim().toLowerCase();
+            let cellB = rowB.cells[columnIndex].textContent.trim().toLowerCase();
+
+            if (!isNaN(cellA) && !isNaN(cellB)) {
+                return isAscending ? cellA - cellB : cellB - cellA;
+            } else {
+                return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            }
+        });
+
+        rows.forEach(row => table.appendChild(row));
+        table.setAttribute("data-sort", isAscending ? "asc" : "desc");
+    }
 
 </script>
 </body>

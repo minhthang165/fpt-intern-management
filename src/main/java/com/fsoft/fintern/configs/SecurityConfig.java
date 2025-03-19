@@ -1,5 +1,6 @@
 package com.fsoft.fintern.configs;
 
+//import com.fsoft.fintern.filter.BannedUserFilter;
 import com.fsoft.fintern.filter.LoggedInRedirectFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +27,6 @@ public class SecurityConfig {
                         .anonymous()
                         .anyRequest().authenticated()
                         //.anyRequest().permitAll()
-
                 )
                 .addFilterBefore(new LoggedInRedirectFilter(), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
