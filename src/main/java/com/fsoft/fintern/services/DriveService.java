@@ -81,10 +81,8 @@ public class DriveService {
 
 
     private Drive createDriveService() throws GeneralSecurityException, IOException {
-
         GoogleCredential credential = GoogleCredential.fromStream(new FileInputStream(SERVICE_ACOUNT_KEY_PATH))
                 .createScoped(Collections.singleton(DriveScopes.DRIVE));
-
         return new Drive.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 JSON_FACTORY,
