@@ -31,7 +31,7 @@ public class RecruitmentController {
 
     @GetMapping("/recruitments")
     public String listRecruitments(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) {
-        ResponseEntity<List<Recruitment>> response = recruitmentServices.findAll();
+        ResponseEntity<List<Recruitment>> response = recruitmentService.findAll();
         model.addAttribute("user_id", user_id);
         if (response.getBody() != null) {
             model.addAttribute("recruitments", response.getBody());
@@ -48,13 +48,13 @@ public class RecruitmentController {
             @SessionAttribute("user") LoginUserDTO loginUserDTO,
             Model model) throws BadRequestException {
 
-        Recruitment recruitment = recruitmentServices.findById(id).getBody();
+        Recruitment recruitment = recruitmentService.findById(id).getBody();
         if (recruitment == null) {
             throw new BadRequestException("Recruitment not found");
         }
 
         model.addAttribute("recruitment", recruitment);
-        model.addAttribute("user_id", user_id);
+//        model.addAttribute("user_id", user_id);
         return "recruitment-page" ;
     }
 

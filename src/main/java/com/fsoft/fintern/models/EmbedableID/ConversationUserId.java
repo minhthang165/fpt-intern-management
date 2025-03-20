@@ -12,11 +12,7 @@ import org.hibernate.Hibernate;
 import java.io.Serializable;
 import java.util.Objects;
 
-@Getter
-@Setter
 @Embeddable
-@AllArgsConstructor
-@NoArgsConstructor
 public class ConversationUserId implements Serializable {
     private static final long serialVersionUID = -1481890229345169771L;
     @NotNull
@@ -34,6 +30,30 @@ public class ConversationUserId implements Serializable {
         ConversationUserId entity = (ConversationUserId) o;
         return Objects.equals(this.conversationId, entity.conversationId) &&
                 Objects.equals(this.userId, entity.userId);
+    }
+
+    public ConversationUserId() {
+    }
+
+    public ConversationUserId(Integer userId, Integer conversationId) {
+        this.userId = userId;
+        this.conversationId = conversationId;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
+    public Integer getConversationId() {
+        return conversationId;
+    }
+
+    public void setConversationId(Integer conversationId) {
+        this.conversationId = conversationId;
     }
 
     @Override
