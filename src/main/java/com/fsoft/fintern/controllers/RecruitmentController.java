@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Controller
-@RequestMapping("api/recruitment")
+@RequestMapping("recruitment")
 public class RecruitmentController {
     private final RecruitmentService recruitmentService;
 
@@ -55,7 +55,7 @@ public class RecruitmentController {
 
         model.addAttribute("recruitment", recruitment);
 //        model.addAttribute("user_id", user_id);
-        return "recruitment-page" ;
+        return "recruitment-detail" ;
     }
 
 
