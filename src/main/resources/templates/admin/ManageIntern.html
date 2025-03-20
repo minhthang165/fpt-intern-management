@@ -96,7 +96,7 @@
                             <div class="breadcrum__button">
                                 <button class="element__btn  yellow-bg" data-bs-toggle="modal"
                                         data-bs-target="#addUserModal">
-                                    Add Employee +
+                                    Add Intern +
                                 </button>
                             </div>
                         </div>
@@ -108,7 +108,7 @@
     <!-- insert custom content here -->
     <section th:fragment="content">
         <div class="flex-grow-1 p-4">
-            <h3 style="font-weight: bold">Employee List</h3>
+            <h3 style="font-weight: bold">Intern List</h3>
             <!-- Table -->
             <div class="card mt-4">
                 <div class="card-body">
@@ -219,15 +219,6 @@
                                     <option value="FEMALE">FEMALE</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label>Role</label>
-                                <select id="editRole" class="form-control">
-                                    <option value="ADMIN">ADMIN</option>
-                                    <option value="EMPLOYEE">EMPLOYEE</option>
-                                    <option value="INTERN">INTERN</option>
-                                    <option value="GUEST">GUEST</option>
-                                </select>
-                            </div>
                         </form>
                     </div>
                     <div class="modal-footer">
@@ -243,7 +234,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="addUserModalLabel">Add Employee</h5>
+                        <h5 class="modal-title" id="addUserModalLabel">Add Intern</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -263,19 +254,19 @@
                             <div class="mb-3">
                                 <label for="addUserGender" class="form-label">Gender</label>
                                 <select class="form-control" id="addUserGender">
-                                    <option value="MALE">Male</option>
-                                    <option value="FEMALE">Female</option>
+                                    <option value="MALE">MALE</option>
+                                    <option value="FEMALE">FEMALE</option>
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label for="addUserRole" class="form-label">Role</label>
-                                <select class="form-control" id="addUserRole">
-                                    <option value="ADMIN">Admin</option>
-                                    <option value="EMPLOYEE">Employee</option>
-                                    <option value="INTERN">Intern</option>
-                                    <option value="GUEST">Guest</option>
-                                </select>
-                            </div>
+<!--                            <div class="mb-3">-->
+<!--                                <label for="addUserRole" class="form-label">Role</label>-->
+<!--                                <select class="form-control" id="addUserRole">-->
+<!--                                    <option value="ADMIN">Admin</option>-->
+<!--                                    <option value="EMPLOYEE">Employee</option>-->
+<!--                                    <option value="INTERN">Intern</option>-->
+<!--                                    <option value="GUEST">Guest</option>-->
+<!--                                </select>-->
+<!--                            </div>-->
                         </form>
                     </div>
                     <div class="modal-footer">
@@ -522,7 +513,6 @@
                 document.getElementById("editFullName").value = user.first_name + " " + user.last_name;
                 document.getElementById("editEmail").value = user.email;
                 document.getElementById("editGender").value = user.gender;
-                document.getElementById("editRole").value = user.role;
 
                 // Hiển thị modal
                 $('#editUserModal').modal('show');
@@ -535,7 +525,6 @@
         let emailInput = document.getElementById("editEmail");
         let phoneNumberInput = document.getElementById("editPhoneNumber");
         let genderInput = document.getElementById("editGender");
-        let roleInput = document.getElementById("editRole");
         let userId = document.getElementById("editUserId").value;
 
         let fullName = fullNameInput.value.trim();
@@ -570,7 +559,6 @@
             email: email,
             phone_number: phoneNumber,
             gender: genderInput.value,
-            role: roleInput.value
         };
 
         fetch(`/api/user/update/${userId}`, {
@@ -593,7 +581,6 @@
         let emailInput = document.getElementById("addUserEmail");
         let phoneNumberInput = document.getElementById("addUserPhoneNumber");
         let genderInput = document.getElementById("addUserGender");
-        let roleInput = document.getElementById("addUserRole");
 
         let fullName = fullNameInput.value.trim();
         let email = emailInput.value.trim();
@@ -625,10 +612,10 @@
             email: email,
             phone_number: phoneNumber,
             gender: genderInput.value,
-            role: roleInput.value
+            role: "INTERN"
         };
 
-        fetch('api/user/create-employee', {
+        fetch('api/user/create', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
