@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ocr")
-public class OCR_RestController {
+public class OCRRestController {
 
     @Autowired
     private OCR_Service ocrService;
