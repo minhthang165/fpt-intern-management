@@ -11,6 +11,8 @@ import com.fsoft.fintern.repositories.UserRepository;
 import com.fsoft.fintern.utils.BeanUtilsHelper;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,11 +21,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final ClassroomRepository classRepository;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
 
     public UserService(final UserRepository userRepository, final ClassroomRepository classRepository) {
         this.userRepository = userRepository;
@@ -158,4 +164,14 @@ public class UserService {
             return null;
         }
     }
+
+//    public String banUser(int userId, int durationInSeconds) {
+//        String key = "banned_user:" + userId;
+//        redisTemplate.opsForValue().set(key, "banned", durationInSeconds, TimeUnit.SECONDS);
+//        return "User is banned for: " + durationInSeconds + " seconds";
+//    }
+//
+//    public boolean isUserBanned(int userId) {
+//        return redisTemplate.hasKey("banned_user:" + userId);
+//    }
 }

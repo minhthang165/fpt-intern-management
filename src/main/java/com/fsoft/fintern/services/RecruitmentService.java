@@ -86,7 +86,6 @@ public class RecruitmentService {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRecruitment);
     }
 
-
     public ResponseEntity<Recruitment> setIsActiveTrue(int id) throws BadRequestException {
         Recruitment existedRecruitment = this.recruitRepository.findById(id).orElse(null);
         if (existedRecruitment == null) {

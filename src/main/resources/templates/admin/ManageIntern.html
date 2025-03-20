@@ -3,603 +3,701 @@
 <head th:replace="include/master-header :: head"></head>
 <style>
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  th, td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  th {
-    background-color: #f4f4f4;
-  }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-  .search__bar input {
-    margin-right: auto;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 500px;
-  }
-  .breadcrum__button{
-    display: flex;
-    padding-left: 25px;
-  }
-  .search__bar input {
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    width: 400px;
-    height: fit-content;
-  }
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
 
-  .modal-backdrop {
-    display: none;
-  }
+    th {
+        background-color: #f4f4f4;
+    }
 
-  .lock-icon {
-    font-size: 20px;
-    margin-left: 10px;
-    cursor: pointer; /* Biến icon thành nút có thể nhấn */
-  }
+    .search__bar input {
+        margin-right: auto;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 500px;
+    }
 
-  .active {
-    color: green; /* Màu xanh khi lớp đang hoạt động */
-  }
+    .breadcrum__button {
+        display: flex;
+        padding-left: 25px;
+    }
 
-  .inactive {
-    color: red; /* Màu đỏ khi lớp bị khóa */
-  }
+    .search__bar input {
+        border: 1px solid #ccc;
+        border-radius: 15px;
+        width: 400px;
+        height: fit-content;
+    }
 
-  .upload-box {
-    border: 2px dashed orange;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-  }
+    .modal-backdrop {
+        display: none;
+    }
+
+    .lock-icon {
+        font-size: 20px;
+        margin-left: 10px;
+        cursor: pointer; /* Biến icon thành nút có thể nhấn */
+    }
+
+    .active {
+        color: green; /* Màu xanh khi lớp đang hoạt động */
+    }
+
+    .inactive {
+        color: red; /* Màu đỏ khi lớp bị khóa */
+    }
+
+    .upload-box {
+        border: 2px dashed orange;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+    }
 </style>
 <body class="body-area">
-<th:block  th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
-  <!--header breadcrumb area-->
-  <div class="app__slide-wrapper" th:fragment="content">
-    <div class="breadcrumb__area">
-      <div class="breadcrumb__wrapper mb-35" style="padding: 0px;">
-        <div class="breadcrumb__main">
-          <div class="breadcrumb__inner">
-            <div class="breadcrumb__icon">
-              <i class="flaticon-home"></i>
+<th:block th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
+    <!--header breadcrumb area-->
+    <div class="app__slide-wrapper" th:fragment="content">
+        <div class="breadcrumb__area">
+            <div class="breadcrumb__wrapper mb-35" style="padding: 0px;">
+                <div class="breadcrumb__main">
+                    <div class="breadcrumb__inner">
+                        <div class="breadcrumb__icon">
+                            <i class="flaticon-home"></i>
+                        </div>
+                        <div class="breadcrumb__menu">
+                            <nav>
+                                <ul>
+                                    <li><span><a href="authenticate">Dashboard</a></span></li>
+                                    <li class="active"><span>Manage Intern</span></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    <div class="search_add d-flex justify-content-between align-items-center">
+                        <div class="new_class">
+                            <div class="breadcrum__button">
+                                <button class="element__btn  border-red" data-bs-toggle="modal"
+                                        data-bs-target="#importModal">
+                                    Import Excel
+                                </button>
+                            </div>
+                        </div>
+                        <div class="new_class">
+                            <div class="breadcrum__button">
+                                <button class="element__btn  yellow-bg" data-bs-toggle="modal"
+                                        data-bs-target="#addUserModal">
+                                    Add Employee +
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="breadcrumb__menu">
-              <nav>
-                <ul>
-                  <li><span><a href="authenticate">Dashboard</a></span></li>
-                  <li class="active"><span>Manage Intern</span></li>
-                </ul>
-              </nav>
+        </div>
+    </div>
+    <!-- insert custom content here -->
+    <section th:fragment="content">
+        <div class="flex-grow-1 p-4">
+            <h3 style="font-weight: bold">Employee List</h3>
+            <!-- Table -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <input type="text" id="searchInput" class="form-control"
+                               style="width: 250px; margin-right: 10px;"
+                               placeholder="Search interns..." onkeyup="filterTable()">
+                        <button class="btn btn-outline-primary btn-sm" onclick="sortTable(0)">Sort by Name</button>
+                        <button class="btn btn-outline-primary btn-sm mx-2" onclick="sortTable(2)">Sort by Phone</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="sortTable(4)">Sort by Role</button>
+                    </div>
+
+                    <table id="userTable" class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Phone number</th>
+                            <th>Gender</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="user : ${userList}" th:if="${user.role.name()== 'INTERN'}">
+                            <td th:text="${user.first_name + ' ' + user.last_name}"></td>
+                            <td th:text="${user.email}"></td>
+                            <td th:text="${user.phone_number}"></td>
+                            <td th:text="${user.gender}"></td>
+                            <td th:text="${user.role}"></td>
+                            <td th:classappend="${user.isActive()} ? 'active' : 'inactive'">
+                                <a href="#" th:data-id="${user.id}" class="toggle-class-status open-modal">
+                                    <i th:data-id="${user.id}" th:data-user-email="${user.email}"
+                                       th:class="${user.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"
+                                       onclick="showModal()">
+                                    </i>
+                                </a>
+                                <a href="#" class="edit-user-modal" th:data-id="${user.id}"
+                                   onclick="openEditUserModal(this, event)">
+                                    <i class="flaticon-edit edit-user-modal" style="cursor: pointer"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-          </div>
-          <div class="search_add d-flex justify-content-between align-items-center">
-            <div class="new_class">
-              <div class="breadcrum__button">
-                <button class="element__btn  border-red" data-bs-toggle="modal" data-bs-target="#importModal">
-                  Import Excel
-                </button>
-              </div>
+        </div>
+
+
+        <!-- Lock/Unlock User Modal -->
+        <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modalMessage"></p>
+                        <div id="lockInputs" class="d-none">
+                            <label for="lockReason" class="form-label">Reason for Lock:</label>
+                            <textarea id="lockReason" class="form-control" rows="2"></textarea>
+                            <label for="lockDuration" class="form-label mt-2">Lock Duration (in seconds):</label>
+                            <input type="number" id="lockDuration" class="form-control" min="1">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary d-none" id="modalCancelBtn"
+                                data-bs-dismiss="modal">Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary d-none" id="modalConfirmBtn">Confirm</button>
+                        <button type="button" class="btn btn-primary" id="modalOkBtn" data-bs-dismiss="modal">OK
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="new_class">
-              <div class="breadcrum__button">
-                <button class="element__btn  yellow-bg" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                  Add Employee +
-                </button>
-              </div>
+        </div>
+
+        <div id="editUserModal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Employee</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editUserForm">
+                            <input type="hidden" id="editUserId">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="editFullName" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="editEmail" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone number</label>
+                                <input type="email" id="editPhoneNumber" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select id="editGender" class="form-control">
+                                    <option value="MALE">MALE</option>
+                                    <option value="FEMALE">FEMALE</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Role</label>
+                                <select id="editRole" class="form-control">
+                                    <option value="ADMIN">ADMIN</option>
+                                    <option value="EMPLOYEE">EMPLOYEE</option>
+                                    <option value="INTERN">INTERN</option>
+                                    <option value="GUEST">GUEST</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="updateUser()">Save changes</button>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </div>
-  <!-- insert custom content here -->
-  <section th:fragment="content">
-    <div class="flex-grow-1 p-4">
-      <h3 style="font-weight: bold">Employee List</h3>
-      <!-- Table -->
-      <div class="card mt-4">
-        <div class="card-body">
-          <table>
-            <thead>
-            <tr>
-              <th>Full Name</th>
-              <th>Email</th>
-              <th>Phone number</th>
-              <th>Gender</th>
-              <th>Role</th>
-              <th>Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="user : ${userList}" th:if="${user.role.name()== 'INTERN'}">
-              <td th:text="${user.first_name + ' ' + user.last_name}"></td>
-              <td th:text="${user.email}"></td>
-              <td th:text="${user.phone_number}"></td>
-              <td th:text="${user.gender}"></td>
-              <td th:text="${user.role}"></td>
-              <!--Nút Delete-->
-              <td th:classappend="${user.isActive()} ? 'active' : 'inactive'">
-                <a href="#" th:data-id="${user.id}" class="toggle-class-status open-modal">
-                  <i th:data-id="${user.id}"
-                     th:class="${user.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"
-                     onclick="toggleActiveStatus(this, event)">
-                  </i>
-                </a>
-                <a href="#" class="edit-user-modal" th:data-id="${user.id}" onclick="openEditUserModal(this, event)">
-                  <i class="flaticon-edit edit-user-modal" style="cursor: pointer"></i>
-                </a>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
-
-    <!-- Open Confirm modal -->
-    <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalTitle">Title</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" id="modalMessage">Message here...</div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary d-none" id="modalCancelBtn" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary d-none" id="modalConfirmBtn">Yes</button>
-            <button type="button" class="btn btn-success d-none" id="modalOkBtn" data-bs-dismiss="modal">OK</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="editUserModal" class="modal fade" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Edit Employee</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <form id="editUserForm">
-              <input type="hidden" id="editUserId">
-              <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="editFullName" class="form-control">
-              </div>
-              <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="editEmail" class="form-control">
-              </div>
-              <div class="form-group">
-                <label>Phone number</label>
-                <input type="email" id="editPhoneNumber" class="form-control">
-              </div>
-              <div class="form-group">
-                <label>Gender</label>
-                <select id="editGender" class="form-control">
-                  <option value="MALE">MALE</option>
-                  <option value="FEMALE">FEMALE</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Role</label>
-                <select id="editRole" class="form-control">
-                  <option value="ADMIN">ADMIN</option>
-                  <option value="EMPLOYEE">EMPLOYEE</option>
-                  <option value="INTERN">INTERN</option>
-                  <option value="GUEST">GUEST</option>
-                </select>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" onclick="updateUser()">Save changes</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Add User -->
-    <div id="addUserModal" class="modal fade" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addUserModalLabel">Add Employee</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form id="addUserForm">
-              <div class="mb-3">
-                <label for="addUserName" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="addUserName" required>
-              </div>
-              <div class="mb-3">
-                <label for="addUserEmail" class="form-label">Email</label>
-                <input type="email" class="form-control" id="addUserEmail" required>
-              </div> <div class="mb-3">
-              <label for="addUserEmail" class="form-label">PhoneNumber</label>
-              <input type="email" class="form-control" id="addUserPhoneNumber" required>
+        <!-- Modal Add User -->
+        <div id="addUserModal" class="modal fade" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addUserModalLabel">Add Employee</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addUserForm">
+                            <div class="mb-3">
+                                <label for="addUserName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="addUserName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="addUserEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="addUserEmail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="addUserEmail" class="form-label">PhoneNumber</label>
+                                <input type="email" class="form-control" id="addUserPhoneNumber" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="addUserGender" class="form-label">Gender</label>
+                                <select class="form-control" id="addUserGender">
+                                    <option value="MALE">Male</option>
+                                    <option value="FEMALE">Female</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="addUserRole" class="form-label">Role</label>
+                                <select class="form-control" id="addUserRole">
+                                    <option value="ADMIN">Admin</option>
+                                    <option value="EMPLOYEE">Employee</option>
+                                    <option value="INTERN">Intern</option>
+                                    <option value="GUEST">Guest</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-warning" onclick="addUser()">Add User</button>
+                    </div>
+                </div>
             </div>
-              <div class="mb-3">
-                <label for="addUserGender" class="form-label">Gender</label>
-                <select class="form-control" id="addUserGender">
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="addUserRole" class="form-label">Role</label>
-                <select class="form-control" id="addUserRole">
-                  <option value="ADMIN">Admin</option>
-                  <option value="EMPLOYEE">Employee</option>
-                  <option value="INTERN">Intern</option>
-                  <option value="GUEST">Guest</option>
-                </select>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-warning" onclick="addUser()">Add User</button>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!--  Modal Import Data -->
-    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="importModalLabel">Import Data From Excel</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Make sure the data matches the format of the sample template</p>
-            <div class="upload-box text-center border border-dashed p-4" id="dropZone" style="border-radius: 10px;">
-              <input type="file" id="fileInput" hidden>
-              <label for="fileInput" class="d-block cursor-pointer">
-                <img src="assets/img/icon/upload-icon.png" alt="Upload" width="50">
-                <p class="mt-2">Drag and drop or select<br>to upload data files</p>
-              </label>
+        <!--  Modal Import Data -->
+        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importModalLabel">Import Data From Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Make sure the data matches the format of the sample template</p>
+                        <div class="upload-box text-center border border-dashed p-4" id="dropZone"
+                             style="border-radius: 10px;">
+                            <input type="file" id="fileInput" hidden>
+                            <label for="fileInput" class="d-block cursor-pointer">
+                                <img src="assets/img/icon/upload-icon.png" alt="Upload" width="50">
+                                <p class="mt-2">Drag and drop or select<br>to upload data files</p>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link" id="downloadTemplate">Download Template</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning" id="uploadFile">Confirm</button>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-link" id="downloadTemplate">Download Template</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-warning" id="uploadFile">Confirm</button>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Toast Notification -->
-    <div class="toast-container position-fixed top-0 end-0 p-3">
-      <div id="notificationToast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body" id="notificationMessage">
-          </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        <!-- Toast Notification -->
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div id="notificationToast" class="toast align-items-center text-white bg-dark border-0" role="alert"
+                 aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body" id="notificationMessage">
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                            aria-label="Close"></button>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
 
-  </section>
+    </section>
 </th:block>
 
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
-  document.addEventListener("click", function (event) {
-    let icon = event.target.closest(".flaticon-padlock");
-    if (!icon) return;
+    document.addEventListener("DOMContentLoaded", function () {
+        const fileInput = document.getElementById("fileInput");
+        const dropZone = document.getElementById("dropZone");
+        const fileNameText = document.getElementById("fileName");
+        const uploadBtn = document.getElementById("uploadFile");
+        const downloadTemplateBtn = document.getElementById("downloadTemplate");
+        const notificationToastEl = document.getElementById("notificationToast");
+        const notificationMessage = document.getElementById("notificationMessage");
+        const toastBootstrap = new bootstrap.Toast(notificationToastEl, {delay: 3000});
 
-    event.preventDefault();
-    event.stopPropagation();
+        let selectedFile = null;
 
-    let userId = icon.getAttribute("data-id");
-    if (!userId) {
-      showModal("Error", "Missing user ID!");
-      return;
-    }
+        // Click to select file
+        fileInput.addEventListener("change", function (event) {
+            selectedFile = event.target.files[0];
+            fileNameText.textContent = selectedFile ? `File đã chọn: ${selectedFile.name}` : "";
+        });
 
-    let isUnlock = icon.classList.contains("inactive");
-    let action = isUnlock ? "unlock" : "lock";
-    let message = isUnlock ? "Are you sure you want to unlock this user?" : "Are you sure you want to lock this user?";
+        // Drag & Drop file
+        dropZone.addEventListener("dragover", function (event) {
+            event.preventDefault();
+            dropZone.classList.add("border-primary");
+        });
 
-    showModal("Confirm", message, true, function () {
-      toggleUserStatus(userId, action);
+        dropZone.addEventListener("dragleave", function () {
+            dropZone.classList.remove("border-primary");
+        });
+
+        dropZone.addEventListener("drop", function (event) {
+            event.preventDefault();
+            dropZone.classList.remove("border-primary");
+
+            if (event.dataTransfer.files.length) {
+                selectedFile = event.dataTransfer.files[0];
+                fileNameText.textContent = `File đã chọn: ${selectedFile.name}`;
+            }
+        });
+
+        // Upload file
+        uploadBtn.addEventListener("click", function () {
+            if (!selectedFile) {
+                alert("Please choose a file before uploading");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+
+            fetch("/api/excel/import", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    notificationMessage.textContent = data.message;
+                    toastBootstrap.show();
+
+                    if (data.status === 200 && data.result !== "No new data added") {
+                        setTimeout(() => window.location.reload(), 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error("Upload error:", error);
+                    alert("Error occurs when uploading file: " + error.message);
+                });
+        });
+
+        // Download template file
+        downloadTemplateBtn.addEventListener("click", function () {
+            window.location.href = "/assets/excel-template/Template-Employee.xlsx";
+        });
     });
-  });
 
-  function toggleUserStatus(userId, action) {
-    let url = action === "unlock" ? `api/user/setIsActiveTrue/${userId}` : `api/user/delete/${userId}`;
-    let method = action === "unlock" ? "PATCH" : "DELETE";
+    document.addEventListener("click", async function (event) {
+        let icon = event.target.closest(".flaticon-padlock"); // Get the clicked padlock icon
+        if (!icon) return;
 
-    fetch(url, { method: method })
-            .then(response => {
-              if (!response.ok) {
-                return response.text().then(text => { throw new Error(text); });
-              }
-              return response.json();
-            })
+        event.preventDefault();
+        event.stopPropagation();
+
+        let userId = icon.getAttribute("data-id");
+        let userEmail = icon.getAttribute("data-user-email"); // Get user email
+
+        if (!userId) {
+            showModal("Error", "Missing user ID!");
+            return;
+        }
+
+        let isUnlock = icon.classList.contains("inactive");
+        let action = isUnlock ? "unlock" : "lock";
+        let duration;
+        if (isUnlock) {
+            let response = await fetch(`/api/user/get-status/${userId}`);
+            let data = await response.json();
+            duration = data.duration;
+        }
+
+        let message = isUnlock
+            ? `Are you sure you want to unlock this user? \n This user has been banned for ${duration} seconds`
+            : `Provide details for locking this user.`;
+
+        showModal("Lock User", message, !isUnlock, function () {
+            let reason = document.getElementById("lockReason").value;
+            let duration = document.getElementById("lockDuration").value;
+            toggleUserStatus(userId, userEmail, action, reason, duration); // Pass userEmail
+        }, !isUnlock);
+    });
+
+
+    function toggleUserStatus(userId, userEmail, action, reason = "", duration = "") {
+        let url = `api/user/${action === "unlock" ? "unban" : "ban"}/${userId}`;
+        let method = action === "unlock" ? "PATCH" : "POST";
+        let body = action === "unlock" ? null : JSON.stringify({duration});
+
+        fetch(url, {
+            method,
+            headers: {"Content-Type": "application/json"},
+            body
+        })
+            .then(response => response.ok ? response.text() : response.text().then(text => {
+                throw new Error(text);
+            }))
             .then(() => {
-              let successMessage = action === "unlock" ? "User has been unlocked!" : "User has been locked!";
-              showModal("Success", successMessage);
+                if (action === "lock") {
+                    fetch("api/email/send-mail", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({
+                            recipient: userEmail,  // Use extracted email
+                            msgBody: reason,
+                            subject: `Your account has been banned for ${duration} seconds`,
+                            attachment: null
+                        })
+                    });
+                }
 
-              let icon = document.querySelector(`.flaticon-padlock[data-id="${userId}"]`);
-              if (icon) {
-                icon.classList.toggle("inactive");
-                icon.classList.toggle("active");
-              }
+                showModal("Success", `User has been ${action}ed!`);
+                let icon = document.querySelector(`.flaticon-padlock[data-id="${userId}"]`);
+                if (icon) icon.classList.toggle("inactive", action === "unlock");
+                if (icon) icon.classList.toggle("active", action !== "unlock");
             })
-            .catch(error => showModal("Error", "Error: " + error.message));
-  }
-
-  function showModal(title, message, isConfirm = false, confirmCallback = null) {
-    let modalTitle = document.getElementById("modalTitle");
-    let modalMessage = document.getElementById("modalMessage");
-    let confirmBtn = document.getElementById("modalConfirmBtn");
-    let cancelBtn = document.getElementById("modalCancelBtn");
-    let okBtn = document.getElementById("modalOkBtn");
-
-    modalTitle.innerText = title;
-    modalMessage.innerText = message;
-
-    if (isConfirm) {
-      confirmBtn.classList.remove("d-none");
-      cancelBtn.classList.remove("d-none");
-      okBtn.classList.add("d-none");
-
-      confirmBtn.onclick = function () {
-        confirmCallback();
-        let modalInstance = bootstrap.Modal.getInstance(document.getElementById("genericModal"));
-        modalInstance.hide();
-      };
-    } else {
-      confirmBtn.classList.add("d-none");
-      cancelBtn.classList.add("d-none");
-      okBtn.classList.remove("d-none");
+            .catch(error => showModal("Error", `Error: ${error.message}`));
     }
 
-    let modal = new bootstrap.Modal(document.getElementById("genericModal"));
-    modal.show();
-  }
 
-  function openEditUserModal(element, event) {
-    event.preventDefault();
-    let userId = element.getAttribute("data-id");
+    function showModal(title, message, isConfirm = false, confirmCallback = null, showInputs = false) {
+        let modalElement = document.getElementById("genericModal");
+        let modalTitle = document.getElementById("modalTitle");
+        let modalMessage = document.getElementById("modalMessage");
+        let confirmBtn = document.getElementById("modalConfirmBtn");
+        let cancelBtn = document.getElementById("modalCancelBtn");
+        let okBtn = document.getElementById("modalOkBtn");
+        let lockInputs = document.getElementById("lockInputs");
 
-    // Gửi request để lấy thông tin user
-    fetch(`/api/user/${userId}`)
+        modalTitle.innerText = title;
+        modalMessage.innerText = message;
+        lockInputs.classList.toggle("d-none", !showInputs);
+
+        if (isConfirm) {
+            confirmBtn.classList.remove("d-none");
+            cancelBtn.classList.remove("d-none");
+            okBtn.classList.add("d-none");
+
+            confirmBtn.onclick = function () {
+                if (confirmCallback) confirmCallback();
+                let modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modalInstance.hide();
+            };
+        } else {
+            confirmBtn.classList.add("d-none");
+            cancelBtn.classList.add("d-none");
+            okBtn.classList.remove("d-none");
+        }
+
+        let modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+        modalInstance.show();
+    }
+
+    function openEditUserModal(element, event) {
+        event.preventDefault();
+        let userId = element.getAttribute("data-id");
+
+        // Gửi request để lấy thông tin user
+        fetch(`/api/user/${userId}`)
             .then(response => response.json())
             .then(user => {
-              document.getElementById("editUserId").value = user.id;
-              document.getElementById("editFullName").value = user.first_name + " " + user.last_name;
-              document.getElementById("editEmail").value = user.email;
-              document.getElementById("editGender").value = user.gender;
-              document.getElementById("editRole").value = user.role;
+                document.getElementById("editUserId").value = user.id;
+                document.getElementById("editFullName").value = user.first_name + " " + user.last_name;
+                document.getElementById("editEmail").value = user.email;
+                document.getElementById("editGender").value = user.gender;
+                document.getElementById("editRole").value = user.role;
 
-              // Hiển thị modal
-              $('#editUserModal').modal('show');
+                // Hiển thị modal
+                $('#editUserModal').modal('show');
             })
             .catch(error => console.error("Error fetching user:", error));
-  }
-
-  function updateUser() {
-    let fullNameInput = document.getElementById("editFullName");
-    let emailInput = document.getElementById("editEmail");
-    let phoneNumberInput = document.getElementById("editPhoneNumber");
-    let genderInput = document.getElementById("editGender");
-    let roleInput = document.getElementById("editRole");
-    let userId = document.getElementById("editUserId").value;
-
-    let fullName = fullNameInput.value.trim();
-    let email = emailInput.value.trim();
-    let phoneNumber = phoneNumberInput.value.trim();
-
-    let isValid = true;
-
-    clearErrors();
-    document.querySelectorAll(".error-message").forEach(e => e.remove());
-    [fullNameInput, emailInput, phoneNumberInput].forEach(input => input.classList.remove("is-invalid"));
-
-
-    if (fullName === "") {
-      showError(fullNameInput, "This field is required");
-      isValid = false;
-    }
-    if (email === "") {
-      showError(emailInput, "This field is required");
-      isValid = false;
-    }
-    if (phoneNumber === "") {
-      showError(phoneNumberInput, "This field is required");
-      isValid = false;
     }
 
-    if (!isValid) return;
+    function updateUser() {
+        let fullNameInput = document.getElementById("editFullName");
+        let emailInput = document.getElementById("editEmail");
+        let phoneNumberInput = document.getElementById("editPhoneNumber");
+        let genderInput = document.getElementById("editGender");
+        let roleInput = document.getElementById("editRole");
+        let userId = document.getElementById("editUserId").value;
 
-    let updatedUser = {
-      first_name: fullName.split(" ")[0],
-      last_name: fullName.split(" ").slice(1).join(" "),
-      email: email,
-      phone_number: phoneNumber,
-      gender: genderInput.value,
-      role: roleInput.value
-    };
+        let fullName = fullNameInput.value.trim();
+        let email = emailInput.value.trim();
+        let phoneNumber = phoneNumberInput.value.trim();
 
-    fetch(`/api/user/update/${userId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(updatedUser)
-    })
+        let isValid = true;
+
+        clearErrors();
+        document.querySelectorAll(".error-message").forEach(e => e.remove());
+        [fullNameInput, emailInput, phoneNumberInput].forEach(input => input.classList.remove("is-invalid"));
+
+
+        if (fullName === "") {
+            showError(fullNameInput, "This field is required");
+            isValid = false;
+        }
+        if (email === "") {
+            showError(emailInput, "This field is required");
+            isValid = false;
+        }
+        if (phoneNumber === "") {
+            showError(phoneNumberInput, "This field is required");
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        let updatedUser = {
+            first_name: fullName.split(" ")[0],
+            last_name: fullName.split(" ").slice(1).join(" "),
+            email: email,
+            phone_number: phoneNumber,
+            gender: genderInput.value,
+            role: roleInput.value
+        };
+
+        fetch(`/api/user/update/${userId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(updatedUser)
+        })
             .then(response => response.json())
             .then(user => {
-              $('#editUserModal').modal('hide');
-              location.reload();
+                $('#editUserModal').modal('hide');
+                location.reload();
             })
             .catch(error => console.error("Error updating user:", error));
-  }
-
-  function addUser() {
-    let fullNameInput = document.getElementById("addUserName");
-    let emailInput = document.getElementById("addUserEmail");
-    let phoneNumberInput = document.getElementById("addUserPhoneNumber");
-    let genderInput = document.getElementById("addUserGender");
-    let roleInput = document.getElementById("addUserRole");
-
-    let fullName = fullNameInput.value.trim();
-    let email = emailInput.value.trim();
-    let phoneNumber = phoneNumberInput.value.trim();
-
-    let isValid = true;
-
-    document.querySelectorAll(".error-message").forEach(e => e.remove());
-    [fullNameInput, emailInput, phoneNumberInput].forEach(input => input.classList.remove("is-invalid"));
-
-    if (fullName === "") {
-      showError(fullNameInput, "This field is required");
-      isValid = false;
-    }
-    if (email === "") {
-      showError(emailInput, "This field is required");
-      isValid = false;
-    }
-    if (phoneNumber === "") {
-      showError(phoneNumberInput, "This field is required");
-      isValid = false;
     }
 
-    if (!isValid) return;
+    function addUser() {
+        let fullNameInput = document.getElementById("addUserName");
+        let emailInput = document.getElementById("addUserEmail");
+        let phoneNumberInput = document.getElementById("addUserPhoneNumber");
+        let genderInput = document.getElementById("addUserGender");
+        let roleInput = document.getElementById("addUserRole");
 
-    let newUser = {
-      first_name: fullName.split(" ")[0],
-      last_name: fullName.split(" ").slice(1).join(" "),
-      email: email,
-      phone_number: phoneNumber,
-      gender: genderInput.value,
-      role: roleInput.value
-    };
+        let fullName = fullNameInput.value.trim();
+        let email = emailInput.value.trim();
+        let phoneNumber = phoneNumberInput.value.trim();
 
-    fetch('api/user/create-employee', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(newUser)
-    })
+        let isValid = true;
+
+        document.querySelectorAll(".error-message").forEach(e => e.remove());
+        [fullNameInput, emailInput, phoneNumberInput].forEach(input => input.classList.remove("is-invalid"));
+
+        if (fullName === "") {
+            showError(fullNameInput, "This field is required");
+            isValid = false;
+        }
+        if (email === "") {
+            showError(emailInput, "This field is required");
+            isValid = false;
+        }
+        if (phoneNumber === "") {
+            showError(phoneNumberInput, "This field is required");
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        let newUser = {
+            first_name: fullName.split(" ")[0],
+            last_name: fullName.split(" ").slice(1).join(" "),
+            email: email,
+            phone_number: phoneNumber,
+            gender: genderInput.value,
+            role: roleInput.value
+        };
+
+        fetch('api/user/create-employee', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(newUser)
+        })
             .then(response => response.json())
             .then(user => {
-              $('#addUserModal').modal('hide');
-              location.reload();
+                $('#addUserModal').modal('hide');
+                location.reload();
             })
             .catch(error => console.error("Error adding user:", error));
-  }
+    }
 
-  function showError(input, message) {
-    let error = document.createElement("div");
-    error.className = "error-message text-danger mt-1";
-    error.innerText = message;
-    input.parentNode.appendChild(error);
-    input.classList.add("is-invalid");
-  }
+    function showError(input, message) {
+        let error = document.createElement("div");
+        error.className = "error-message text-danger mt-1";
+        error.innerText = message;
+        input.parentNode.appendChild(error);
+        input.classList.add("is-invalid");
+    }
 
-  function clearErrors() {
-    let inputs = document.querySelectorAll(".is-invalid");
-    inputs.forEach(input => input.classList.remove("is-invalid"));
+    function clearErrors() {
+        let inputs = document.querySelectorAll(".is-invalid");
+        inputs.forEach(input => input.classList.remove("is-invalid"));
 
-    let errorMessages = document.querySelectorAll(".invalid-feedback");
-    errorMessages.forEach(error => error.remove());
-  }
+        let errorMessages = document.querySelectorAll(".invalid-feedback");
+        errorMessages.forEach(error => error.remove());
+    }
 
-  document.addEventListener("DOMContentLoaded", function () {
-    const fileInput = document.getElementById("fileInput");
-    const dropZone = document.getElementById("dropZone");
-    const fileNameText = document.getElementById("fileName");
-    const uploadBtn = document.getElementById("uploadFile");
-    const downloadTemplateBtn = document.getElementById("downloadTemplate");
-    const notificationToastEl = document.getElementById("notificationToast");
-    const notificationMessage = document.getElementById("notificationMessage");
-    const toastBootstrap = new bootstrap.Toast(notificationToastEl, { delay: 3000 });
+    function filterTable() {
+        let input = document.getElementById("searchInput");
+        let filter = input.value.toLowerCase();
+        let table = document.getElementById("userTable");
+        let rows = table.getElementsByTagName("tr");
 
-    let selectedFile = null;
+        for (let i = 1; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let match = false;
 
-    // Click to select file
-    fileInput.addEventListener("change", function (event) {
-      selectedFile = event.target.files[0];
-      fileNameText.textContent = selectedFile ? `File đã chọn: ${selectedFile.name}` : "";
-    });
-
-    // Drag & Drop file
-    dropZone.addEventListener("dragover", function (event) {
-      event.preventDefault();
-      dropZone.classList.add("border-primary");
-    });
-
-    dropZone.addEventListener("dragleave", function () {
-      dropZone.classList.remove("border-primary");
-    });
-
-    dropZone.addEventListener("drop", function (event) {
-      event.preventDefault();
-      dropZone.classList.remove("border-primary");
-
-      if (event.dataTransfer.files.length) {
-        selectedFile = event.dataTransfer.files[0];
-        fileNameText.textContent = `File đã chọn: ${selectedFile.name}`;
-      }
-    });
-
-    // Upload file
-    uploadBtn.addEventListener("click", function () {
-      if (!selectedFile) {
-        alert("Please choose a file before uploading");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-
-      fetch("/api/excel/import", {
-        method: "POST",
-        body: formData
-      })
-              .then(response => response.json())
-              .then(data => {
-                notificationMessage.textContent = data.message;
-                toastBootstrap.show();
-
-                if (data.status === 200 && data.result !== "No new data added") {
-                  setTimeout(() => window.location.reload(), 2000);
+            for (let j = 0; j < cells.length - 1; j++) {
+                if (cells[j].textContent.toLowerCase().includes(filter)) {
+                    match = true;
+                    break;
                 }
-              })
-              .catch(error => {
-                console.error("Upload error:", error);
-                alert("Error occurs when uploading file: " + error.message);
-              });
-    });
+            }
+            rows[i].style.display = match ? "" : "none";
+        }
+    }
 
-    // Download template file
-    downloadTemplateBtn.addEventListener("click", function () {
-      window.location.href = "/assets/excel-template/Template-Employee.xlsx";
-    });
-  });
+    function sortTable(columnIndex) {
+        let table = document.getElementById("userTable");
+        let rows = Array.from(table.rows).slice(1);
+        let isAscending = table.getAttribute("data-sort") !== "asc";
 
+        rows.sort((rowA, rowB) => {
+            let cellA = rowA.cells[columnIndex].textContent.trim().toLowerCase();
+            let cellB = rowB.cells[columnIndex].textContent.trim().toLowerCase();
+
+            if (!isNaN(cellA) && !isNaN(cellB)) {
+                return isAscending ? cellA - cellB : cellB - cellA;
+            } else {
+                return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            }
+        });
+
+        rows.forEach(row => table.appendChild(row));
+        table.setAttribute("data-sort", isAscending ? "asc" : "desc");
+    }
 </script>
 </body>
 </html>

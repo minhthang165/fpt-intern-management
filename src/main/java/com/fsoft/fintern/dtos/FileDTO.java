@@ -4,10 +4,9 @@ public class FileDTO {
 
         private Integer id;
         private Integer submitterId;
-        private String fileType;
         private String displayName;
         private String path;
-        private Double size;
+        private Boolean isActive;
 
         public Integer getId() {
             return id;
@@ -23,14 +22,6 @@ public class FileDTO {
 
         public void setSubmitterId(Integer submitterId) {
             this.submitterId = submitterId;
-        }
-
-        public String getFileType() {
-            return fileType;
-        }
-
-        public void setFileType(String fileType) {
-            this.fileType = fileType;
         }
 
         public String getDisplayName() {
@@ -49,12 +40,12 @@ public class FileDTO {
             this.path = path;
         }
 
-        public Double getSize() {
-            return size;
+        public Boolean getIsActive() {
+            return isActive;
         }
 
-        public void setSize(Double size) {
-            this.size = size;
+        public void setIsActive(Boolean isActive) {
+            this.isActive = isActive;
         }
     }
 

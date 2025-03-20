@@ -1,6 +1,7 @@
 package com.fsoft.fintern.controllers;
 
 import com.fsoft.fintern.services.CloudinaryService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ public class CloudinaryRestController {
     }
 
     @PostMapping
+    @Operation(description = "Upload file to cloudinary and return data")
     public ResponseEntity<Map> uploadImage(@RequestParam("file") MultipartFile file){
         System.out.println("data sout: " + file.getSize());
         Map data = this.cloudinaryService.upload(file);

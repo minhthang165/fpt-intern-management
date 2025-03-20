@@ -1,5 +1,6 @@
 package com.fsoft.fintern.controllers;
 
+import com.fsoft.fintern.dtos.LoginUserDTO;
 import com.fsoft.fintern.dtos.RecruitmentDTO;
 import com.fsoft.fintern.models.Recruitment;
 import com.fsoft.fintern.services.RecruitmentService;
@@ -29,9 +30,9 @@ public class RecruitmentController {
     }
 
     @GetMapping("/recruitments")
-    public String listRecruitments(Model model) {
-        ResponseEntity<List<Recruitment>> response = recruitmentService.findAll();
-
+    public String listRecruitments(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) {
+        ResponseEntity<List<Recruitment>> response = recruitmentServices.findAll();
+        model.addAttribute("user_id", user_id);
         if (response.getBody() != null) {
             model.addAttribute("recruitments", response.getBody());
         } else {
@@ -41,13 +42,17 @@ public class RecruitmentController {
     }
 
 
+    @GetMapping("/{id}")
+    public String viewRecruitment(
+            @PathVariable int id,
+            @SessionAttribute("user") LoginUserDTO loginUserDTO,
+            Model model) throws BadRequestException {
 
-    @GetMapping("/{id}/{user_id}")
-    public String viewRecruitment(@PathVariable int id, @PathVariable int user_id, Model model) throws BadRequestException {
-        Recruitment recruitment = recruitmentService.findById(id).getBody();
+        Recruitment recruitment = recruitmentServices.findById(id).getBody();
         if (recruitment == null) {
             throw new BadRequestException("Recruitment not found");
         }
+
         model.addAttribute("recruitment", recruitment);
         model.addAttribute("user_id", user_id);
         return "recruitment-page" ;

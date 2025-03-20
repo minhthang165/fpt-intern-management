@@ -1,15 +1,13 @@
 package com.fsoft.fintern.services;
 
-import com.fsoft.fintern.dtos.ConversationDTO;
 import com.fsoft.fintern.dtos.ConversationUserDTO;
-import com.fsoft.fintern.models.CompositeKey.ConversationUserId;
+import com.fsoft.fintern.models.EmbedableID.ConversationUserId;
 import com.fsoft.fintern.models.Conversation;
 import com.fsoft.fintern.models.ConversationUser;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.repositories.ConversationRepository;
 import com.fsoft.fintern.repositories.ConversationUserRepository;
 import com.fsoft.fintern.repositories.UserRepository;
-import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ConversationUserService {

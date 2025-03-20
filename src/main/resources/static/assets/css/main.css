@@ -178,11 +178,6 @@
 /*---------------------------------
     Typography css start
 ---------------------------------*/
-.is-invalid {
-  border: 2px solid red !important;
-  background-color: #ffe6e6;
-}
-
 body {
   font-family: var(--bd-ff-body);
   font-size: var(--bd-fs-body);
@@ -3107,7 +3102,7 @@ input[type=file] {
   display: block;
 }
 .sticky .main-menu ul li a {
-  color: #0b0b0b;
+  color: var(--clr-text-20);
 }
 .sticky .bar-icon span {
   background: var(--clr-text-20);
@@ -3167,17 +3162,17 @@ input[type=file] {
 .main-menu ul li a {
   display: inline-block;
   font-size: 18px;
-  color: var(--clr-common-black);
+  color: #ff9900; /* Màu cam */
   padding: 46px 0;
   font-weight: var(--bd-fw-medium);
-  -webkit-transition: all 0.3s ease-out 0s;
-  -moz-transition: all 0.3s ease-out 0s;
-  -ms-transition: all 0.3s ease-out 0s;
-  -o-transition: all 0.3s ease-out 0s;
   transition: all 0.3s ease-out 0s;
   text-transform: capitalize;
   line-height: 1;
 }
+.main-menu ul li a:hover {
+  color: #ff6600;
+}
+
 .main-menu ul li .submenu {
   position: absolute;
   top: 120%;
@@ -3581,7 +3576,7 @@ input[type=file] {
 .bar-icon span {
   width: 100%;
   height: 2px;
-  background: var(--clr-common-black);
+  background: var(--clr-common-white);
   display: inline-block;
 }
 .bar-icon span:nth-child(2) {
@@ -9150,24 +9145,6 @@ input[type=file] {
   .footer__copyright p a:hover {
     color: var(--clr-theme-1);
   }
-}
-
-::-webkit-scrollbar {
-  width: 5px;
-}
-
-::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px grey;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: grey;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: grey;
 }
 
 /*# sourceMappingURL=main.css.map */

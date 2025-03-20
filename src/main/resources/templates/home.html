@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -32,97 +33,19 @@
     </style>
 </head>
 <body>
-
 <div class="container">
     <h1>🏠 Home Page</h1>
-
-
-    <p>Welcome, User ID: <span th:text="${user_id}"></span></p>
-
     <input type="hidden" id="userId" th:value="${user_id}">
-
-    <a th:href="@{/profile/{user_id}(user_id=${user_id})}">👤 View Profile</a>
-    <a th:href="@{/profile/edit/{user_id}(user_id=${user_id})}">✏️ Edit Profile</a>
-    <a th:href="@{/recruitment/recruitments/{user_id}(user_id=${user_id})}">📄 Recruitment List</a>
-    <a th:href="@{/drive/upload/{user_id} (user_id=${user_id})}">📄 uploadcv</a>
+    <p>Welcome, User ID: <span th:text="${user_id}"></span></p>
+    <a th:href="@{/profile}">👤 View Profile</a>
+    <a th:href="@{/edit}">✏️ Edit Profile</a>
+    <a th:href="@{/recruitment/recruitments}">📝 Recruitment List</a>
+    <a th:href="@{/drive/upload}">📝 uploadcv</a>
     <a th:href="@{/users/{user_id} (user_id=${user_id})}">📄 UserList</a>
-
-
 </div>
-
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-<script>
-    function getIdsFromPath() {
-        let pathSegments = window.location.pathname.split('/');
-        let userId = pathSegments[pathSegments.length - 1];
-        return { userId };
-    }
-    const { userId } = getIdsFromPath();
-    console.log(userId)
-    let stompClient = null;
+<script src="/assets/js/WebSocket.js" ></script>
 
-    function connectWebSocket() {
-        let socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-
-        stompClient.connect({}, function () {
-            console.log("✅ WebSocket connected!");
-
-            stompClient.subscribe(`/topic/call/${userId}`, function (message) {
-                let data = JSON.parse(message.body);
-                let myUserID = userId || `user_${Math.floor(Math.random() * 10000)}`;
-                showCallNotification(data.roomID, myUserID);
-            });
-        });
-    }
-
-    function showCallNotification(roomID, callerID) {
-        let userid = localStorage.getItem("userId");
-        fetch(`/api/user/${userid}`)
-            .then(response => {
-                if (!response.ok) throw new Error("❌ Failed to fetch caller info");
-                return response.json();
-            })
-            .then(user => {
-                let callerName = user.first_name || "Unknown";
-                displayCallPopup(roomID, callerID, callerName);
-            })
-            .catch(error => {
-                console.error(error);
-                displayCallPopup(roomID, callerID, "Unknown");
-            });
-    }
-
-    function displayCallPopup(roomID, callerID, callerName) {
-        let callDialog = document.createElement("div");
-        callDialog.innerHTML = `
-        <div id="call-popup" style="position: fixed; top: 20%; left: 50%; transform: translate(-50%, -50%);
-            background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            text-align: center;">
-            <p>📞 Incoming Call from <b>${callerName}</b></p>
-            <button id="acceptCall" style="background: green; color: white; padding: 10px; margin: 5px; border: none; cursor: pointer;">
-                Accept
-            </button>
-            <button id="rejectCall" style="background: red; color: white; padding: 10px; margin: 5px; border: none; cursor: pointer;">
-                Reject
-            </button>
-        </div>
-    `;
-        document.body.appendChild(callDialog);
-        document.getElementById("acceptCall").onclick = function () {
-            document.getElementById("call-popup").remove();
-            window.location.href = `/video-call.html?room=${roomID}&user=${callerID}`;
-        };
-        document.getElementById("rejectCall").onclick = function () {
-            document.getElementById("call-popup").remove();
-        };
-    }
-
-    window.onload = function () {
-        connectWebSocket();
-    };
-
-</script>
 </html>

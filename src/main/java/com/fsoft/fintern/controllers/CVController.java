@@ -1,26 +1,35 @@
 package com.fsoft.fintern.controllers;
 
-import com.fsoft.fintern.dtos.CVSubmitterDTO;
-import com.fsoft.fintern.models.CVSubmitter;
-import com.fsoft.fintern.services.CVSubmitterService;
-import io.swagger.v3.oas.annotations.Operation;
+import com.fsoft.fintern.services.OCR_Service;
+import net.sourceforge.tess4j.TesseractException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/CVSubmitter")
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+@RestController
+@RequestMapping("/cv")
 public class CVController {
-    private final CVSubmitterService cvSubmitterService;
 
-    public CVController(CVSubmitterService cvSubmitterService) {
-        this.cvSubmitterService = cvSubmitterService;
+    @Autowired
+    private OCR_Service ocrService;
+
+    @PostMapping("/save")
+    public ResponseEntity<?> saveCVInfo(@RequestParam String driveLink,
+                                        @RequestParam int fileId,
+                                        @RequestParam int recruitmentId) {
+        System.out.println("Received request: driveLink=" + driveLink + ", fileId=" + fileId + ", recruitmentId=" + recruitmentId);
+
+        try {
+            Map<String, List<String>> cvData = ocrService.processGoogleDriveLink(driveLink);
+            ocrService.saveToDatabase(cvData, fileId, recruitmentId);
+            return ResponseEntity.ok("CV information saved successfully.");
+        } catch (IOException | InterruptedException | TesseractException e) {
+            System.out.println("Error: " + e.getMessage());
+            return ResponseEntity.status(500).body("Error processing CV: " + e.getMessage());
+        }
     }
 
-    @PostMapping("/create")
-    @Operation(description = "Submit a CV")
-    public ResponseEntity<CVSubmitter> create(@RequestBody CVSubmitterDTO dto) {
-        CVSubmitter cvSubmitter = cvSubmitterService.create(dto.getRecruitmentId(), dto.getFileId());
-        return ResponseEntity.ok(cvSubmitter);
-    }
 }
