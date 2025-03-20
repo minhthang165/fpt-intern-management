@@ -1,27 +1,27 @@
 package com.fsoft.fintern.dtos;
 
-import com.fsoft.fintern.models.EmbedableID.CV_InfoId;
+import com.fsoft.fintern.models.EmbedableID.CVInfoId;
 
 public class CVInfoDTO {
-    private CV_InfoId id;
+    private CVInfoId id;
     private Float gpa;
     private String skill;
     private String education;
 
     public CVInfoDTO() {}
 
-    public CVInfoDTO(CV_InfoId id, Float gpa, String skill, String education) {
+    public CVInfoDTO(CVInfoId id, Float gpa, String skill, String education) {
         this.id = id;
         this.gpa = gpa;
         this.skill = skill;
         this.education = education;
     }
 
-    public CV_InfoId getId() {
+    public CVInfoId getId() {
         return id;
     }
 
-    public void setId(CV_InfoId id) {
+    public void setId(CVInfoId id) {
         this.id = id;
     }
 

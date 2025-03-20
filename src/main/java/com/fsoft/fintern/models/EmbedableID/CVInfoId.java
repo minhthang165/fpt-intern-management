@@ -4,11 +4,11 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 
 @Embeddable
-public class CV_InfoId implements Serializable {
+public class CVInfoId implements Serializable {
     private Integer recruitmentId;
     private Integer fileId;
-    public CV_InfoId() {}
-    public CV_InfoId(Integer recruitmentId, Integer fileId) {
+    public CVInfoId() {}
+    public CVInfoId(Integer recruitmentId, Integer fileId) {
         this.recruitmentId = recruitmentId;
         this.fileId = fileId;
     }
