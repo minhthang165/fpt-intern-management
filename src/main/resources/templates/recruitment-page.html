@@ -3,7 +3,6 @@
 <head th:replace="include/master-header :: head"></head>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
 <style>
   .carousel-inner {
     padding: 20px;
@@ -25,11 +24,6 @@
     gap: 10px;
   }
 
-  .event-content {
-    padding: 20px;
-    text-align: left;
-  }
-
   .event-content h5 {
     font-size: 1.5rem;
     color: #ff6600;
@@ -43,17 +37,6 @@
 
   .img-fluid {
     border-radius: 10px;
-  }
-
-
-  .custom-control {
-    width: 50px;
-    height: 50px;
-    background-color: orange;
-    border-radius: 50%;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 1;
   }
 
   .custom-control span {
@@ -74,57 +57,17 @@
     object-fit: contain;
   }
 
-  .custom-control {
-    width: 60px;
-    height: 60px;
-    background-color: orange;
-    border-radius: 50%;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 1;
-  }
-
-  .image-banner {
-    width: 100%;
-    height: 300px;
-    overflow: hidden;
-    margin-bottom: 30px;
-  }
-
   .image-banner img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  .container-fluid {
-    border-radius: 0 !important;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-  }
 
-  .event-section {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(to right, #0f172a, #1e293b);
-    color: white;
-    padding: 70px;
-    border-radius: 8px;
-  }
-  .event-image {
-    flex: 1;
-    text-align: center;
-  }
   .event-image img {
     max-width: 100%;
     border-radius: 8px;
   }
-  .event-info {
-    flex: 1;
-    padding: 20px;
-  }
+
   .event-info h2 {
     font-size: 28px;
     font-weight: bold;
@@ -133,11 +76,7 @@
     font-size: 18px;
     margin-top: 10px;
   }
-  .highlight {
-    font-size: 30px;
-    font-weight: bold;
-    color: #facc15;
-  }
+
 
   a {
     text-decoration: none;
@@ -278,12 +217,82 @@
     transform: translateY(-2px);
     box-shadow: 0px 4px 10px rgba(255, 107, 107, 0.5);
   }
+
+  /*footer-style*/
+  .footer {
+    background-color: #111827;
+    color: white;
+    padding: 48px 0;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  @media (min-width: 768px) {
+    .footer-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .footer-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .footer-text {
+    color: #9ca3af;
+  }
+
+  .footer-links {
+    list-style: none;
+    margin-top: 16px;
+  }
+
+  .footer-links li {
+    margin-bottom: 8px;
+  }
+
+  .footer-links a {
+    color: #9ca3af;
+    transition: color 0.3s;
+  }
+
+  .footer-links a:hover {
+    color: white;
+  }
+
+  .social-links {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .social-link {
+    color: #9ca3af;
+    transition: color 0.3s;
+  }
+
+  .social-link:hover {
+    color: white;
+  }
+
+  .footer-bottom {
+    border-top: 1px solid #374151;
+    margin-top: 40px;
+    padding-top: 24px;
+    text-align: center;
+    color: #6b7280;
+  }
 </style>
+
 <body>
 <header th:include="include/guest-header :: header"></header>
 
-
-  <section class="recruitment-list">
+<section class="recruitment-list">
     <section id="" class="about__area p-relative pt-150 pb-90">
       <div class="container">
         <div class="row">
@@ -320,19 +329,78 @@
                   VIEW DETAIL
                 </a>
               </div>
-
             </div>
           </div>
         </div>
       </div>
     </section>
-  </section>
+</section>
 
-
-
-
-
-<footer th:replace="include/guest-footer :: footer"></footer>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h3 class="footer-title">FPT FINTERN</h3>
+        <p class="footer-text">Empowering students to build their future in technology.</p>
+        <div class="social-links">
+          <a href="#" class="social-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+            </svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+            </svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+              <rect x="2" y="9" width="4" height="12"></rect>
+              <circle cx="4" cy="4" r="2"></circle>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h4 class="footer-title">Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Events</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-title">Contact</h4>
+        <ul class="footer-links">
+          <li>FPT Software, Da Nang</li>
+          <li>Email: fintern@fpt.edu.vn</li>
+          <li>Phone: +84 123 456 789</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-title">Programs</h4>
+        <ul class="footer-links">
+          <li><a href="#">Software Development</a></li>
+          <li><a href="#">Data Science</a></li>
+          <li><a href="#">AI & Machine Learning</a></li>
+          <li><a href="#">Cloud Computing</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 FPT FINTERN. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -344,7 +412,6 @@
         userDropdown.classList.toggle("show");
       });
 
-      // Đóng dropdown khi click ra ngoài
       document.addEventListener("click", function (event) {
         if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
           userDropdown.classList.remove("show");

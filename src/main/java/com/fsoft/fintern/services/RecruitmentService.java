@@ -18,7 +18,6 @@ import java.util.Optional;
 @Service
 public class RecruitmentService {
     private final RecruitRepository recruitRepository;
-    private RecruitmentService userRepository;
 
     public RecruitmentService(RecruitRepository recruitRepository) {
         this.recruitRepository = recruitRepository;

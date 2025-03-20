@@ -3659,6 +3659,7 @@ input[type=file] {
 /*----------------------------------------*/
 /*  SIDEBAR CSS START
 /*----------------------------------------*/
+
 .expovent__sidebar.collapsed ~ .page__body-wrapper .app__header__area {
   width: calc(100% - 78px);
 }
@@ -3719,7 +3720,7 @@ input[type=file] {
   top: 0;
   height: 100%;
   width: 260px;
-  background: var(--clr-common-black);
+  background: var(--clr-common-white);
   padding-bottom: 0px;
   padding: 0 14px;
   z-index: 99;
@@ -3754,8 +3755,8 @@ input[type=file] {
   width: 100%;
   left: 0;
   top: 0;
-  background: var(--clr-bg-4);
-  border-right: 1px solid var(--clr-border-2);
+  background: white;
+  border-right: 1px solid white;
 }
 .expovent__sidebar.collapsed {
   width: 78px;
@@ -3929,7 +3930,7 @@ input[type=file] {
   line-height: 50px;
 }
 .dlabnav .metismenu > li.mm-active li:hover a {
-  background: var(--clr-gradient-1);
+  background: var(--clr-gradient-4);
   color: var(--clr-common-white);
 }
 [bd-theme=bd-theme-dark] .dlabnav .metismenu > li.mm-active li:hover a {
@@ -3938,7 +3939,7 @@ input[type=file] {
 }
 .dlabnav .metismenu > li.mm-active > a {
   color: var(--clr-text-primary);
-  background: var(--clr-gradient-1);
+  background: var(--clr-gradient-4);
 }
 [bd-theme=bd-theme-dark] .dlabnav .metismenu > li.mm-active > a {
   background: var(--clr-common-white);
@@ -4016,7 +4017,7 @@ input[type=file] {
 }
 
 .dlabnav .metismenu > li:hover > a {
-  background: var(--clr-gradient-1);
+  background: lightgrey;
   color: var(--clr-common-white);
 }
 [bd-theme=bd-theme-dark] .dlabnav .metismenu > li:hover > a {
@@ -4064,7 +4065,7 @@ input[type=file] {
   font-size: 18px;
 }
 .sidebar__profile a:hover {
-  color: var(--clr-theme-1);
+  color: lightgrey;
 }
 
 .copyright__text {
