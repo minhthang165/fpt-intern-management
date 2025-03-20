@@ -54,7 +54,7 @@ public class RecruitmentController {
         }
 
         model.addAttribute("recruitment", recruitment);
-//        model.addAttribute("user_id", user_id);
+        model.addAttribute("user_id", loginUserDTO.getId());
         return "recruitment-detail" ;
     }
 
