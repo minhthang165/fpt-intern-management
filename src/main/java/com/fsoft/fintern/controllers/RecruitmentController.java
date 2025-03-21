@@ -25,8 +25,15 @@ public class RecruitmentController {
 
     @GetMapping("")
     @Operation(description = "view all Recruitment")
-    public ResponseEntity<List<Recruitment>> viewAllRecruitment() {
-        return this.recruitmentService.findAll();
+    public String viewAllRecruitment(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) {
+        ResponseEntity<List<Recruitment>> response = recruitmentService.findAll();
+        model.addAttribute("user_id", user_id);
+        if (response.getBody() != null) {
+            model.addAttribute("recruitments", response.getBody());
+        } else {
+            model.addAttribute("recruitments", List.of());
+        }
+        return "admin/ManageRequirement";
     }
 
     @GetMapping("/recruitments")

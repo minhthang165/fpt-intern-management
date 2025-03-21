@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="include/master-header :: head"></head>
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background-color: #f4f4f4;
+    }
+
+    .search__bar input {
+        margin-right: auto;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 500px;
+    }
+    .breadcrum__button{
+        display: flex;
+        padding-left: 25px;
+    }
+    .search__bar input {
+        border: 1px solid #ccc;
+        border-radius: 15px;
+        width: 400px;
+        height: fit-content;
+    }
+</style>
+<body class="body-area">
+<th:block  th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
+    <!--header breadcrumb area-->
+    <div class="app__slide-wrapper" th:fragment="content">
+        <div class="breadcrumb__area">
+            <div class="breadcrumb__wrapper mb-35" style="padding: 0px;">
+                <div class="breadcrumb__main">
+                    <div class="breadcrumb__inner">
+                        <div class="breadcrumb__icon">
+                            <i class="flaticon-home"></i>
+                        </div>
+                        <div class="breadcrumb__menu">
+                            <nav>
+                                <ul>
+                                    <li><span><a href="authenticate">Dashboard</a></span></li>
+                                    <li class="active"><span>Manage Requirement</span></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    <div class="search_add d-flex justify-content-between align-items-center">
+                        <div class="new_class">
+                            <div class="breadcrum__button">
+                                <button class="element__btn  yellow-bg" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                                    Add Requirement +
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- insert custom content here -->
+    <section th:fragment="content">
+        <div class="flex-grow-1 p-4">
+            <h3 style="font-weight: bold">Requirement List</h3>
+            <!-- Table -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <input type="text" id="searchInput" class="form-control"
+                               style="width: 250px; margin-right: 10px;"
+                               placeholder="Search requirments..." onkeyup="filterTable()">
+                        <button class="btn btn-outline-primary btn-sm" onclick="sortTable(0)">Sort by Name</button>
+                        <button class="btn btn-outline-primary btn-sm mx-2" onclick="sortTable(1)">Sort by Position</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="sortTable(4)">Sort By GPA</button>
+                    </div>
+                    <table id="recruitmentTable" class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Experience Requirement</th>
+                            <th>Language</th>
+                            <th>Min GPA</th>
+                            <th>Total Slot</th>
+                            <th>End Time</th>
+<!--                            <th>Action</th>-->
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="recruitment : ${recruitments}">
+                            <td th:text="${recruitment.name}"></td>
+                            <td th:text="${recruitment.position}"></td>
+                            <td th:text="${recruitment.experienceRequirement}"></td>
+                            <td th:text="${recruitment.language}"></td>
+                            <td th:text="${recruitment.minGPA}"></td>
+                            <td th:text="${recruitment.totalSlot}"></td>
+                            <td th:text="${#dates.format(recruitment.endTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+<!--                            <td>-->
+<!--                                <a href="#" th:data-id="${recruitment.id}" class="edit-recruitment-modal"-->
+<!--                                   onclick="openEditRecruitmentModal(this, event)">-->
+<!--                                    <i class="flaticon-edit" style="cursor: pointer"></i>-->
+<!--                                </a>-->
+<!--                                <a href="#" th:data-id="${recruitment.id}" class="delete-recruitment-modal"-->
+<!--                                   onclick="confirmDeleteRecruitment(this, event)">-->
+<!--                                    <i class="flaticon-delete" style="cursor: pointer; color: red"></i>-->
+<!--                                </a>-->
+<!--                            </td>-->
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</th:block>
+<footer th:replace="~{include/master-footer :: footer}"></footer>
+<script>
+
+    function filterTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("userTable");
+        let rows = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let match = false;
+
+            for (let j = 0; j < cells.length - 1; j++) {
+                if (cells[j].textContent.toLowerCase().includes(input)) {
+                    match = true;
+                    break;
+                }
+            }
+            rows[i].style.display = match ? "" : "none";
+        }
+    }
+
+    function sortTable(columnIndex) {
+        let table = document.getElementById("userTable");
+        let rows = Array.from(table.rows).slice(1);
+        let isAscending = table.getAttribute("data-sort") !== "asc";
+
+        rows.sort((rowA, rowB) => {
+            let cellA = rowA.cells[columnIndex].textContent.trim().toLowerCase();
+            let cellB = rowB.cells[columnIndex].textContent.trim().toLowerCase();
+
+            if (!isNaN(cellA) && !isNaN(cellB)) {
+                return isAscending ? cellA - cellB : cellB - cellA;
+            } else {
+                return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            }
+        });
+
+        rows.forEach(row => table.appendChild(row));
+        table.setAttribute("data-sort", isAscending ? "asc" : "desc");
+    }
+</script>
+</body>
+</html>
+
+
+
+
+
+
