@@ -47,9 +47,4 @@ public class RecruitmentRestController {
         return this.recruitmentService.update(id, recruitmentDTO);
     }
 
-    @PatchMapping("/recruitment/setIsActiveTrue/{id}")
-    @Operation(description = "Update IsActive True")
-    public ResponseEntity<Recruitment> setIsActiveTrue(@PathVariable int id) throws BadRequestException {
-        return this.recruitmentService.setIsActiveTrue(id);
-    }
 }
