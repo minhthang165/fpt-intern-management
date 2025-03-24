@@ -15,7 +15,7 @@ import java.util.Map;
 @Repository
 public interface CVInfoRepository extends JpaRepository<CVInfo, CVInfoId> {
     
-    @Query("SELECT c FROM CVInfo c WHERE c.id.recruitmentId = :recruitmentId")
+    @Query("SELECT c FROM CVInfo c WHERE c.id.recruitmentId = :recruitmentId AND c.isActive = true")
     List<CVInfo> findAllByRecruitmentId(@Param("recruitmentId") Integer recruitmentId);
     
 }

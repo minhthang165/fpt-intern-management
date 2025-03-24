@@ -730,6 +730,10 @@
         const tableBody = document.getElementById("candidateTableBody");
         tableBody.innerHTML = "";
         
+        // Lọc chỉ lấy các CV chưa được duyệt (isActive = true)
+
+        candidates = candidates.filter(candidate => candidate.isActive !== false);
+        
         if (!candidates || candidates.length === 0) {
             tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No candidates found for this requirement</td></tr>';
             return;
@@ -752,6 +756,9 @@
         if (totalCandidates > pageSize) {
             createPagination(totalPages, currentPage);
         }
+        
+        // Thêm thông báo trạng thái cho người dùng
+        addCandidateStatusMessage(recruitmentId);
     }
     
     function displayCandidatesPage(page, pageSize, recruitmentId) {
@@ -1064,6 +1071,26 @@
         if (event.target === modal) {
             closeModal();
         }
+    }
+    
+    // Thêm thông báo về trạng thái hiển thị CV
+    function addCandidateStatusMessage(recruitmentId) {
+        // Xóa thông báo cũ nếu có
+        const existingMessage = document.getElementById('candidateStatusMessage');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        // Tạo phần tử thông báo
+        const messageDiv = document.createElement('div');
+        messageDiv.id = 'candidateStatusMessage';
+        messageDiv.className = 'alert alert-info mt-2';
+        messageDiv.style.fontSize = '0.9rem';
+        messageDiv.innerHTML = '<i class="fas fa-info-circle"></i> Only showing CV candidates that have not been approved yet.';
+        
+        // Thêm vào DOM
+        const modalCard = document.querySelector('.modal .card');
+        modalCard.parentNode.insertBefore(messageDiv, modalCard);
     }
 </script>
 </body>
