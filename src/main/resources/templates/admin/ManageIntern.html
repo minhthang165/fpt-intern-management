@@ -2,7 +2,109 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="include/master-header :: head"></head>
 <style>
+    /*css pagination*/
+    /* Records selector styling */
+    .records-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+    }
 
+    .records-per-page {
+        height: 2.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid #e5e7eb;
+        background-color: #fff;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .records-per-page:focus {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+    }
+
+    /* Pagination container */
+    .pagination-container {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .pagination-list {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Pagination items */
+    .pagination-item {
+        display: inline-block;
+    }
+
+    .pagination-link {
+        display: inline-flex;
+        height: 2.25rem;
+        min-width: 2.25rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.375rem;
+        border: 1px solid #e5e7eb;
+        background-color: #fff;
+        color: #374151;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        padding: 0 0.5rem;
+    }
+
+    .pagination-link:hover {
+        background-color: #f3f4f6;
+        border-color: #d1d5db;
+    }
+
+    /* Active page */
+    .pagination-item.active .pagination-link {
+        background-color: #f38321;
+        color: white;
+        border-color: #f38321;
+    }
+
+    .pagination-item.active .pagination-link:hover {
+        background-color: #f38321;
+    }
+
+    /* Disabled pagination items */
+    .pagination-item.disabled .pagination-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Arrow icons */
+    .pagination-arrow {
+        font-weight: bold;
+    }
+
+    .arrow-icon {
+        font-size: 1.25rem;
+        line-height: 1;
+    }
+
+    /* Ellipsis */
+    .ellipsis {
+        display: inline-block;
+        padding: 0 0.25rem;
+    }
+
+    /*css table*/
     table {
         width: 100%;
         border-collapse: collapse;
@@ -154,6 +256,54 @@
                         </tr>
                         </tbody>
                     </table>
+                    <!--                        pagination-->
+                    <div class="table-footer">
+                        <div class="records-selector">
+                            <span>Hiển thị</span>
+                            <select class="records-per-page" onchange="changePageSize(this)" th:value="${pageSize}">
+                                <option value="5" th:selected="${pageSize == 5}">5</option>
+                                <option value="10" th:selected="${pageSize == 10}">10</option>
+                                <option value="20" th:selected="${pageSize == 20}">20</option>
+                                <option value="50" th:selected="${pageSize == 50}">50</option>
+                            </select>
+                            <span>bản ghi</span>
+                        </div>
+
+                        <div class="pagination-container">
+                            <ul class="pagination-list">
+                                <!-- Nút Previous -->
+                                <li th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-item">
+                                    <a th:href="@{/manage-user(page=${currentPage - 1}, size=${pageSize}, role=${selectedRole})}"
+                                       class="pagination-link pagination-arrow" aria-label="Previous page">
+                                        <span class="arrow-icon">&#8249;</span>
+                                    </a>
+                                </li>
+
+                                <!-- Hiển thị các số trang -->
+                                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                                    th:if="${(i >= currentPage - 2 && i <= currentPage + 2) || i == 0 || i == totalPages - 1}"
+                                    th:classappend="${i == currentPage} ? 'active'"
+                                    class="pagination-item">
+
+                                    <!-- Hiển thị dấu ... nếu có khoảng cách -->
+                                    <span class="ellipsis" th:if="${i == 0 && currentPage > 2}">...</span>
+
+                                    <a th:href="@{/manage-user(page=${i}, size=${pageSize}, role=${selectedRole})}"
+                                       class="pagination-link" th:text="${i + 1}"></a>
+
+                                    <span class="ellipsis" th:if="${i == totalPages - 1 && i > currentPage + 2}">...</span>
+                                </li>
+
+                                <!-- Nút Next -->
+                                <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'" class="pagination-item">
+                                    <a th:href="@{/manage-user(page=${currentPage + 1}, size=${pageSize}, role=${selectedRole})}"
+                                       class="pagination-link pagination-arrow" aria-label="Next page">
+                                        <span class="arrow-icon">&#8250;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -467,7 +617,6 @@
             .catch(error => showModal("Error", `Error: ${error.message}`));
     }
 
-
     function showModal(title, message, isConfirm = false, confirmCallback = null, showInputs = false) {
         let modalElement = document.getElementById("genericModal");
         let modalTitle = document.getElementById("modalTitle");
@@ -684,6 +833,14 @@
 
         rows.forEach(row => table.appendChild(row));
         table.setAttribute("data-sort", isAscending ? "asc" : "desc");
+    }
+
+    function changePageSize(selectElement) {
+        var newSize = selectElement.value;
+        var currentPage = new URLSearchParams(window.location.search).get("page") || 0;
+        var role = new URLSearchParams(window.location.search).get("role") || "employee";
+
+        window.location.href = `/manage-user?page=0&size=${newSize}&role=${role}`;
     }
 </script>
 </body>

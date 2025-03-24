@@ -8,6 +8,9 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @Controller
 @RequestMapping("/api")
 public class RecruitmentRestController {
@@ -16,6 +19,12 @@ public class RecruitmentRestController {
 
     public RecruitmentRestController(RecruitmentService recruitmentService) {
         this.recruitmentService = recruitmentService;
+    }
+
+    @GetMapping("")
+    @Operation(description = "view all Recruitment")
+    public ResponseEntity<List<Recruitment>> viewAllRecruitment() {
+        return this.recruitmentService.findAll();
     }
 
     @PostMapping("/recruitment/create")
