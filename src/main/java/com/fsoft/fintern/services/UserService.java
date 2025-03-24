@@ -12,6 +12,8 @@ import com.fsoft.fintern.utils.BeanUtilsHelper;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +23,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserService {
@@ -91,18 +92,19 @@ public class UserService {
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
-    public ResponseEntity<List<User>> findAll() throws BadRequestException {
-        List<User> users = this.userRepository.findAll();
+    public ResponseEntity<Page<User>> findAll(Pageable pageable) throws BadRequestException {
+        Page<User> users = userRepository.findAll(pageable);
         if (users.isEmpty()) {
             throw new BadRequestException(ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage());
-        } else {
-            return new ResponseEntity<>(users, HttpStatus.OK);
         }
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    public ResponseEntity<List<User>> findUserByRole(Role role) throws BadRequestException {
-        List<User> users = this.userRepository.findByRole(role)
-                .orElseThrow(() -> new BadRequestException(ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage()));
+    public ResponseEntity<Page<User>> findUserByRole(Role role, Pageable pageable) throws BadRequestException {
+        Page<User> users = userRepository.findByRole(role, pageable);
+        if (users.isEmpty()) {
+            throw new BadRequestException(ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage());
+        }
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
@@ -164,14 +166,4 @@ public class UserService {
             return null;
         }
     }
-
-//    public String banUser(int userId, int durationInSeconds) {
-//        String key = "banned_user:" + userId;
-//        redisTemplate.opsForValue().set(key, "banned", durationInSeconds, TimeUnit.SECONDS);
-//        return "User is banned for: " + durationInSeconds + " seconds";
-//    }
-//
-//    public boolean isUserBanned(int userId) {
-//        return redisTemplate.hasKey("banned_user:" + userId);
-//    }
 }

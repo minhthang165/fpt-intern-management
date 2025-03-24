@@ -10,6 +10,8 @@ import com.fsoft.fintern.repositories.UserRepository;
 import com.fsoft.fintern.utils.BeanUtilsHelper;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -52,8 +54,8 @@ public class ClassroomService {
         return new ResponseEntity<>(savedClass, HttpStatus.CREATED);
     }
 
-    public ResponseEntity<List<Classroom>> findAll() throws BadRequestException {
-        List<Classroom> classrooms = class_repository.findAll();
+    public ResponseEntity<Page<Classroom>> findAll(Pageable pageable) throws BadRequestException {
+        Page<Classroom> classrooms = class_repository.findAll(pageable);
         if(classrooms.isEmpty()) {
             throw new BadRequestException(ErrorDictionaryConstraints.CLASS_IS_EMPTY.getMessage());
         } else {
