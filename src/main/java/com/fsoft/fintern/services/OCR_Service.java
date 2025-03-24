@@ -1,7 +1,7 @@
 package com.fsoft.fintern.services;
 
 import com.fsoft.fintern.models.CVInfo;
-import com.fsoft.fintern.models.EmbedableID.CV_InfoId;
+import com.fsoft.fintern.models.EmbedableID.CVInfoId;
 import com.fsoft.fintern.repositories.CVInfoRepository;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -53,7 +53,7 @@ public class OCR_Service {
         CVInfo cvInfo = new CVInfo();
 
         // Sử dụng fileId và recruitmentId từ controller thay vì hardcode
-        CV_InfoId cvInfoId = new CV_InfoId(recruitmentId, fileId);
+        CVInfoId cvInfoId = new CVInfoId(recruitmentId, fileId);
         cvInfo.setId(cvInfoId);
 
         // Lấy GPA và chuyển đổi

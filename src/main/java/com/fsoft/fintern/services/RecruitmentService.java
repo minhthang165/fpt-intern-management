@@ -2,7 +2,7 @@ package com.fsoft.fintern.services;
 import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.dtos.RecruitmentDTO;
 import com.fsoft.fintern.models.Recruitment;
-import com.fsoft.fintern.repositories.RecruitRepository;
+import com.fsoft.fintern.repositories.RecruitmentRepository;
 import com.fsoft.fintern.utils.BeanUtilsHelper;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.BeanUtils;
@@ -17,13 +17,13 @@ import java.util.Optional;
 
 @Service
 public class RecruitmentService {
-    private final RecruitRepository recruitRepository;
+    private final RecruitmentRepository recruitmentRepository;
 
-    public RecruitmentService(RecruitRepository recruitRepository) {
-        this.recruitRepository = recruitRepository;
+    public RecruitmentService(RecruitmentRepository recruitRepository) {
+        this.recruitmentRepository = recruitRepository;
     }
     public ResponseEntity<Recruitment> findById(int id) throws BadRequestException {
-        Optional<Recruitment> recruitment = this.recruitRepository.findById(id);
+        Optional<Recruitment> recruitment = this.recruitmentRepository.findById(id);
         if (recruitment.isPresent()) {
             return new ResponseEntity<>(recruitment.get(), HttpStatus.OK);
         } else {
@@ -32,7 +32,7 @@ public class RecruitmentService {
     }
 
     public ResponseEntity<List<Recruitment>> findAll() {
-        List<Recruitment> recruitments = this.recruitRepository.findAll();
+        List<Recruitment> recruitments = this.recruitmentRepository.findAll();
         if (recruitments.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -41,23 +41,23 @@ public class RecruitmentService {
     }
 
     public ResponseEntity<Recruitment> update(int id, RecruitmentDTO recruitmentDTO) throws BadRequestException {
-        Recruitment recruitment = this.recruitRepository.findById(id).orElseThrow(()
+        Recruitment recruitment = this.recruitmentRepository.findById(id).orElseThrow(()
                 -> new BadRequestException());
 
         BeanUtils.copyProperties(recruitmentDTO, recruitment, BeanUtilsHelper.getNullPropertyNames(recruitmentDTO));
 
-        this.recruitRepository.save(recruitment);
+        this.recruitmentRepository.save(recruitment);
         return new ResponseEntity<>(recruitment, HttpStatus.OK);
     }
 
     public ResponseEntity<Recruitment> delete(int id) throws BadRequestException {
-        Recruitment recruitment = this.recruitRepository.findById(id).orElse(null);
+        Recruitment recruitment = this.recruitmentRepository.findById(id).orElse(null);
         if (recruitment == null) {
             throw new BadRequestException();
         }
         recruitment.setActive(false);
         recruitment.setDeletedAt(Timestamp.from(Instant.now().plus((Duration.ofHours(6)))));
-        this.recruitRepository.save(recruitment);
+        this.recruitmentRepository.save(recruitment);
         return new ResponseEntity<>(recruitment, HttpStatus.OK);
     }
 
@@ -80,25 +80,12 @@ public class RecruitmentService {
         }
 
 
-        Recruitment savedRecruitment = this.recruitRepository.save(newRecruitment);
+        Recruitment savedRecruitment = this.recruitmentRepository.save(newRecruitment);
 
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRecruitment);
     }
 
-    public ResponseEntity<Recruitment> setIsActiveTrue(int id) throws BadRequestException {
-        Recruitment existedRecruitment = this.recruitRepository.findById(id).orElse(null);
-        if (existedRecruitment == null) {
-            throw new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage());
-        }
-        if (existedRecruitment.isActive()) {
-            throw new BadRequestException(ErrorDictionaryConstraints.IS_ACTIVE_TRUE.getMessage());
-        }
-
-        existedRecruitment.setActive(true);
-        recruitRepository.save(existedRecruitment);
-        return new ResponseEntity<>(existedRecruitment, HttpStatus.OK);
-    }
 
 
 }

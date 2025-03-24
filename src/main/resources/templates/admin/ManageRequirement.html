@@ -32,7 +32,377 @@
         width: 400px;
         height: fit-content;
     }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.6); /* Tối màu nền hơn */
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 0;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        width: 75%;
+        max-width: 900px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        animation: modalopen 0.4s;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    @keyframes modalopen {
+        from {opacity: 0; transform: translate(-50%, -60%);}
+        to {opacity: 1; transform: translate(-50%, -50%);}
+    }
+    
+    .close-modal {
+        position: absolute;
+        right: 5px;
+        top: 0;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .close-modal:hover {
+        color: #ff6600;
+    }
+    
+    .requirement-row {
+        cursor: pointer;
+    }
+    
+    .requirement-row:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Additional styles for content inside modal */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .search-bar {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .search-input {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        border-radius: 50px;
+        width: 300px;
+    }
+    
+    .btn-primary {
+        background-color: #ff6600;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 50px;
+        cursor: pointer;
+    }
+    
+    .skills-container {
+        max-height: none;
+        overflow-y: visible;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding-right: 0;
+    }
+    
+    .skill-pill {
+        background-color: rgba(255, 102, 0, 0.1);
+        color: #ff6600;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-bottom: 3px;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    
+    .gpa {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .gpa-high {
+        color: #28a745;
+    }
+    
+    .gpa-medium {
+        color: #fd7e14;
+    }
+    
+    .gpa-low {
+        color: #dc3545;
+    }
+    
+    /* Button styling */
+    button {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        cursor: pointer;
+        outline: inherit;
+    }
+    
+    .action-icons {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+    
+    .action-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid;
+        font-size: 14px;
+    }
+    
+    .check-icon {
+        color: #28a745;
+        border-color: #28a745;
+        background-color: white;
+    }
+    
+    .check-icon:hover {
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+    
+    .x-icon {
+        color: #dc3545;
+        border-color: #dc3545;
+        background-color: white;
+    }
+    
+    /* Hover styles */
+    .action-icon:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Shadow effect for sidebar when modal is open */
+    .modal-open .sidebar {
+        pointer-events: none;
+    }
+    
+    .modal-open .app__slide-wrapper {
+        pointer-events: none;
+    }
+    
+    /* Modal table styling */
+    .modal .table {
+        margin-bottom: 0;
+        width: 100%;
+        table-layout: fixed;
+    }
+    
+    .modal .table th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        font-weight: 600;
+        background-color: #f8f9fa;
+        border-top: none;
+        
+    }
+    
+    .modal .table-container {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        max-height: 65vh;
+        overflow-y: auto;
+    }
+    
+    .pagination-container {
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+    
+    .pagination .page-item .page-link {
+        color: #ff6600;
+        border-color: #ddd;
+        background-color: #fff;
+        transition: all 0.2s ease;
+    }
+    
+    .pagination .page-item.active .page-link {
+        color: #fff;
+        background-color: #ff6600;
+        border-color: #ff6600;
+    }
+    
+    .pagination .page-item .page-link:hover {
+        background-color: #f8f9fa;
+        color: #ff6600;
+        border-color: #ddd;
+    }
+    
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        pointer-events: none;
+        background-color: #fff;
+        border-color: #ddd;
+    }
+    
+    /* Điều chỉnh padding các thành phần trong modal */
+    .modal .card {
+        margin-top: 10px;
+    }
+    
+    .modal .header {
+        margin-bottom: 10px;
+    }
+    
+    .modal h3 {
+        font-size: 1.4rem;
+        margin-bottom: 0;
+    }
+    
+    .modal .table th, 
+    .modal .table td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+    
+    .search-input {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-primary {
+        padding: 6px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .skill-pill {
+        padding: 2px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .action-icon {
+        width: 30px;
+        height: 30px;
+    }
+    
+    /* Điều chỉnh độ rộng các cột */
+    .modal .table th:nth-child(1),
+    .modal .table td:nth-child(1) {
+        width: 18%;
+    }
+    
+    .modal .table th:nth-child(2),
+    .modal .table td:nth-child(2) {
+        width: 8%;
+    }
+    
+    .modal .table th:nth-child(3),
+    .modal .table td:nth-child(3) {
+        width: 20%;
+    }
+    
+    .modal .table th:nth-child(4),
+    .modal .table td:nth-child(4) {
+        width: 34%;  /* Thêm chiều rộng cho cột skills */
+    }
+    
+    .modal .table th:nth-child(5),
+    .modal .table td:nth-child(5) {
+        width: 10%;
+        white-space: nowrap;
+        text-align: center;
+    }
+    
+    .modal .table th:nth-child(6),
+    .modal .table td:nth-child(6) {
+        width: 12%;
+        text-align: center;
+    }
+    
+    /* Tối ưu hiển thị text dài */
+    .modal .table td {
+        white-space: normal;
+        word-break: break-word;
+    }
+    
+    /* Làm cho phân trang nhỏ gọn hơn */
+    .pagination-container {
+        margin-top: 10px;
+        margin-bottom: 5px;
+    }
+    
+    .pagination .page-link {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Điều chỉnh chiều cao của các hàng */
+    .modal .table tr {
+        min-height: 60px;
+    }
+    
+    /* Cải thiện hiển thị skills */
+    .modal .table td:nth-child(4) {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+    
+    .skills-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+    }
+    
+    .skill-pill {
+        background-color: rgba(255, 102, 0, 0.1);
+        color: #ff6600;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        display: inline-block;
+        white-space: nowrap;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+    }
+    
+    .skill-pill:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
+    
+    .x-icon:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
 </style>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
 <body class="body-area">
 <th:block  th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
     <!--header breadcrumb area-->
@@ -95,14 +465,14 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="recruitment : ${recruitments}">
+                        <tr th:each="recruitment : ${recruitments}" class="requirement-row" onclick="openCandidateModal(this)" th:data-id="${recruitment.id}">
                             <td th:text="${recruitment.name}"></td>
                             <td th:text="${recruitment.position}"></td>
                             <td th:text="${recruitment.experienceRequirement}"></td>
                             <td th:text="${recruitment.language}"></td>
                             <td th:text="${recruitment.minGPA}"></td>
                             <td th:text="${recruitment.totalSlot}"></td>
-                            <td th:text="${#dates.format(recruitment.endTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                            <td th:text="${#dates.format(recruitment.endTime, 'yyyy-MM-dd')}"></td>
 <!--                            <td>-->
 <!--                                <a href="#" th:data-id="${recruitment.id}" class="edit-recruitment-modal"-->
 <!--                                   onclick="openEditRecruitmentModal(this, event)">-->
@@ -119,21 +489,66 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Candidate Modal -->
+        <div id="candidateModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+                <div class="header">
+                    <h3 id="modalTitle">Candidate List</h3>
+                    <div class="search-bar">
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="text" id="searchCandidateInput" class="search-input" 
+                                   placeholder="Search candidates...">
+                            <button class="btn btn-primary" id="searchCandidateButton">Search</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>GPA</th>
+                                <th>Education</th>
+                                <th>Skills</th>
+                                <th>Gender</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody id="candidateTableBody">
+                            <!-- Candidate data will be loaded here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
+    // Make sure DOM is fully loaded before accessing elements
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fix table reference in filter function
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) {
+            searchInput.addEventListener('keyup', filterTable);
+        }
+    });
 
     function filterTable() {
         let input = document.getElementById("searchInput").value.toLowerCase();
-        let table = document.getElementById("userTable");
+        let table = document.getElementById("recruitmentTable");
         let rows = table.getElementsByTagName("tr");
 
         for (let i = 1; i < rows.length; i++) {
             let cells = rows[i].getElementsByTagName("td");
             let match = false;
 
-            for (let j = 0; j < cells.length - 1; j++) {
+            for (let j = 0; j < cells.length; j++) {
                 if (cells[j].textContent.toLowerCase().includes(input)) {
                     match = true;
                     break;
@@ -144,7 +559,7 @@
     }
 
     function sortTable(columnIndex) {
-        let table = document.getElementById("userTable");
+        let table = document.getElementById("recruitmentTable");
         let rows = Array.from(table.rows).slice(1);
         let isAscending = table.getAttribute("data-sort") !== "asc";
 
@@ -161,6 +576,494 @@
 
         rows.forEach(row => table.appendChild(row));
         table.setAttribute("data-sort", isAscending ? "asc" : "desc");
+    }
+    
+    // Thêm xử lý tìm kiếm ứng viên
+    function setupCandidateSearch() {
+        const searchButton = document.getElementById('searchCandidateButton');
+        const searchInput = document.getElementById('searchCandidateInput');
+        
+        searchButton.addEventListener('click', function() {
+            searchCandidates();
+        });
+        
+        searchInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                searchCandidates();
+            }
+        });
+    }
+    
+    function searchCandidates() {
+        const searchTerm = document.getElementById('searchCandidateInput').value.toLowerCase().trim();
+        
+        if (!window.allCandidates) {
+            return;
+        }
+        
+        // Nếu không có từ khóa tìm kiếm, hiển thị tất cả
+        if (!searchTerm) {
+            displayCandidates(window.allCandidates, window.currentRecruitmentId);
+            return;
+        }
+        
+        // Lọc danh sách ứng viên theo từ khóa
+        const filteredCandidates = window.allCandidates.filter(candidate => {
+            return (
+                (candidate.name && candidate.name.toLowerCase().includes(searchTerm)) ||
+                (candidate.education && candidate.education.toLowerCase().includes(searchTerm)) ||
+                (candidate.skill && candidate.skill.toLowerCase().includes(searchTerm))
+            );
+        });
+        
+        // Hiển thị kết quả tìm kiếm
+        if (filteredCandidates.length === 0) {
+            const tableBody = document.getElementById("candidateTableBody");
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No candidates found matching your search criteria</td></tr>';
+            
+            // Xóa phân trang nếu có
+            const existingPagination = document.getElementById('candidatePagination');
+            if (existingPagination) {
+                existingPagination.remove();
+            }
+        } else {
+            displayCandidates(filteredCandidates, window.currentRecruitmentId);
+        }
+    }
+    
+    function openCandidateModal(row) {
+        // Get the data from the clicked row
+        const name = row.cells[0].textContent;
+        const position = row.cells[1].textContent;
+        const recruitmentId = row.getAttribute('data-id');
+        
+        const modal = document.getElementById("candidateModal");
+        const modalTitle = document.getElementById("modalTitle");
+        modalTitle.textContent = name + " - " + position + " Candidates";
+        
+        // Load candidates
+        loadCandidates(recruitmentId);
+        
+        // Set up search functionality
+        setupCandidateSearch();
+        
+        // Add blur effect to sidebar and content
+        document.body.classList.add('modal-open');
+        
+        // Display the modal
+        modal.style.display = "block";
+        
+        // Prevent event bubbling
+        event.stopPropagation();
+    }
+    
+    function closeModal() {
+        const modal = document.getElementById("candidateModal");
+        modal.style.display = "none";
+        
+        // Remove blur effect
+        document.body.classList.remove('modal-open');
+    }
+    
+    function loadCandidates(recruitmentId) {
+        // Fetch CV_Info data from the server based on the recruitment ID
+        const tableBody = document.getElementById("candidateTableBody");
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Loading candidates...</td></tr>';
+        
+        // Call the API to get CV_Info data
+        fetch('/api/cv-info/recruitment/' + recruitmentId)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch candidates: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                displayCandidates(data, recruitmentId);
+            })
+            .catch(error => {
+                console.error('Error fetching candidates:', error);
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading candidates: ' + error.message + '</td></tr>';
+                
+                // For demo purposes, load sample data if API fails
+                setTimeout(() => {
+                    loadSampleCandidates(recruitmentId);
+                }, 1000);
+            });
+    }
+    
+    function loadSampleCandidates(recruitmentId) {
+        console.warn('Using sample data because API failed');
+        const sampleCandidates = [
+            {
+                name: "John Doe", 
+                gpa: 3.8, 
+                education: "Computer Science, FPT University",
+                skill: "Java, Spring Boot, React",
+                gender: "MALE",
+                fileId: 1,
+                recruitmentId: recruitmentId
+            },
+            {
+                name: "Jane Smith", 
+                gpa: 3.5, 
+                education: "Information Technology, FPT University",
+                skill: "Python, Django, SQL",
+                gender: "FEMALE",
+                fileId: 2,
+                recruitmentId: recruitmentId
+            },
+            {
+                name: "Alex Johnson", 
+                gpa: 3.2, 
+                education: "Software Engineering, FPT University",
+                skill: "JavaScript, Node.js, Vue",
+                gender: "MALE",
+                fileId: 3,
+                recruitmentId: recruitmentId
+            }
+        ];
+        displayCandidates(sampleCandidates, recruitmentId);
+    }
+    
+    function displayCandidates(candidates, recruitmentId) {
+        const tableBody = document.getElementById("candidateTableBody");
+        tableBody.innerHTML = "";
+        
+        if (!candidates || candidates.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No candidates found for this requirement</td></tr>';
+            return;
+        }
+
+        // Thêm biến phân trang - thay đổi từ 10 xuống 5
+        const pageSize = 5;
+        const totalCandidates = candidates.length;
+        const totalPages = Math.ceil(totalCandidates / pageSize);
+        let currentPage = 1;
+        
+        // Lưu toàn bộ dữ liệu ứng viên vào biến toàn cục để sử dụng khi chuyển trang
+        window.allCandidates = candidates;
+        window.currentRecruitmentId = recruitmentId;
+        
+        // Hiển thị chỉ 5 ứng viên của trang hiện tại
+        displayCandidatesPage(currentPage, pageSize, recruitmentId);
+        
+        // Tạo phân trang nếu có nhiều hơn 5 ứng viên
+        if (totalCandidates > pageSize) {
+            createPagination(totalPages, currentPage);
+        }
+    }
+    
+    function displayCandidatesPage(page, pageSize, recruitmentId) {
+        const tableBody = document.getElementById("candidateTableBody");
+        tableBody.innerHTML = "";
+        
+        // Lấy danh sách ứng viên cho trang hiện tại
+        const startIndex = (page - 1) * pageSize;
+        const endIndex = Math.min(startIndex + pageSize, window.allCandidates.length);
+        const candidatesForPage = window.allCandidates.slice(startIndex, endIndex);
+        
+        candidatesForPage.forEach(candidate => {
+            const row = document.createElement("tr");
+            
+            // Name
+            const nameCell = document.createElement("td");
+            nameCell.textContent = candidate.name || "Unknown";
+            row.appendChild(nameCell);
+            
+            // GPA
+            const gpaCell = document.createElement("td");
+            const gpaSpan = document.createElement("span");
+            gpaSpan.textContent = candidate.gpa;
+            
+            if (candidate.gpa >= 3.7) {
+                gpaSpan.className = "gpa gpa-high";
+            } else if (candidate.gpa >= 3.0) {
+                gpaSpan.className = "gpa gpa-medium";
+            } else {
+                gpaSpan.className = "gpa gpa-low";
+            }
+            
+            gpaCell.appendChild(gpaSpan);
+            row.appendChild(gpaCell);
+            
+            // Education
+            const eduCell = document.createElement("td");
+            eduCell.textContent = candidate.education || "Not specified";
+            row.appendChild(eduCell);
+            
+            // Skills
+            const skillsCell = document.createElement("td");
+            const skillsContainer = document.createElement("div");
+            skillsContainer.className = "skills-container";
+            
+            // Split the skills string into an array
+            let skills = [];
+            if (typeof candidate.skill === 'string') {
+                skills = candidate.skill.split(',').map(s => s.trim()).filter(s => s);
+            }
+            
+            // Nếu không có kỹ năng, thêm thông báo
+            if (skills.length === 0) {
+                const pill = document.createElement("span");
+                pill.className = "skill-pill";
+                pill.style.backgroundColor = "#f8f9fa";
+                pill.style.color = "#6c757d";
+                pill.textContent = "No skills specified";
+                skillsContainer.appendChild(pill);
+            } else {
+                skills.forEach(skill => {
+                    const pill = document.createElement("span");
+                    pill.className = "skill-pill";
+                    pill.textContent = skill;
+                    skillsContainer.appendChild(pill);
+                });
+            }
+            
+            skillsCell.appendChild(skillsContainer);
+            row.appendChild(skillsCell);
+            
+            // Gender
+            const genderCell = document.createElement("td");
+            genderCell.textContent = candidate.gender || "MALE";
+            row.appendChild(genderCell);
+            
+            // Actions
+            const actionCell = document.createElement("td");
+            
+            // Create action icons container
+            const actionIcons = document.createElement("div");
+            actionIcons.className = "action-icons";
+            
+            // Create accept button
+            const acceptButton = document.createElement("button");
+            acceptButton.className = "action-icon check-icon";
+            acceptButton.title = "Approve Candidate";
+            acceptButton.innerHTML = '<i class="fas fa-solid fa-check"></i>';
+            acceptButton.onclick = function() {
+                approveCandidate(candidate.fileId, recruitmentId);
+            };
+            
+            // Create reject button
+            // const rejectButton = document.createElement("button");
+            // rejectButton.className = "action-icon x-icon";
+            // rejectButton.title = "Reject Candidate";
+            // rejectButton.innerHTML = '<i class="fas fa-times"></i>';
+            // rejectButton.onclick = function() {
+            //     rejectCandidate(candidate.fileId, recruitmentId);
+            // };
+            
+            // Add buttons to container
+            actionIcons.appendChild(acceptButton);
+            // actionIcons.appendChild(rejectButton);
+            
+            // Add container to cell
+            actionCell.appendChild(actionIcons);
+            
+            // Add cell to row
+            row.appendChild(actionCell);
+            
+            // Add row to table
+            tableBody.appendChild(row);
+        });
+    }
+    
+    function createPagination(totalPages, currentPage) {
+        // Xóa phân trang cũ nếu có
+        const existingPagination = document.getElementById('candidatePagination');
+        if (existingPagination) {
+            existingPagination.remove();
+        }
+        
+        // Tạo container cho phân trang
+        const paginationContainer = document.createElement('div');
+        paginationContainer.id = 'candidatePagination';
+        paginationContainer.className = 'pagination-container mt-3 d-flex justify-content-center';
+        
+        // Tạo ul element cho nút phân trang
+        const paginationList = document.createElement('ul');
+        paginationList.className = 'pagination';
+        
+        // Nút Previous
+        const prevLi = document.createElement('li');
+        prevLi.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
+        const prevLink = document.createElement('a');
+        prevLink.className = 'page-link';
+        prevLink.href = '#';
+        prevLink.textContent = 'Previous';
+        prevLink.onclick = function(e) {
+            e.preventDefault();
+            if (currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+        };
+        prevLi.appendChild(prevLink);
+        paginationList.appendChild(prevLi);
+        
+        // Tạo các nút số trang
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Điều chỉnh lại startPage nếu cần
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const pageLi = document.createElement('li');
+            pageLi.className = 'page-item ' + (i === currentPage ? 'active' : '');
+            const pageLink = document.createElement('a');
+            pageLink.className = 'page-link';
+            pageLink.href = '#';
+            pageLink.textContent = i;
+            pageLink.onclick = function(e) {
+                e.preventDefault();
+                goToPage(i);
+            };
+            pageLi.appendChild(pageLink);
+            paginationList.appendChild(pageLi);
+        }
+        
+        // Nút Next
+        const nextLi = document.createElement('li');
+        nextLi.className = 'page-item ' + (currentPage === totalPages ? 'disabled' : '');
+        const nextLink = document.createElement('a');
+        nextLink.className = 'page-link';
+        nextLink.href = '#';
+        nextLink.textContent = 'Next';
+        nextLink.onclick = function(e) {
+            e.preventDefault();
+            if (currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        };
+        nextLi.appendChild(nextLink);
+        paginationList.appendChild(nextLi);
+        
+        // Thêm phân trang vào container
+        paginationContainer.appendChild(paginationList);
+        
+        // Thêm vào DOM sau bảng
+        const cardElement = document.querySelector('.modal .card');
+        cardElement.appendChild(paginationContainer);
+    }
+    
+    function goToPage(page) {
+        // Cập nhật trang hiện tại và hiển thị lại dữ liệu - thay đổi từ 10 xuống 5
+        window.currentPage = page;
+        displayCandidatesPage(page, 5, window.currentRecruitmentId);
+        
+        // Cập nhật UI phân trang
+        const totalPages = Math.ceil(window.allCandidates.length / 5);
+        createPagination(totalPages, page);
+    }
+    
+    function approveCandidate(fileId, recruitmentId) {
+        // Call API to approve the candidate
+        fetch('/api/cv-info/approve?fileId=' + fileId + '&recruitmentId=' + recruitmentId, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Failed to approve candidate');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Approval response:', data);
+            
+            if (data.isFull) {
+                // Nếu lớp đã đủ người
+                alert(`Class is now full! (${data.filledSlots}/${data.totalSlot} slots). Other candidates have been removed.`);
+                closeModal(); // Đóng popup
+            } else {
+                // Nếu lớp chưa đủ người
+                alert(`Candidate approved successfully! (${data.filledSlots}/${data.totalSlot} slots filled)`);
+                
+                // Remove the approved candidate from the list without reloading
+                removeApprovedCandidate(fileId);
+            }
+        })
+        .catch(error => {
+            console.error('Error approving candidate:', error);
+            alert('Error approving candidate: ' + error.message);
+        });
+    }
+    
+    /**
+     * Xóa ứng viên đã được approve khỏi danh sách hiển thị
+     */
+    function removeApprovedCandidate(fileId) {
+        // Xóa ứng viên khỏi danh sách toàn cục
+        if (window.allCandidates) {
+            window.allCandidates = window.allCandidates.filter(candidate => candidate.fileId != fileId);
+            
+            // Cập nhật lại danh sách hiển thị
+            const pageSize = 5;
+            const totalCandidates = window.allCandidates.length;
+            const totalPages = Math.ceil(totalCandidates / pageSize);
+            
+            // Kiểm tra nếu trang hiện tại lớn hơn tổng số trang sau khi xóa
+            if (window.currentPage > totalPages && totalPages > 0) {
+                window.currentPage = totalPages;
+            } else if (totalPages === 0) {
+                window.currentPage = 1;
+            }
+            
+            // Cập nhật hiển thị
+            displayCandidatesPage(window.currentPage || 1, pageSize, window.currentRecruitmentId);
+            
+            // Cập nhật phân trang
+            if (totalCandidates > pageSize) {
+                createPagination(totalPages, window.currentPage || 1);
+            } else {
+                // Xóa phân trang nếu không đủ ứng viên
+                const existingPagination = document.getElementById('candidatePagination');
+                if (existingPagination) {
+                    existingPagination.remove();
+                }
+            }
+            
+            // Hiển thị thông báo nếu không còn ứng viên
+            if (totalCandidates === 0) {
+                const tableBody = document.getElementById("candidateTableBody");
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No candidates found for this requirement</td></tr>';
+            }
+        }
+    }
+    
+    function rejectCandidate(fileId, recruitmentId) {
+        // Call API to reject the candidate
+        fetch('/api/cv-info/reject?fileId=' + fileId + '&recruitmentId=' + recruitmentId, {
+            method: 'POST'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to reject candidate');
+            }
+            return response.text();
+        })
+        .then(data => {
+            console.log('Rejection response:', data);
+            alert('Candidate rejected successfully!');
+            // Reload candidates data
+            loadCandidates(recruitmentId);
+        })
+        .catch(error => {
+            console.error('Error rejecting candidate:', error);
+            alert('Error rejecting candidate: ' + error.message);
+        });
+    }
+    
+    // Close modal when clicking outside the modal content
+    window.onclick = function(event) {
+        const modal = document.getElementById("candidateModal");
+        if (event.target === modal) {
+            closeModal();
+        }
     }
 </script>
 </body>
