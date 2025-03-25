@@ -5,55 +5,400 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --secondary-color: #f97316;
+            --secondary-light: #fb923c;
+            --secondary-dark: #c2410c;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --radius: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fb;
+            background-image: linear-gradient(135deg, #f5f7fb 0%, #e4e9f2 100%);
+            color: var(--gray-800);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .profile-container {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .profile-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .profile-header {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            padding: 1.5rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .profile-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        .profile-content {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            background-color: var(--gray-50);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: var(--gray-400);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+            padding-right: 2.5rem;
+        }
+
+        .profile-image-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .profile-image:hover {
+            transform: scale(1.05);
+        }
+
+        .image-edit-button {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: var(--primary-color);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .image-edit-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: var(--shadow);
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .submit-button:active {
+            transform: translateY(0);
+        }
+
+        .logout-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            margin-bottom: 1.5rem;
+        }
+
+        .logout-link:hover {
+            color: var(--error-color);
+        }
+
+        .logout-link i {
+            margin-right: 0.5rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--gray-300), transparent);
+            margin: 1.5rem 0;
+        }
+
+        /* Back button styles */
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1.25rem;
+            background-color: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 10;
+        }
+
+        .back-button:hover {
+            background-color: var(--gray-50);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .back-button i {
+            margin-right: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Action buttons container */
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .action-button {
+            flex: 1;
+            padding: 0.875rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-button.primary {
+            background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .action-button.secondary {
+            background-color: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .action-button.secondary:hover {
+            background-color: var(--gray-50);
+            color: var(--primary-color);
+        }
+
+        .action-button i {
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .profile-container {
+                margin: 1rem;
+                border-radius: 0.75rem;
+            }
+
+            .profile-header {
+                padding: 1.25rem;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-content {
+                padding: 1.25rem;
+            }
+
+            .profile-image-container {
+                margin-bottom: 1.5rem;
+            }
+
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.5rem 1rem;
+                font-size: 0.75rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex justify-center items-center min-h-screen">
-<div class="bg-white p-8 rounded-lg shadow-md w-full max-w-4xl">
-    <input type="hidden" id="user_id" th:value="${user_id}">
-    <h1 class="text-2xl font-bold mb-4">Edit your Information</h1>
-    <hr class="mb-6"/>
-    <a href="/logout">Logout</a>
-    <form>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label for="first_name" class="block text-lg font-semibold mb-2">First Name:</label>
-                <input type="text" id="first_name" name="first_name" placeholder="Enter your First name here" class="w-full p-3 rounded-lg bg-purple-100" required>
-            </div>
-            <div class="flex justify-center md:justify-end">
-                <div class="relative">
-                    <img id="picture" alt="Profile Picture" class="w-24 h-24 rounded-full profile-image">
-                    <button class="absolute bottom-0 right-0 bg-white p-1 rounded-full shadow-md">
-                        <i class="fas fa-pen"></i>
-                    </button>
+<body class="flex justify-center items-center min-h-screen p-4 relative">
+
+<div class="profile-container w-full max-w-4xl">
+    <div class="profile-header">
+        <div>
+            <h1 class="profile-title">Edit Your Profile</h1>
+            <p class="profile-subtitle">Update your personal information</p>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <input type="hidden" id="user_id" th:value="${user_id}">
+
+        <!-- Container cho các nút Back và Logout -->
+        <div class="flex justify-between items-center mb-4">
+            <a href="/logout" class="logout-link">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+
+        <div class="divider"></div>
+
+        <form>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2 flex justify-center mb-6">
+                    <div class="profile-image-container">
+                        <img id="picture" alt="Profile Picture" class="profile-image" src="/placeholder.svg?height=120&width=120">
+                        <button type="button" class="image-edit-button">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div>
-                <label for="last_name" class="block text-lg font-semibold mb-2">Last Name:</label>
-                <input type="text" id="last_name" name="last_name" placeholder="Enter your Last name here" class="w-full p-3 rounded-lg bg-purple-100" required>
-            </div>
-            <div>
-                <label for="gender" class="block text-lg font-semibold mb-2">Gender:</label>
-                <div class="relative">
-                    <select id="gender" name="gender" class="w-full p-3 rounded-lg bg-purple-100 appearance-none" required>
+
+                <div class="form-group">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input type="text" id="first_name" name="first_name" placeholder="Enter your first name" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" placeholder="Enter your last name" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-input bg-gray-100" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone_number" class="form-label">Phone Number</label>
+                    <input type="text" id="phone_number" name="phone" placeholder="Enter your phone number" class="form-input">
+                </div>
+
+                <div class="form-group md:col-span-2">
+                    <label for="gender" class="form-label">Gender</label>
+                    <select id="gender" name="gender" class="form-input form-select" required>
                         <option value="FEMALE">Female</option>
                         <option value="MALE">Male</option>
                         <option value="OTHER">Other</option>
                     </select>
-                    <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2"></i>
                 </div>
             </div>
-            <div>
-                <label for="email" class="block text-lg font-semibold mb-2">Email:</label>
-                <input type="email" id="email" name="email" class="w-full p-3 rounded-lg bg-purple-100" readonly>
+
+            <!-- Action 显示Buttons -->
+            <div class="action-buttons">
+                <a href="javascript:history.back()" class="action-button secondary">
+                    <i class="fas fa-arrow-left"></i> Cancel
+                </a>
+                <button type="submit" class="action-button primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
             </div>
-            <div>
-                <label for="phone_number" class="block text-lg font-semibold mb-2">Phone Number:</label>
-                <input type="text" id="phone_number" name="phone" placeholder="Enter your phone number here" class="w-full p-3 rounded-lg bg-purple-100">
-            </div>
-        </div>
-        <button class="mt-6 rounded-lg p-3 w-full bg-blue-500 text-white font-semibold" type="submit">Save</button>
-    </form>
+        </form>
+    </div>
 </div>
+
 <script src="/assets/js/editProfile.js"></script>
 </body>
 </html>
