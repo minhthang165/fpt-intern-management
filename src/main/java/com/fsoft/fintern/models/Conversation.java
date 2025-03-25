@@ -25,6 +25,11 @@ public class Conversation extends BaseModel {
     @Column(name = "conversation_avatar")
     private String conversationAvatar;
 
+    @Size(max = 255)
+    @Nationalized
+    @Column(name = "type")
+    private String type;
+
     public Integer getId() {
         return id;
     }
@@ -47,5 +52,13 @@ public class Conversation extends BaseModel {
 
     public void setConversationAvatar(String conversationAvatar) {
         this.conversationAvatar = conversationAvatar;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

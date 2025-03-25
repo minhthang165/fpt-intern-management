@@ -1,33 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-<script src="https://cdn.tailwindcss.com">
-</script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
-<link href="/assets/css/main.css" rel="stylesheet"/>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
 </head>
 <body class="bg-white">
 <input type="hidden" id="user_avatar" th:value="${user.picture}">
 <input type="hidden" id="user_id" th:value="${user.id}">
+
 <div class="flex h-screen">
     <!-- Main Content -->
     <div class="flex flex-col flex-grow">
-        <!-- Chat Section -->
+        <!-- Chat Header -->
+        <div class="bg-blue-500 text-white p-4 flex items-center justify-between">
+            <div class="text-xl font-bold">Chat</div>
+            <div class="flex space-x-3">
+                <button class="p-2 rounded-full hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-users" aria-label="Group Chat"></i>
+                </button>
+                <button class="p-2 rounded-full hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-comment" aria-label="One-to-One Chat"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Section --> 
         <div class="flex flex-grow h-screen bg-blue-100">
             <!-- Chat List -->
             <div class="bg-blue-100 w-1/4 left-side overflow-y-auto m-3">
                 <div class="mb-4">
-                    <label>
+                    <label class="w-full">
                         <input class="w-full p-2 rounded-full bg-white border border-gray-300" placeholder="Search" type="text"/>
                     </label>
                 </div>
                 <div class="space-y-4">
+                    <!-- Chat list items will be populated here -->
                 </div>
             </div>
-            <div id="messengerBox" class="flex flex-grow bg-blue-100 right-side p-3 mb-3">
+
+            <!-- Chat Content -->
+            <div id="messengerBox" class="flex flex-grow bg-white rounded-lg shadow-md right-side p-3 mb-3 mx-3 relative">
+                <!-- Main Chat Container -->
+                <div id="chat-container" class="chat-container flex flex-col w-full transition-all duration-300"></div>
+
+                <!-- Conversation Info Box -->
+                <div id="conversation-info-box"
+                     class="conversation-info-box bg-white h-full w-[30%] absolute right-0 top-0 shadow-lg overflow-y-auto hidden transition-all duration-300">
+                </div>
             </div>
+
         </div>
     </div>
 </div>
+
 <script src="/assets/js/messenger.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
