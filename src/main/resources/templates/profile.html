@@ -1,162 +1,1011 @@
-<!DOCTYPE html>
-<html lang="en">
-<head th:replace="include/master-header :: head"></head>
-<style>
-    #loading {
-        display: none;
-        font-size: 16px;
-        font-weight: bold;
-        color: #007bff;
-    }
-    #fileName {
-        font-style: italic;
-        margin-top: 5px;
-    }
-    #pdfViewer {
-        width: 100%;
-        height: 500px;
-        display: none;
-        border: 1px solid #ddd;
-    }
-    .user__dropdown {
-        display: none;
-        position: absolute;
-        top: 110%; /* Điều chỉnh vị trí */
-        right: 0;
-        background: #fff;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        border-radius: 8px;
-        width: 220px;
-        padding: 10px 0;
-        z-index: 1000;
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>User Profile</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <head th:replace="include/master-header :: head"></head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+        <style>
+            :root {
+                --fpt-orange: #f7941d;
+                --fpt-orange-dark: #e58000;
+                --fpt-blue: #0066b3;
+                --fpt-blue-dark: #004e8a;
+                --success: #00a651;
+                --error: #ed1c24;
+                --gray-100: #f8f9fa;
+                --gray-200: #e9ecef;
+                --gray-300: #dee2e6;
+                --gray-400: #ced4da;
+                --gray-500: #adb5bd;
+                --gray-600: #6c757d;
+                --gray-700: #495057;
+                --gray-800: #343a40;
+                --gray-900: #212529;
+                --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                --radius: 8px;
+            }
 
-    .user__dropdown.show {
-        display: block;
-        opacity: 1;
-        transform: translateY(0);
-    }
+            body {
+                font-family: 'Roboto', sans-serif;
+                background-color: #f5f7fb;
+                background-image: linear-gradient(135deg, #f5f7fb 0%, #e4e9f2 100%);
+                color: var(--gray-800);
+                line-height: 1.6;
+                min-height: 100vh;
+            }
 
-    .user__dropdown ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+            /* Add spacing for the header */
+            .header-spacing {
+                padding-top: 120px; /* Adjust this value based on your header height */
+            }
 
-    .user__dropdown li {
-        padding: 10px 15px;
-        display: flex;
-        align-items: center;
-    }
+            .profile-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                border-top: 4px solid var(--fpt-orange);
+            }
 
-    .user__dropdown li a {
-        text-decoration: none;
-        color: #333;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        width: 100%;
-    }
+            .profile-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow);
+            }
 
-    .user__dropdown li a:hover {
-        background: #f0f0f0;
-        border-radius: 5px;
-    }
+            .upload-area {
+                border: 2px dashed var(--gray-300);
+                border-radius: var(--radius);
+                padding: 30px;
+                text-align: center;
+                margin-bottom: 20px;
+                transition: all 0.3s ease;
+                cursor: pointer;
+                background-color: var(--gray-100);
+            }
 
-    .user__dropdown svg {
-        margin-right: 10px;
-        fill: #666;
-    }
-</style>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<body class="bg-gray-100">
-<header th:replace="include/guest-header :: header"></header>
-<section id="homeabout" class="about__area p-relative pt-150 pb-90">
-    <input type="hidden" id="user_id" th:value="${user_id}">
+            .upload-area:hover {
+                border-color: var(--fpt-orange);
+                background-color: rgba(247, 148, 29, 0.05);
+            }
 
-    <!-- Profile Information -->
-    <div class="max-w-4xl mx-auto mt-8 bg-white p-8 rounded-lg shadow">
-        <div class="flex justify-between items-center border-b pb-4 mb-4">
-            <a href="/logout">Logout</a>
-            <h2 class="text-xl font-semibold">Profile Information</h2>
-            <button onclick="window.location.href = `/edit`" class="text-gray-600 flex items-center">
-                <i class="fas fa-edit mr-2"></i>
-                Edit Profile
-            </button>
-        </div>
-        <div class="flex">
-            <div class="w-2/5 flex flex-col items-center">
-                <img id="profile_picture" class="rounded-full mb-4" height="100" width="100"/>
-                <div class="text-left w-full">
-                    <p class="font-semibold">Name: <span id="full_name"></span></p>
-                    <p class="mt-2 font-semibold">Email: <span id="email"></span></p>
-                    <p class="mt-2 font-semibold">Phone Number: <span id="phone"></span></p>
-                    <p class="mt-2 font-semibold">MY CV</p>
-                    <form id="uploadForm" enctype="multipart/form-data">
-                        <input type="file" id="fileInput" required>
-                        <p id="fileName"></p>
-                        <button type="submit" id="uploadButton">Upload</button>
-                        <span id="loading">⏳ Đang tải lên...</span>
-                    </form>
+            .upload-icon {
+                width: 80px;
+                height: 80px;
+                margin: 0 auto 15px;
+                background-color: rgba(247, 148, 29, 0.1);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 32px;
+            }
+
+            .upload-text {
+                margin-bottom: 15px;
+                color: var(--gray-700);
+            }
+
+            .upload-hint {
+                font-size: 13px;
+                color: var(--gray-600);
+                margin-bottom: 15px;
+            }
+
+            .file-input-wrapper {
+                position: relative;
+                overflow: hidden;
+                display: inline-block;
+            }
+
+            #fileInput {
+                position: absolute;
+                font-size: 100px;
+                opacity: 0;
+                right: 0;
+                top: 0;
+                cursor: pointer;
+            }
+
+            .file-input-label {
+                display: inline-block;
+                padding: 10px 24px;
+                background-color: var(--fpt-orange);
+                color: white;
+                border-radius: var(--radius);
+                cursor: pointer;
+                transition: background-color 0.3s;
+                font-weight: 500;
+                box-shadow: 0 2px 4px rgba(247, 148, 29, 0.3);
+            }
+
+            .file-input-label:hover {
+                background-color: var(--fpt-orange-dark);
+            }
+
+            #fileName {
+                margin-top: 15px;
+                padding: 10px;
+                background-color: white;
+                border-radius: var(--radius);
+                border: 1px solid var(--gray-300);
+                color: var(--gray-700);
+                word-break: break-all;
+                display: none;
+            }
+
+            #uploadButton {
+                display: block;
+                width: 100%;
+                padding: 12px;
+                background-color: var(--fpt-blue);
+                color: white;
+                border: none;
+                border-radius: var(--radius);
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 500;
+                margin-top: 20px;
+                transition: background-color 0.3s;
+                box-shadow: 0 2px 4px rgba(0, 102, 179, 0.3);
+            }
+
+            #uploadButton:hover {
+                background-color: var(--fpt-blue-dark);
+            }
+
+            #uploadButton:disabled {
+                background-color: var(--gray-400);
+                box-shadow: none;
+                cursor: not-allowed;
+            }
+
+            #loading {
+                display: none;
+                font-weight: 500;
+                color: var(--fpt-blue);
+                margin-top: 15px;
+                text-align: center;
+                padding: 10px;
+                background-color: rgba(0, 102, 179, 0.05);
+                border-radius: var(--radius);
+            }
+
+            #message {
+                margin-top: 15px;
+                padding: 15px;
+                border-radius: var(--radius);
+                text-align: center;
+                font-weight: 500;
+                display: none;
+            }
+
+            .message-success {
+                background-color: rgba(0, 166, 81, 0.1);
+                color: var(--success);
+                border-left: 4px solid var(--success);
+            }
+
+            .message-error {
+                background-color: rgba(237, 28, 36, 0.1);
+                color: var(--error);
+                border-left: 4px solid var(--error);
+            }
+
+            #pdfViewer {
+                width: 100%;
+                height: 500px;
+                display: none;
+                border: 1px solid var(--gray-300);
+                border-radius: var(--radius);
+                margin-top: 20px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            .progress-container {
+                margin-top: 15px;
+                display: none;
+            }
+
+            .progress-bar {
+                height: 6px;
+                background-color: var(--gray-200);
+                border-radius: 3px;
+                overflow: hidden;
+            }
+
+            .progress {
+                height: 100%;
+                background-color: var(--fpt-orange);
+                width: 0%;
+                transition: width 0.3s ease;
+            }
+
+            .cv-list-item {
+                transition: all 0.2s ease;
+                padding: 15px;
+                border-bottom: 1px solid var(--gray-200);
+                display: flex;
+                align-items: center;
+            }
+
+            .cv-list-item:hover {
+                background-color: var(--gray-100);
+            }
+
+            .cv-list-item:last-child {
+                border-bottom: none;
+            }
+
+            .cv-list-item .file-icon {
+                margin-right: 15px;
+                color: var(--fpt-blue);
+                font-size: 20px;
+            }
+
+            .cv-list-item .file-name {
+                flex: 1;
+                font-weight: 500;
+            }
+
+            .cv-list-item .view-button {
+                background-color: var(--fpt-orange);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: var(--radius);
+                cursor: pointer;
+                font-size: 14px;
+                transition: background-color 0.3s;
+            }
+
+            .cv-list-item .view-button:hover {
+                background-color: var(--fpt-orange-dark);
+            }
+
+            /* Delete button styles */
+            .cv-list-item .delete-button {
+                background-color: transparent;
+                color: var(--error);
+                border: 1px solid var(--error);
+                padding: 6px 12px;
+                border-radius: var(--radius);
+                cursor: pointer;
+                font-size: 14px;
+                transition: all 0.3s;
+                margin-left: 8px;
+            }
+
+            .cv-list-item .delete-button:hover {
+                background-color: var(--error);
+                color: white;
+            }
+
+            /* Confirmation modal styles */
+            .confirm-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1100;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .confirm-modal-content {
+                background-color: white;
+                border-radius: var(--radius);
+                width: 90%;
+                max-width: 400px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                overflow: hidden;
+            }
+
+            .confirm-modal-header {
+                background: linear-gradient(90deg, var(--error), #c41017);
+                color: white;
+                padding: 15px 20px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .confirm-modal-header h3 {
+                margin: 0;
+                font-size: 18px;
+                display: flex;
+                align-items: center;
+            }
+
+            .confirm-modal-header .warning-icon {
+                margin-right: 10px;
+                font-size: 20px;
+            }
+
+            .confirm-modal-body {
+                padding: 20px;
+                text-align: center;
+            }
+
+            .confirm-modal-footer {
+                padding: 15px 20px;
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                border-top: 1px solid var(--gray-200);
+            }
+
+            .confirm-modal-footer button {
+                padding: 8px 16px;
+                border-radius: var(--radius);
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .cancel-button {
+                background-color: var(--gray-200);
+                color: var(--gray-700);
+                border: none;
+            }
+
+            .cancel-button:hover {
+                background-color: var(--gray-300);
+            }
+
+            .confirm-delete-button {
+                background-color: var(--error);
+                color: white;
+                border: none;
+            }
+
+            .confirm-delete-button:hover {
+                background-color: #c41017;
+            }
+
+            .confirm-delete-button:disabled {
+                background-color: var(--gray-400);
+                cursor: not-allowed;
+            }
+
+            .user__dropdown {
+                display: none;
+                position: absolute;
+                top: 110%;
+                right: 0;
+                background: #fff;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+                border-radius: 8px;
+                width: 220px;
+                padding: 10px 0;
+                z-index: 1000;
+                opacity: 0;
+                transform: translateY(-10px);
+                transition: opacity 0.3s ease, transform 0.3s ease;
+            }
+
+            .user__dropdown.show {
+                display: block;
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .user__dropdown ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .user__dropdown li {
+                padding: 10px 15px;
+                display: flex;
+                align-items: center;
+            }
+
+            .user__dropdown li a {
+                text-decoration: none;
+                color: #333;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                width: 100%;
+            }
+
+            .user__dropdown li a:hover {
+                background: #f0f0f0;
+                border-radius: 5px;
+            }
+
+            .user__dropdown svg {
+                margin-right: 10px;
+                fill: #666;
+            }
+
+            .header-title {
+                color: var(--fpt-blue);
+                font-size: 24px;
+                font-weight: 700;
+                margin: 0;
+            }
+
+            .header-subtitle {
+                color: var(--gray-600);
+                font-size: 14px;
+            }
+
+            .logo {
+                height: 50px;
+                margin-right: 15px;
+            }
+
+            /* Responsive adjustments for header spacing */
+            @media (max-width: 768px) {
+                .header-spacing {
+                    padding-top: 100px; /* Smaller spacing on mobile */
+                }
+            }
+        </style>
+    </head>
+    <body>
+    <header th:replace="include/guest-header :: header"></header>
+
+    <!-- Added header-spacing class to create space between header and content -->
+    <section class="header-spacing px-4 pb-16">
+        <input type="hidden" id="user_id" th:value="${user_id}">
+        <div class="max-w-5xl mx-auto">
+            <!-- Profile Card -->
+            <div class="profile-card bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+                <!-- Profile Header -->
+                <div class="bg-gradient-to-r from-orange-500 to-indigo-500 px-8 py-6 text-white flex justify-between items-center">
+                    <h2 class="text-2xl font-semibold" style="color: white">Profile Information</h2>
+                    <button onclick="window.location.href = `/edit`" class="bg-white text-indigo-600 px-4 py-2 rounded-lg flex items-center font-medium hover:bg-opacity-90 transition-all">
+                        <i class="fas fa-edit mr-2"></i>
+                        Edit Profile
+                    </button>
+                </div>
+
+                <!-- Profile Content -->
+                <div class="p-8">
+                    <div class="flex flex-col md:flex-row">
+                        <!-- Left Column - User Info -->
+                        <div class="w-full md:w-2/5 flex flex-col items-center md:items-start mb-8 md:mb-0">
+                            <div class="relative mb-6 group">
+                                <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full opacity-75 group-hover:opacity-100 transition-opacity -m-1"></div>
+                                <img id="profile_picture" class="rounded-full w-32 h-32 object-cover border-4 border-white relative" alt="Profile Picture" />
+                            </div>
+
+                            <div class="w-full space-y-4 bg-gray-50 p-6 rounded-lg">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user text-indigo-500 w-8"></i>
+                                    <div>
+                                        <p class="text-gray-500 text-sm">Full Name</p>
+                                        <p id="full_name" class="font-medium text-gray-800"></p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center">
+                                    <i class="fas fa-envelope text-indigo-500 w-8"></i>
+                                    <div>
+                                        <p class="text-gray-500 text-sm">Email Address</p>
+                                        <p id="email" class="font-medium text-gray-800"></p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center">
+                                    <i class="fas fa-phone text-indigo-500 w-8"></i>
+                                    <div>
+                                        <p class="text-gray-500 text-sm">Phone Number</p>
+                                        <p id="phone" class="font-medium text-gray-800"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column - CV Management -->
+                        <div class="w-full md:w-3/5 md:pl-8 md:border-l border-gray-200">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-file-alt text-indigo-500 mr-2"></i>
+                                CV Management
+                            </h3>
+
+                            <!-- FPT Style Upload Form -->
+                            <form id="uploadForm" enctype="multipart/form-data">
+                                <div class="upload-area" id="uploadArea">
+                                    <div class="upload-icon">📄</div>
+                                    <p class="upload-text">Drag and drop your file here or click to browse</p>
+                                    <p class="upload-hint">Supported formats: PDF, DOC, DOCX (Max 10MB)</p>
+                                    <div class="file-input-wrapper">
+                                        <label for="fileInput" class="file-input-label">Select File</label>
+                                        <input type="file" id="fileInput" required>
+                                    </div>
+                                </div>
+
+                                <div id="fileName"></div>
+
+                                <div class="progress-container" id="progressContainer">
+                                    <div class="progress-bar">
+                                        <div class="progress" id="progressBar"></div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" id="uploadButton" disabled>Upload Document</button>
+                                <div id="loading">⏳ Uploading...</div>
+                                <div id="message"></div>
+                            </form>
+
+                            <!-- CV List -->
+                            <div class="bg-white border border-gray-200 rounded-lg mt-8">
+                                <div class="px-6 py-4 border-b border-gray-200">
+                                    <h4 class="font-medium text-gray-700">My CV Documents</h4>
+                                </div>
+                                <ul id="cv_list" class="divide-y divide-gray-200 max-h-60 overflow-y-auto">
+                                    <!-- CV items will be populated here -->
+                                </ul>
+                            </div>
+
+                            <!-- PDF Viewer -->
+                            <iframe id="pdfViewer" frameborder="0"></iframe>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div id="cv_list" class="w-3/5 border-l pl-4">
-                <!-- Additional content can go here -->
+        </div>
+    </section>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="confirmDeleteModal" class="confirm-modal">
+        <div class="confirm-modal-content">
+            <div class="confirm-modal-header">
+                <h3><i class="fas fa-exclamation-triangle warning-icon"></i> Confirm Deletion</h3>
+                <button id="closeConfirmModal" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
             </div>
-            <div id="previewContainer"></div>
-            <p id="message"></p>
-            <iframe id="pdfViewer" frameborder="0"></iframe>
+            <div class="confirm-modal-body">
+                <p>Are you sure you want to delete <span id="fileToDeleteName" style="font-weight: 500;"></span>?</p>
+                <p style="margin-top: 10px; font-size: 14px; color: var(--gray-600);">This action cannot be undone.</p>
+            </div>
+            <div class="confirm-modal-footer">
+                <button id="cancelDeleteButton" class="cancel-button">Cancel</button>
+                <button id="confirmDeleteButton" class="confirm-delete-button">Delete</button>
+            </div>
         </div>
     </div>
-</section>
-<footer th:replace="~{include/master-footer :: footer}"></footer>
-<script>
-    document.addEventListener("DOMContentLoaded", async function () {
-        const id = document.getElementById("user_id").value;
-        document.getElementById("uploadForm").addEventListener("submit", uploadFile);
-        try {
-            let response = await fetch(`/api/user/` + id);
-            if (!response.ok) throw new Error("User not found");
-            const user = await response.json();
-            document.getElementById("profile_picture").src = user.avatar_path;
-            document.getElementById("full_name").textContent = `${user.first_name} ${user.last_name}`;
-            document.getElementById("email").textContent = user.email;
-            document.getElementById("phone").textContent = user.phone_number;
-        } catch (error) {
-            console.error("Error fetching user:", error);
-        }
-        let cvResponse = await fetch(`/file/user/${id}/all`);
-        let cvData = await cvResponse.json();  // Convert response to JSON
-        let cv_list = document.getElementById("cv_list");
 
-// Clear previous list items
-        cv_list.innerHTML = "";
+    <footer th:replace="~{include/master-footer :: footer}"></footer>
 
-// Check if the response contains data
-        if (Array.isArray(cvData) && cvData.length > 0) {
-            cvData.forEach(cv => {
-                let listItem = document.createElement("li");
-                let link = document.createElement("a");
+    <script>
+        // Global variable to store the file to be deleted
+        let currentFileToDelete = null;
 
-                link.textContent = cv.displayName;  // Display name
-                link.href = "#"; // Prevent default navigation
-                link.onclick = (e) => {
-                    e.preventDefault();
-                    showPreview(cv.path);
-                };
+        document.addEventListener("DOMContentLoaded", async function () {
+            const id = document.getElementById("user_id").value;
+            document.getElementById("uploadForm").addEventListener("submit", uploadFile);
 
-                listItem.appendChild(link);
-                cv_list.appendChild(listItem);
+            // File input change event
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                const fileNameEl = document.getElementById('fileName');
+                if (e.target.files[0]) {
+                    const fileName = e.target.files[0].name;
+                    fileNameEl.textContent = `📂 Selected: ${fileName}`;
+                    fileNameEl.style.display = 'block';
+                    document.getElementById('uploadButton').disabled = false;
+                } else {
+                    fileNameEl.style.display = 'none';
+                    document.getElementById('uploadButton').disabled = true;
+                }
             });
-        } else {
-            cv_list.innerHTML = "<li>No files found</li>";
+
+            // Upload area click event
+            document.getElementById('uploadArea').addEventListener('click', function(event) {
+                if (event.target.id !== 'fileInput') {
+                    document.getElementById('fileInput').click();
+                }
+            });
+
+
+            // Drag and drop functionality
+            const uploadArea = document.getElementById('uploadArea');
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                uploadArea.style.borderColor = 'var(--fpt-orange)';
+                uploadArea.style.backgroundColor = 'rgba(247, 148, 29, 0.05)';
+            }
+
+            function unhighlight() {
+                uploadArea.style.borderColor = 'var(--gray-300)';
+                uploadArea.style.backgroundColor = 'var(--gray-100)';
+            }
+
+            uploadArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                if (files.length) {
+                    document.getElementById('fileInput').files = files;
+                    const fileName = files[0].name;
+                    const fileNameEl = document.getElementById('fileName');
+                    fileNameEl.textContent = `📂 Selected: ${fileName}`;
+                    fileNameEl.style.display = 'block';
+                    document.getElementById('uploadButton').disabled = false;
+                }
+            }
+
+            // Fetch user data
+            try {
+                let response = await fetch(`/api/user/` + id);
+                if (!response.ok) throw new Error("User not found");
+                const user = await response.json();
+                document.getElementById("profile_picture").src = user.avatar_path || '/placeholder.svg?height=128&width=128';
+                document.getElementById("full_name").textContent = `${user.first_name} ${user.last_name}`;
+                document.getElementById("email").textContent = user.email;
+                document.getElementById("phone").textContent = user.phone_number || 'Not provided';
+            } catch (error) {
+                console.error("Error fetching user:", error);
+            }
+
+            // Fetch CV list
+            await refreshCVList(id);
+
+            // Set up user dropdown if it exists
+            const userPortfolio = document.getElementById("userportfolio");
+            const userDropdown = document.querySelector(".user__dropdown");
+
+            if (userPortfolio && userDropdown) {
+                userPortfolio.addEventListener("click", function (event) {
+                    userDropdown.classList.toggle("show");
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener("click", function (event) {
+                    if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
+                        userDropdown.classList.remove("show");
+                    }
+                });
+            }
+
+            // Set up delete confirmation modal event listeners
+            document.getElementById('closeConfirmModal').addEventListener('click', function() {
+                document.getElementById('confirmDeleteModal').style.display = 'none';
+            });
+
+            document.getElementById('cancelDeleteButton').addEventListener('click', function() {
+                document.getElementById('confirmDeleteModal').style.display = 'none';
+            });
+
+            document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+                if (currentFileToDelete) {
+                    deleteFile(currentFileToDelete);
+                }
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('confirmDeleteModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        });
+
+        // Upload file function
+        async function uploadFile(event) {
+            event.preventDefault();
+            const userId = document.getElementById("user_id").value;
+            const fileInput = document.getElementById("fileInput");
+            const messageEl = document.getElementById("message");
+            const loadingEl = document.getElementById("loading");
+            const fileNameEl = document.getElementById("fileName");
+            const progressContainer = document.getElementById("progressContainer");
+            const progressBar = document.getElementById("progressBar");
+            const cv_list = document.getElementById("cv_list");
+
+            // Check required elements
+            if (!cv_list || !messageEl) {
+                console.error("❌ One or more UI elements don't exist!");
+                return;
+            }
+
+            // Set up initial UI
+            messageEl.textContent = "";
+            messageEl.className = "";
+            messageEl.style.display = "none";
+            loadingEl.style.display = "block";
+            progressContainer.style.display = "block";
+            progressBar.style.width = "0%";
+
+            // Simulate progress bar
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + "%";
+            }, 300);
+
+            // Check file
+            if (!fileInput.files.length) {
+                messageEl.textContent = "❌ Please select a file!";
+                messageEl.className = "message-error";
+                messageEl.style.display = "block";
+                loadingEl.style.display = "none";
+                progressContainer.style.display = "none";
+                clearInterval(progressInterval);
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const fileName = file.name;
+            fileNameEl.textContent = `📂 Uploading: ${fileName}`;
+
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("Filetype", "CV");
+
+            if (userId && !isNaN(userId)) {
+                formData.append("userId", userId);
+            } else {
+                messageEl.textContent = "❌ User ID not found!";
+                messageEl.className = "message-error";
+                messageEl.style.display = "block";
+                loadingEl.style.display = "none";
+                progressContainer.style.display = "none";
+                clearInterval(progressInterval);
+                return;
+            }
+
+            try {
+                const response = await fetch("/drive/uploadFileToGoogleDrive", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                progressBar.style.width = "100%";
+                clearInterval(progressInterval);
+
+                const data = await response.json();
+                let message = data.success ? "✅ " + data.message : "❌ " + data.message;
+                messageEl.textContent = message;
+                messageEl.className = data.success ? "message-success" : "message-error";
+                messageEl.style.display = "block";
+
+                if (data.success && data.data && data.data.url) {
+                    let fileUrl = data.data.url;
+
+                    // Add new file to temporary list
+                    if (cv_list.innerHTML.includes("No CV documents found")) {
+                        cv_list.innerHTML = "";
+                    }
+                    let listItem = document.createElement("li");
+                    listItem.className = "cv-list-item";
+                    listItem.style.backgroundColor = "rgba(247, 148, 29, 0.1)";
+                    listItem.style.borderLeft = "4px solid var(--fpt-orange)";
+
+                    let fileIcon = document.createElement("i");
+                    const fileExt = fileName.split('.').pop().toLowerCase();
+                    if (fileExt === 'pdf') {
+                        fileIcon.className = "fas fa-file-pdf file-icon";
+                        fileIcon.style.color = "#e74c3c";
+                    } else if (['doc', 'docx'].includes(fileExt)) {
+                        fileIcon.className = "fas fa-file-word file-icon";
+                        fileIcon.style.color = "#ff923a";
+                    } else {
+                        fileIcon.className = "fas fa-file-alt file-icon";
+                    }
+
+                    let nameSpan = document.createElement("span");
+                    nameSpan.className = "file-name";
+                    nameSpan.textContent = fileName;
+
+                    let buttonContainer = document.createElement("div");
+                    buttonContainer.style.display = "flex";
+                    buttonContainer.style.gap = "8px";
+
+                    let viewButton = document.createElement("button");
+                    viewButton.className = "view-button";
+                    viewButton.innerHTML = '<i class="fas fa-eye mr-1"></i> View';
+                    viewButton.onclick = (e) => {
+                        e.preventDefault();
+                        showPreview(fileUrl);
+                    };
+
+                    buttonContainer.appendChild(viewButton);
+                    listItem.appendChild(fileIcon);
+                    listItem.appendChild(nameSpan);
+                    listItem.appendChild(buttonContainer);
+
+                    if (cv_list.firstChild) {
+                        cv_list.insertBefore(listItem, cv_list.firstChild);
+                    } else {
+                        cv_list.appendChild(listItem);
+                    }
+
+                    setTimeout(() => {
+                        listItem.style.transition = "background-color 1s ease";
+                        listItem.style.backgroundColor = "";
+                    }, 1000);
+
+                    // Refresh CV list from server
+                    console.log("🔄 Refreshing CV list...");
+                    await refreshCVList(userId);
+                }
+            } catch (error) {
+                messageEl.textContent = "❌ Upload error: " + error.message;
+                messageEl.className = "message-error";
+                messageEl.style.display = "block";
+                clearInterval(progressInterval);
+            } finally {
+                loadingEl.style.display = "none";
+                setTimeout(() => {
+                    progressContainer.style.display = "none";
+                    fileNameEl.textContent = "";
+                }, 500);
+            }
         }
 
-// Function to show file preview in iframe (popup-style)
+        // Refresh CV list function
+        async function refreshCVList(userId) {
+            try {
+                const cvResponse = await fetch(`/file/user/${userId}/all`);
+                if (!cvResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${cvResponse.status}`);
+                }
+                const cvData = await cvResponse.json();
+
+                const cv_list = document.getElementById("cv_list");
+                if (!cv_list) {
+                    throw new Error("CV list element doesn't exist in the DOM!");
+                }
+
+                cv_list.innerHTML = "";
+
+                const cvArray = Array.isArray(cvData) ? cvData : (cvData.data || []);
+                if (cvArray.length > 0) {
+                    cvArray.forEach(cv => {
+                        const listItem = document.createElement("li");
+                        listItem.className = "cv-list-item";
+                        listItem.dataset.fileId = cv.id || ''; // Store file ID for deletion
+
+                        const fileIcon = document.createElement("i");
+                        const fileExt = cv.displayName.split('.').pop().toLowerCase();
+                        if (fileExt === 'pdf') {
+                            fileIcon.className = "fas fa-file-pdf file-icon";
+                            fileIcon.style.color = "#e74c3c";
+                        } else if (['doc', 'docx'].includes(fileExt)) {
+                            fileIcon.className = "fas fa-file-word file-icon";
+                            fileIcon.style.color = "#3498db";
+                        } else {
+                            fileIcon.className = "fas fa-file-alt file-icon";
+                        }
+
+                        const nameSpan = document.createElement("span");
+                        nameSpan.className = "file-name";
+                        nameSpan.textContent = cv.displayName;
+
+                        const buttonContainer = document.createElement("div");
+                        buttonContainer.style.display = "flex";
+                        buttonContainer.style.gap = "8px";
+
+                        const viewButton = document.createElement("button");
+                        viewButton.className = "view-button";
+                        viewButton.innerHTML = '<i class="fas fa-eye mr-1"></i> View';
+                        viewButton.onclick = (e) => {
+                            e.preventDefault();
+                            showPreview(cv.url || cv.path);
+                        };
+
+                        const deleteButton = document.createElement("button");
+                        deleteButton.className = "delete-button";
+                        deleteButton.innerHTML = '<i class="fas fa-times"></i>';
+                        deleteButton.onclick = (e) => {
+                            e.preventDefault();
+                            showDeleteConfirmation(cv);
+                        };
+
+                        buttonContainer.appendChild(viewButton);
+                        buttonContainer.appendChild(deleteButton);
+
+                        listItem.appendChild(fileIcon);
+                        listItem.appendChild(nameSpan);
+                        listItem.appendChild(buttonContainer);
+                        cv_list.appendChild(listItem);
+                    });
+                } else {
+                    cv_list.innerHTML = '<li class="cv-list-item text-gray-500 italic">No CV documents found</li>';
+                    console.log("📭 No CVs found");
+                }
+            } catch (error) {
+                const cv_list = document.getElementById("cv_list");
+                if (cv_list) {
+                    cv_list.innerHTML = '<li class="cv-list-item text-red-500">Error loading CV list</li>';
+                }
+            }
+        }
+
+        // Function to show delete confirmation
+        function showDeleteConfirmation(file) {
+            currentFileToDelete = file;
+            const modal = document.getElementById('confirmDeleteModal');
+            const fileNameSpan = document.getElementById('fileToDeleteName');
+            const confirmButton = document.getElementById('confirmDeleteButton');
+
+            fileNameSpan.textContent = file.displayName;
+            confirmButton.disabled = false;
+            confirmButton.textContent = 'Delete';
+
+            modal.style.display = 'flex';
+        }
+
+        // Function to delete file
+        async function deleteFile(file) {
+            const confirmButton = document.getElementById('confirmDeleteButton');
+            confirmButton.disabled = true;
+            confirmButton.textContent = 'Deleting...';
+
+            try {
+                // Replace with your actual delete API endpoint
+                const response = await fetch(`/file/delete/${file.id}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    throw new Error('THIS FILE HAS BEEN APPLIED TO THE SYSTEM AND CANNOT BE DELETED!!!!');
+                }
+
+                // Close modal
+                document.getElementById('confirmDeleteModal').style.display = 'none';
+
+                // Show success message
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = '✅ File deleted successfully';
+                messageEl.className = 'message-success';
+                messageEl.style.display = 'block';
+
+                // Refresh CV list
+                const userId = document.getElementById('user_id').value;
+                await refreshCVList(userId);
+
+                // Hide message after 3 seconds
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                console.error('Error deleting file:', error);
+
+                // Show error message
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = '❌ Error deleting file: ' + error.message;
+                messageEl.className = 'message-error';
+                messageEl.style.display = 'block';
+
+                // Close modal
+                document.getElementById('confirmDeleteModal').style.display = 'none';
+            }
+        }
+
+        // Function to show file preview in iframe (popup-style)
         function showPreview(filePath) {
             // Remove existing preview container if it exists
             let existingPreview = document.getElementById("previewContainer");
@@ -164,7 +1013,6 @@
                 existingPreview.remove();
             }
 
-            // Create the modal container dynamically
             let previewContainer = document.createElement("div");
             previewContainer.id = "previewContainer";
             previewContainer.style.position = "fixed";
@@ -187,127 +1035,76 @@
             closeButton.style.fontSize = "40px";
             closeButton.style.color = "white";
             closeButton.style.cursor = "pointer";
+            closeButton.style.zIndex = "1001";
             closeButton.onclick = () => {
                 previewContainer.remove(); // Remove the popup
             };
 
             // Preview Box
             let previewDiv = document.createElement("div");
-            previewDiv.style.maxWidth = "90%";
-            previewDiv.style.maxHeight = "90%";
+            previewDiv.style.width = "90%";
+            previewDiv.style.maxWidth = "1000px";
+            previewDiv.style.height = "90%";
+            previewDiv.style.maxHeight = "800px";
             previewDiv.style.background = "#fff";
-            previewDiv.style.padding = "10px";
             previewDiv.style.borderRadius = "8px";
-            previewDiv.style.boxShadow = "0px 0px 10px rgba(255, 255, 255, 0.2)";
+            previewDiv.style.boxShadow = "0px 0px 20px rgba(255, 255, 255, 0.3)";
             previewDiv.style.position = "relative";
+            previewDiv.style.overflow = "hidden";
+
+            // Header for the preview
+            let previewHeader = document.createElement("div");
+            previewHeader.style.padding = "15px 20px";
+            previewHeader.style.borderBottom = "1px solid #eee";
+            previewHeader.style.display = "flex";
+            previewHeader.style.justifyContent = "space-between";
+            previewHeader.style.alignItems = "center";
+            previewHeader.style.backgroundColor = "var(--fpt-orange)";
+            previewHeader.style.color = "white";
+            previewHeader.style.background = "linear-gradient(90deg, #F7941D, #3437db)";
+
+            let previewTitle = document.createElement("h3");
+            previewTitle.textContent = "Document Preview";
+            previewTitle.style.color = "white";
+            previewTitle.style.margin = "0";
+            previewTitle.style.fontSize = "18px";
+            previewTitle.style.fontWeight = "600";
+
+            let closeX = document.createElement("button");
+            closeX.innerHTML = "&times;";
+            closeX.style.background = "none";
+            closeX.style.border = "none";
+            closeX.style.fontSize = "24px";
+            closeX.style.cursor = "pointer";
+            closeX.style.color = "white";
+            closeX.onclick = () => {
+                previewContainer.remove();
+            };
+
+            previewHeader.appendChild(previewTitle);
+            previewHeader.appendChild(closeX);
 
             let iframe = document.createElement("iframe");
             iframe.src = filePath;
-            iframe.width = "800px";
-            iframe.height = "500px";
+            iframe.style.width = "100%";
+            iframe.style.height = "calc(100% - 56px)";
             iframe.style.border = "none";
             iframe.style.display = "block";
-            iframe.style.margin = "0 auto";
 
-            previewDiv.appendChild(closeButton);
+            previewDiv.appendChild(previewHeader);
             previewDiv.appendChild(iframe);
+            previewContainer.appendChild(closeButton);
             previewContainer.appendChild(previewDiv);
 
             // Append modal only when needed
             document.body.appendChild(previewContainer);
 
-            // Close modal when clicking outside of the preview
             previewContainer.onclick = (e) => {
                 if (e.target === previewContainer) {
                     previewContainer.remove();
                 }
             };
         }
-
-        const userPortfolio = document.getElementById("userportfolio");
-        const userDropdown = document.querySelector(".user__dropdown");
-
-        if (userPortfolio && userDropdown) {
-            userPortfolio.addEventListener("click", function (event) {
-                userDropdown.classList.toggle("show");
-            });
-
-            // Đóng dropdown khi click ra ngoài
-            document.addEventListener("click", function (event) {
-                if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
-                    userDropdown.classList.remove("show");
-                }
-            });
-        }
-    });
-
-    async function uploadFile(event) {
-        event.preventDefault();
-
-        const userId = document.getElementById("user_id").value;
-        const fileInput = document.getElementById("fileInput");
-        const messageEl = document.getElementById("message");
-        const loadingEl = document.getElementById("loading");
-        const fileNameEl = document.getElementById("fileName");
-        const pdfViewer = document.getElementById("pdfViewer");
-
-        messageEl.textContent = "";
-        loadingEl.style.display = "inline";
-        pdfViewer.style.display = "none";
-
-        if (!fileInput.files.length) {
-            messageEl.textContent = "❌ Vui lòng chọn một file!";
-            messageEl.style.color = "red";
-            loadingEl.style.display = "none";
-            return;
-        }
-
-        const file = fileInput.files[0];
-        fileNameEl.textContent = `📂 Đang tải lên: ${file.name}`;
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("Filetype", "CV");
-
-        if (userId && !isNaN(userId)) {
-            formData.append("userId", userId);
-        } else {
-            messageEl.textContent = "❌ Không tìm thấy userId!";
-            messageEl.style.color = "red";
-            loadingEl.style.display = "none";
-            return;
-        }
-
-        try {
-            console.log("📤 Đang upload file...");
-            const response = await fetch("/drive/uploadFileToGoogleDrive", {
-                method: "POST",
-                body: formData
-            });
-
-            const data = await response.json();
-            console.log("📥 Phản hồi từ server:", data);
-
-            let message = data.success ? "✅ " + data.message : "❌ " + data.message;
-            messageEl.textContent = message;
-            messageEl.style.color = data.success ? "green" : "red";
-
-            if (data.success && data.data && data.data.path) {
-                let fileUrl = data.data.path;
-
-                // Hiển thị file trong iframe
-                pdfViewer.src = fileUrl;
-                pdfViewer.style.display = "block";
-            }
-        } catch (error) {
-            console.error("❌ Lỗi khi upload!", error);
-            messageEl.textContent = "❌ Lỗi khi upload!";
-            messageEl.style.color = "red";
-        } finally {
-            loadingEl.style.display = "none";
-            fileNameEl.textContent = "";
-        }
-    }
-</script>
-</body>
-</html>
+    </script>
+    </body>
+    </html>

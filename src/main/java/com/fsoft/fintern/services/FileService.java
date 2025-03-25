@@ -97,7 +97,7 @@ public class FileService {
         this.fileRepository.save(file);
         return new ResponseEntity<>(file, HttpStatus.OK);
     }
-    public ResponseEntity<File> delete(int id) throws BadRequestException {
+    public ResponseEntity<File> DeActive(int id) throws BadRequestException {
         File file = this.fileRepository.findById(id).orElse(null);
         if (file == null) {
             throw new BadRequestException();
@@ -107,5 +107,14 @@ public class FileService {
         this.fileRepository.save(file);
         return new ResponseEntity<>(file, HttpStatus.OK);
     }
+    public ResponseEntity<String> deleteFile(int id) {
+        Optional<File> file = fileRepository.findById(id);
+        if (file.isEmpty()) {
+            return new ResponseEntity<>("File không tồn tại.", HttpStatus.NOT_FOUND);
+        }
+        fileRepository.deleteById(id);
+        return new ResponseEntity<>("Xóa file thành công.", HttpStatus.OK);
+    }
+
 
 }

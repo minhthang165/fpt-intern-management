@@ -51,10 +51,10 @@ public class FileControler {
             return this.fileService.update(id, fileDTO);
         }
 
-    @DeleteMapping("/file/delete/{id}")
+    @DeleteMapping("/file/DeActive/{id}")
     @Operation(description = "Delete file by ID")
     public ResponseEntity<File> delete(@PathVariable int id) throws BadRequestException {
-        return this.fileService.delete(id);
+        return this.fileService.DeActive(id);
     }
     @GetMapping("/user/{userId}")
     @Operation(description = "Get CV file by user ID")
@@ -64,6 +64,11 @@ public class FileControler {
     @GetMapping("/user/{userId}/all")
     public ResponseEntity<List<File>> findCVsByUserId(@PathVariable Integer userId) {
         return fileService.findCVsByUserId(userId);
+    }
+    @DeleteMapping("/delete/{id}")
+    @Operation(description = "Delete file permanently by ID")
+    public ResponseEntity<String> deleteFile(@PathVariable int id) {
+        return fileService.deleteFile(id);
     }
 }
 

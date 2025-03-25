@@ -68,6 +68,7 @@ public class CVInfoService {
         for (CVInfo cvInfo : cvInfos) {
             Map<String, Object> cvInfoData = new HashMap<>();
             cvInfoData.put("gpa", cvInfo.getGpa());
+
             cvInfoData.put("skill", cvInfo.getSkill());
             cvInfoData.put("education", cvInfo.getEducation());
             cvInfoData.put("fileId", cvInfo.getId().getFileId());
