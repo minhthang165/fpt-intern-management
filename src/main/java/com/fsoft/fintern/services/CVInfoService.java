@@ -60,6 +60,7 @@ public class CVInfoService {
     
     /**
      * Lấy danh sách CV_Info theo recruitmentId kèm thông tin từ File và User
+     * Chỉ lấy những CV có isActive = true
      */
     public List<Map<String, Object>> getCVInfosByRecruitmentId(Integer recruitmentId) {
         List<CVInfo> cvInfos = cvInfoRepository.findAllByRecruitmentId(recruitmentId);
@@ -151,11 +152,20 @@ public class CVInfoService {
             classroom.setNumberOfIntern(classroom.getNumberOfIntern() + 1);
             classroomRepository.save(classroom);
             
-            // 8. Kiểm tra xem lớp đã đủ số lượng chưa
+            // 8. Đánh dấu CV hiện tại là inactive (đã được approve)
+            CVInfoId cvInfoId = new CVInfoId(recruitmentId, fileId);
+            Optional<CVInfo> currentCVInfoOptional = cvInfoRepository.findById(cvInfoId);
+            if (currentCVInfoOptional.isPresent()) {
+                CVInfo currentCVInfo = currentCVInfoOptional.get();
+                currentCVInfo.setActive(false);
+                cvInfoRepository.save(currentCVInfo);
+            }
+            
+            // 9. Kiểm tra xem lớp đã đủ số lượng chưa
             Integer currentCount = classroom.getNumberOfIntern();
             Integer totalSlot = recruitment.getTotalSlot();
             
-            // 9. Nếu đã đủ số lượng, deactivate các CV khác
+            // 10. Nếu đã đủ số lượng, deactivate các CV khác
             if (currentCount >= totalSlot) {
                 deactivateOtherCVs(recruitmentId, fileId);
                 result.put("isFull", true);
@@ -163,7 +173,7 @@ public class CVInfoService {
                 result.put("isFull", false);
             }
             
-            // 10. Thêm thông tin vào kết quả
+            // 11. Thêm thông tin vào kết quả
             result.put("totalSlot", totalSlot);
             result.put("filledSlots", currentCount);
             result.put("position", recruitment.getPosition());
