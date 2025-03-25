@@ -539,7 +539,7 @@
 
             cv_list.innerHTML = "";
 
-            // Check if the response contains data
+
             if (Array.isArray(cvData) && cvData.length > 0) {
                 cvData.forEach(cv => {
                     let listItem = document.createElement("li");
@@ -580,7 +580,6 @@
                 cv_list.innerHTML = '<li class="cv-list-item text-gray-500 italic">No CV documents found</li>';
             }
         } catch (error) {
-            console.error("Error fetching CV list:", error);
             document.getElementById("cv_list").innerHTML = '<li class="cv-list-item text-red-500">Error loading CV documents</li>';
         }
 
@@ -592,7 +591,6 @@
                 userDropdown.classList.toggle("show");
             });
 
-            // Close dropdown when clicking outside
             document.addEventListener("click", function (event) {
                 if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
                     userDropdown.classList.remove("show");
@@ -612,13 +610,12 @@
         const progressBar = document.getElementById("progressBar");
         const cv_list = document.getElementById("cv_list");
 
-        // Kiểm tra các phần tử cần thiết
+
         if (!cv_list || !messageEl) {
-            console.error("❌ Một hoặc nhiều phần tử giao diện không tồn tại!");
             return;
         }
 
-        // Thiết lập giao diện ban đầu
+
         messageEl.textContent = "";
         messageEl.className = "";
         messageEl.style.display = "none";
@@ -626,7 +623,7 @@
         progressContainer.style.display = "block";
         progressBar.style.width = "0%";
 
-        // Mô phỏng thanh tiến trình
+
         let progress = 0;
         const progressInterval = setInterval(() => {
             progress += Math.random() * 10;
@@ -634,7 +631,7 @@
             progressBar.style.width = progress + "%";
         }, 300);
 
-        // Kiểm tra file
+
         if (!fileInput.files.length) {
             messageEl.textContent = "❌ Please select a file!";
             messageEl.className = "message-error";
@@ -734,8 +731,7 @@
                     listItem.style.backgroundColor = "";
                 }, 1000);
 
-                // Làm mới danh sách CV từ server
-                console.log("🔄 Làm mới danh sách CV...");
+
                 await refreshCVList(userId);
             } else {
             }
@@ -814,11 +810,11 @@
                 cv_list.innerHTML = '<li class="cv-list-item text-red-500">Error loading CV list</li>';
             }
         }
+
+
+        function showPreview(filePath) {
     }
 
-    // Function to show file preview in iframe (popup-style)
-    function showPreview(filePath) {
-        // Remove existing preview container if it exists
         let existingPreview = document.getElementById("previewContainer");
         if (existingPreview) {
             existingPreview.remove();
@@ -863,7 +859,7 @@
         previewDiv.style.position = "relative";
         previewDiv.style.overflow = "hidden";
 
-        // Header for the preview
+
         let previewHeader = document.createElement("div");
         previewHeader.style.padding = "15px 20px";
         previewHeader.style.borderBottom = "1px solid #eee";
@@ -906,7 +902,6 @@
         previewContainer.appendChild(closeButton);
         previewContainer.appendChild(previewDiv);
 
-        // Append modal only when needed
         document.body.appendChild(previewContainer);
 
 
