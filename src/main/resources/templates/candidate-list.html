@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Candidate List</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #ff6600;
+      --secondary-color: #333;
+      --light-gray: #f5f5f5;
+      --border-color: #e0e0e0;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+
+    /* Sidebar (nếu cần, hiện tại không dùng) */
+    .sidebar {
+      background-color: #0f172a;
+      color: white;
+      width: 220px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding-top: 20px;
+    }
+
+    .logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .logo img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .nav-item {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      color: white;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-item i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .copyright {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 220px;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0;
+    }
+
+    .breadcrumb a {
+      color: #666;
+      text-decoration: none;
+    }
+
+    .breadcrumb span {
+      color: var(--primary-color);
+      margin-left: 5px;
+    }
+
+    .breadcrumb i {
+      margin: 0 10px;
+      color: #666;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-input {
+      padding: 8px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 50px;
+      width: 300px;
+    }
+
+    .btn {
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn-outline {
+      border: 1px solid var(--primary-color);
+      color: var(--primary-color);
+      background-color: transparent;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+    }
+
+    /* Table */
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 15px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .action-icons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .action-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .check-icon {
+      color: var(--success-color);
+      border: 1px solid var(--success-color);
+    }
+
+    .check-icon:hover {
+      background-color: rgba(40, 167, 69, 0.1);
+    }
+
+    .x-icon {
+      color: var(--danger-color);
+      border: 1px solid var(--danger-color);
+    }
+
+    .x-icon:hover {
+      background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    /* Skills Pills */
+    .skills-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .skill-pill {
+      background-color: rgba(255, 102, 0, 0.1);
+      color: var(--primary-color);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    /* GPA Styling */
+    .gpa {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .gpa-high {
+      color: #28a745;
+    }
+
+    .gpa-medium {
+      color: #fd7e14;
+    }
+
+    .gpa-low {
+      color: #dc3545;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 70px;
+      }
+
+      .sidebar .nav-text {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 70px;
+      }
+
+      .logo {
+        text-align: center;
+        padding: 10px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .search-bar {
+        flex-direction: column;
+      }
+
+      .search-input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+<!-- Main Content -->
+<div class="main-content">
+  <div class="header">
+    <div class="breadcrumb">
+      <a href="#"><i class="fas fa-home"></i> Dashboard</a>
+      <i class="fas fa-chevron-right"></i>
+      <span>Manage Student</span>
+    </div>
+    <div class="search-bar">
+      <form th:action="@{/candidate-list}" method="get" class="d-flex gap-2 align-items-center">
+        <input type="number" name="fileId" class="search-input" placeholder="Enter File ID"
+               th:value="${selectedFileId}" required>
+        <input type="number" name="recruitmentId" class="search-input" placeholder="Enter Recruitment ID"
+               th:value="${selectedRecruitmentId}" required>
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+    </div>
+  </div>
+
+  <h2>Employee List</h2>
+
+  <div class="card">
+    <div class="table-container">
+      <table>
+        <thead>
+        <tr>
+          <th>Full Name</th>
+          <th>GPA</th>
+          <th>Education</th>
+          <th>Skills</th>
+          <th>Gender</th>
+          <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="cv : ${cvInfos}">
+          <td th:text="${file != null ? file.submitter.getLast_name() : 'N/A'}">Thang Nguyen Minh</td>
+          <td>
+                <span th:classappend="${cv.gpa != null and cv.gpa >= 3.7 ? 'gpa-high' : (cv.gpa != null and cv.gpa >= 3.0 ? 'gpa-medium' : 'gpa-low')}"
+                      class="gpa"
+                      th:text="${cv.gpa != null ? cv.gpa : 'N/A'}">3.8</span>
+          </td>
+          <td th:text="${cv.education}">Computer Science, FPT University</td>
+          <td>
+            <div class="skills-container">
+                  <span class="skill-pill"
+                        th:each="skill : ${cv.skill != null ? #strings.setSplit(cv.skill, ',') : #lists.toList('N/A')}"
+<!--                        th:text="${skill.trim()}">Java-->
+                  </span>
+            </div>
+          </td>
+          <td>MALE</td>
+          <td>
+            <div class="action-icons">
+              <div class="action-icon check-icon">
+                <i class="fas fa-check"></i>
+              </div>
+              <div class="action-icon x-icon">
+                <i class="fas fa-times"></i>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(cvInfos)}">
+          <td colspan="6" class="text-center">No records found for File ID: <span th:text="${selectedFileId}"></span> and Recruitment ID: <span th:text="${selectedRecruitmentId}"></span></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

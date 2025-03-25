@@ -10,6 +10,8 @@ import com.fsoft.fintern.repositories.UserRepository;
 import com.fsoft.fintern.utils.BeanUtilsHelper;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -45,14 +47,15 @@ public class ClassroomService {
         Classroom newClass = new Classroom();
         newClass.setClassName(classDTO.getClassName());
         newClass.setNumberOfIntern(classDTO.getNumberOfIntern());
+        newClass.setStatus(classDTO.getStatus());
         newClass.setManager(manager);
 
         Classroom savedClass = class_repository.save(newClass);
         return new ResponseEntity<>(savedClass, HttpStatus.CREATED);
     }
 
-    public ResponseEntity<List<Classroom>> findAll() throws BadRequestException {
-        List<Classroom> classrooms = class_repository.findAll();
+    public ResponseEntity<Page<Classroom>> findAll(Pageable pageable) throws BadRequestException {
+        Page<Classroom> classrooms = class_repository.findAll(pageable);
         if(classrooms.isEmpty()) {
             throw new BadRequestException(ErrorDictionaryConstraints.CLASS_IS_EMPTY.getMessage());
         } else {
@@ -88,16 +91,13 @@ public class ClassroomService {
                     -> new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage())
             );
             BeanUtils.copyProperties(classDTO, classroom, BeanUtilsHelper.getNullPropertyNames(classDTO));
-            classroom.setClassName(classDTO.getClassName());
-            classroom.setNumberOfIntern(classDTO.getNumberOfIntern());
             classroom.setManager(manager);
 
+            this.class_repository.save(classroom);
+            return new ResponseEntity<>(classroom, HttpStatus.OK);
         }
 
         BeanUtils.copyProperties(classDTO, classroom, BeanUtilsHelper.getNullPropertyNames(classDTO));
-        classroom.setClassName(classDTO.getClassName());
-        classroom.setNumberOfIntern(classDTO.getNumberOfIntern());
-
         this.class_repository.save(classroom);
         return new ResponseEntity<>(classroom, HttpStatus.OK);
     }

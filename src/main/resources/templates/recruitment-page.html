@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="include/master-header :: head"></head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  .carousel-inner {
+    padding: 20px;
+    background: white;
+  }
+
+
+  .carousel-inner img {
+    width: 100%;
+    height: 100%;
+
+  }
+  .carousel-indicators .active {
+    opacity: 1;
+    background-color: #cc5500;
+    bottom: -50px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .event-content h5 {
+    font-size: 1.5rem;
+    color: #ff6600;
+  }
+
+  .event-content p {
+    font-size: 1rem;
+    color: #333;
+  }
+
+
+  .img-fluid {
+    border-radius: 10px;
+  }
+
+  .custom-control span {
+    filter: invert(1);
+  }
+
+
+  .event-image img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .carousel-item img {
+    max-height: 700px;
+    width: 200%;
+    object-fit: contain;
+  }
+
+  .image-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .event-image img {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+
+  .event-info h2 {
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .event-info p {
+    font-size: 18px;
+    margin-top: 10px;
+  }
+
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+
+  .user__dropdown {
+    display: none;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    width: 220px;
+    padding: 10px 0;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .user__dropdown.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .user__dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .user__dropdown li {
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+  }
+
+  .user__dropdown li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .user__dropdown li a:hover {
+    background: #f0f0f0;
+    border-radius: 5px;
+  }
+
+  .user__dropdown svg {
+    margin-right: 10px;
+    fill: #666;
+  }
+  .recruitment-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+  }
+
+
+  .recruitment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(255, 104, 104, 0.2);
+  }
+
+
+  .recruitment-image {
+    position: relative;
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+  }
+
+  .recruitment-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px 12px 0 0;
+    transition: transform 0.3s ease;
+  }
+
+  .recruitment-image img:hover {
+    transform: scale(1.05);
+  }
+
+  .badge {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+
+
+  .badge.bg-dark {
+    top: 10px;
+    left: 10px;
+  }
+
+  .badge.bg-primary {
+    top: 50px;
+    left: 10px;
+  }
+
+
+  .card-title a {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    transition: color 0.3s ease;
+  }
+
+  .card-title a:hover {
+    color: #ff6b6b;
+  }
+
+
+  .btn-gradient {
+    background: linear-gradient(45deg, #ff6b6b, #f06595);
+    color: white;
+    border: none;
+    transition: all 0.3s ease-in-out;
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border-radius: 30px;
+    text-transform: uppercase;
+  }
+
+  .btn-hover:hover {
+    background: linear-gradient(45deg, #f06595, #ff6b6b);
+    transform: translateY(-2px);
+    box-shadow: 0px 4px 10px rgba(255, 107, 107, 0.5);
+  }
+
+  /*footer-style*/
+  .footer {
+    background-color: #111827;
+    color: white;
+    padding: 48px 0;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  @media (min-width: 768px) {
+    .footer-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .footer-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .footer-text {
+    color: #9ca3af;
+  }
+
+  .footer-links {
+    list-style: none;
+    margin-top: 16px;
+  }
+
+  .footer-links li {
+    margin-bottom: 8px;
+  }
+
+  .footer-links a {
+    color: #9ca3af;
+    transition: color 0.3s;
+  }
+
+  .footer-links a:hover {
+    color: white;
+  }
+
+  .social-links {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .social-link {
+    color: #9ca3af;
+    transition: color 0.3s;
+  }
+
+  .social-link:hover {
+    color: white;
+  }
+
+  .footer-bottom {
+    border-top: 1px solid #374151;
+    margin-top: 40px;
+    padding-top: 24px;
+    text-align: center;
+    color: #6b7280;
+  }
+</style>
+
+<body>
+<header th:include="include/guest-header :: header"></header>
+
+<section class="recruitment-list">
+    <section id="" class="about__area p-relative pt-150 pb-90">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4 col-sm-6 mb-4" th:each="recruitment : ${recruitments}">
+            <div class="card recruitment-card shadow-sm p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted">
+              <strong>Position:</strong> <span th:text="${recruitment.getPosition()}"></span>
+            </span>
+                <span class="text-muted">
+              <strong>Publish Date:</strong> <span th:text="${#dates.format(recruitment.getCreatedAt(), 'dd-MM-yyyy')}"></span>
+            </span>
+              </div>
+              <h5 class="card-title">
+                <a href="#" th:text="${recruitment.getName()}"></a>
+              </h5>
+              <p class="text-muted"><i class="fas fa-map-marker-alt"></i>
+                <span th:text="${recruitment.getTotalSlot()}"></span> Total slot
+              </p>
+              <div class="position-relative recruitment-image">
+                <img th:src="@{/assets/img/event/default_Recruitment.jpg}" class="card-img-top img-fluid" alt="Recruitment Image">
+                <div class="position-absolute top-0 start-0 m-2">
+              <span class="badge bg-dark px-2 py-1">
+                <strong></strong> <span th:text="${recruitment.getLanguage()}"></span>
+              </span>
+                  <span class="badge bg-primary px-2 py-1 mt-1">
+                <strong></strong> <span th:text="${recruitment.getExperienceRequirement()}"></span>
+              </span>
+                </div>
+              </div>
+              <div class="card-body text-end mt-2">
+                <a th:href="@{/recruitment/{id}(id=${recruitment.id})}"
+                   class="btn btn-gradient btn-hover fw-bold text-uppercase px-4 py-2 rounded-pill">
+                  VIEW DETAIL
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h3 class="footer-title">FPT FINTERN</h3>
+        <p class="footer-text">Empowering students to build their future in technology.</p>
+        <div class="social-links">
+          <a href="#" class="social-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+            </svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+            </svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+              <rect x="2" y="9" width="4" height="12"></rect>
+              <circle cx="4" cy="4" r="2"></circle>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h4 class="footer-title">Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Events</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-title">Contact</h4>
+        <ul class="footer-links">
+          <li>FPT Software, Da Nang</li>
+          <li>Email: fintern@fpt.edu.vn</li>
+          <li>Phone: +84 123 456 789</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-title">Programs</h4>
+        <ul class="footer-links">
+          <li><a href="#">Software Development</a></li>
+          <li><a href="#">Data Science</a></li>
+          <li><a href="#">AI & Machine Learning</a></li>
+          <li><a href="#">Cloud Computing</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 FPT FINTERN. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const userPortfolio = document.getElementById("userportfolio");
+    const userDropdown = document.querySelector(".user__dropdown");
+
+    if (userPortfolio && userDropdown) {
+      userPortfolio.addEventListener("click", function (event) {
+        userDropdown.classList.toggle("show");
+      });
+
+      document.addEventListener("click", function (event) {
+        if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
+          userDropdown.classList.remove("show");
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>

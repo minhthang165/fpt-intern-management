@@ -8,10 +8,14 @@ import com.fsoft.fintern.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import picocli.CommandLine;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,8 +38,12 @@ public class UserRestController {
 
     @GetMapping("")
     @Operation(description = "view all user")
-    public ResponseEntity<List<User>> findAll() throws BadRequestException {
-        return this.userService.findAll();
+    public ResponseEntity<Page<User>> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) throws BadRequestException {
+        Pageable pageable = PageRequest.of(page, size);
+        return userService.findAll(pageable);
     }
 
     @PostMapping("/create")
@@ -74,16 +82,21 @@ public class UserRestController {
         return this.userService.setIsActiveTrue(id);
     }
 
-    @GetMapping("/email/{email}")
-    @Operation(description = "Find user by email")
-    public ResponseEntity<User> findByEmail(@PathVariable String email) throws BadRequestException {
-        return this.userService.getByEmail(email);
-    }
+//    @GetMapping("/{email}")
+//    @Operation(description = "Find user by email")
+//    public ResponseEntity<User> findByEmail(@PathVariable String email) throws BadRequestException {
+//        return this.userService.getByEmail(email);
+//    }
 
-    @GetMapping("/users/role/{role}")
+    @GetMapping("/role/{role}")
     @Operation(description = "find user by role")
-    public ResponseEntity<List<User>> findByRole(@PathVariable Role role) throws BadRequestException {
-        return this.userService.findUserByRole(role);
+    public ResponseEntity<Page<User>> findByRole(
+            @PathVariable Role role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) throws BadRequestException {
+        Pageable pageable = PageRequest.of(page, size);
+        return this.userService.findUserByRole(role, pageable);
     }
 
     // Ban a user for a specified duration

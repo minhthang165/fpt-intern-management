@@ -5,6 +5,9 @@ import com.fsoft.fintern.services.ClassroomService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +25,12 @@ public class ClassroomRestController {
 
     @GetMapping("")
     @Operation(description = "view all classroom")
-    public ResponseEntity<List<Classroom>> findAll() throws BadRequestException {
-        return this.classroomService.findAll();
+    public ResponseEntity<Page<Classroom>> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) throws BadRequestException {
+        Pageable pageable = PageRequest.of(page, size);
+        return this.classroomService.findAll(pageable);
     }
 
     @PostMapping("/create")

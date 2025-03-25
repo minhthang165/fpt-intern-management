@@ -109,3 +109,4 @@ public class Recruitment extends BaseModel {
         this.endTime = endTime;
     }
 }
+

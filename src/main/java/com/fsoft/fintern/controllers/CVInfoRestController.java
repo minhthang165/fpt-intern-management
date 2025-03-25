@@ -1,0 +1,48 @@
+package com.fsoft.fintern.controllers;
+
+import com.fsoft.fintern.services.CVInfoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/cv-info")
+public class CVInfoRestController {
+
+    private final CVInfoService cvInfoService;
+
+    @Autowired
+    public CVInfoRestController(CVInfoService cvInfoService) {
+        this.cvInfoService = cvInfoService;
+    }
+
+    /**
+     * Lấy danh sách thông tin CV theo recruitmentId
+     * @param recruitmentId ID của yêu cầu tuyển dụng
+     * @return Danh sách CV_Info kèm thông tin người nộp
+     */
+    @GetMapping("/recruitment/{recruitmentId}")
+    public ResponseEntity<List<Map<String, Object>>> getCVInfosByRecruitment(@PathVariable Integer recruitmentId) {
+        List<Map<String, Object>> cvInfos = cvInfoService.getCVInfosByRecruitmentId(recruitmentId);
+        return ResponseEntity.ok(cvInfos);
+    }
+    
+    /**
+     * Phê duyệt một CV và thêm user vào class
+     */
+    @PostMapping("/approve")
+    public ResponseEntity<?> approveCV(@RequestParam Integer fileId, @RequestParam Integer recruitmentId) {
+        Map<String, Object> result = cvInfoService.approveCV(fileId, recruitmentId);
+        
+        if ((Boolean) result.getOrDefault("success", false)) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+    
+
+} 

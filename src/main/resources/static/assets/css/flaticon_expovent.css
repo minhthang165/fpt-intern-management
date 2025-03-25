@@ -62,6 +62,7 @@ i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
 }
 .flaticon-calendar-1:before {
     content: "\f10f";
+    color: darkgrey;
 }
 .flaticon-team:before {
     content: "\f110";
@@ -144,6 +145,7 @@ i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
 }
 .flaticon-user:before {
     content: "\f12a";
+    color: darkgrey;
 }
 .flaticon-event:before {
     content: "\f12b";
@@ -216,6 +218,7 @@ i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
 }
 .flaticon-home:before {
     content: "\f142";
+    color: darkgrey;
 }
 .flaticon-home-1:before {
     content: "\f143";
@@ -237,6 +240,7 @@ i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
 }
 .flaticon-user-1:before {
     content: "\f149";
+    color: darkgrey;
 }
 .flaticon-upcoming:before {
     content: "\f14a";
@@ -264,6 +268,7 @@ i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
 }
 .flaticon-log-out-3:before {
     content: "\f152";
+    color: darkgrey;
 }
 .flaticon-chair:before {
     content: "\f153";

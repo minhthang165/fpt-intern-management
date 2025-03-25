@@ -1,6 +1,6 @@
 package com.fsoft.fintern.models;
 
-import com.fsoft.fintern.models.EmbedableID.CV_InfoId;
+import com.fsoft.fintern.models.EmbedableID.CVInfoId;
 import com.fsoft.fintern.models.Shared.BaseModel;
 import jakarta.persistence.*;
 
@@ -8,7 +8,7 @@ import jakarta.persistence.*;
 @Table(name = "CV_Info")
 public class CVInfo extends BaseModel {
     @EmbeddedId
-    private CV_InfoId id;
+    private CVInfoId id;
 
     @Column(nullable = false)
     private Double gpa;
@@ -19,11 +19,11 @@ public class CVInfo extends BaseModel {
     @Column(nullable = false, length = 255)
     private String education;
 
-    public CV_InfoId getId() {
+    public CVInfoId getId() {
         return id;
     }
 
-    public void setId(CV_InfoId id) {
+    public void setId(CVInfoId id) {
         this.id = id;
     }
 

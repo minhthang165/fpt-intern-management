@@ -3,7 +3,109 @@
 <head th:replace="include/master-header :: head"></head>
 
 <style>
+    /*css pagination*/
+    /* Records selector styling */
+    .records-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+    }
 
+    .records-per-page {
+        height: 2.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid #e5e7eb;
+        background-color: #fff;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .records-per-page:focus {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+    }
+
+    /* Pagination container */
+    .pagination-container {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .pagination-list {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Pagination items */
+    .pagination-item {
+        display: inline-block;
+    }
+
+    .pagination-link {
+        display: inline-flex;
+        height: 2.25rem;
+        min-width: 2.25rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.375rem;
+        border: 1px solid #e5e7eb;
+        background-color: #fff;
+        color: #374151;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        padding: 0 0.5rem;
+    }
+
+    .pagination-link:hover {
+        background-color: #f3f4f6;
+        border-color: #d1d5db;
+    }
+
+    /* Active page */
+    .pagination-item.active .pagination-link {
+        background-color: #f38321;
+        color: white;
+        border-color: #f38321;
+    }
+
+    .pagination-item.active .pagination-link:hover {
+        background-color: #f38321;
+    }
+
+    /* Disabled pagination items */
+    .pagination-item.disabled .pagination-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Arrow icons */
+    .pagination-arrow {
+        font-weight: bold;
+    }
+
+    .arrow-icon {
+        font-size: 1.25rem;
+        line-height: 1;
+    }
+
+    /* Ellipsis */
+    .ellipsis {
+        display: inline-block;
+        padding: 0 0.25rem;
+    }
+
+    /*css table*/
     table {
         width: 100%;
         border-collapse: collapse;
@@ -137,12 +239,6 @@
     }
 </style>
 
-
-
-
-
-</style>
-
 <body class="body-area">
 <th:block  th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
     <!--header breadcrumb area-->
@@ -164,14 +260,6 @@
                         </div>
                     </div>
                     <div class="search_add d-flex justify-content-between align-items-center">
-                        <form method="get" action="">
-                            <div class="search_add d-flex justify-content-between align-items-center">
-                                <div class="search__bar d-flex">
-                                    <input type="text" id="searchValue" name="searchValue" placeholder="Search by..." aria-label="Search students"/>
-                                </div>
-                                <div class="col-md-1 input d-flex "  style="padding-bottom: 18px; margin-left: 5px;" >
-                                    <button type="submit"  class="btn element__btn border-yellow find-button manage-student-find-button mt-15" style="" >Find</button>
-                                </div>
                                <div class="new_class">
                                    <div class="breadcrum__button">
                                        <button class="element__btn  yellow-bg" data-bs-toggle="modal" data-bs-target="#newClassModal">
@@ -179,9 +267,6 @@
                                        </button>
                                    </div>
                                </div>
-
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -196,13 +281,13 @@
             <!-- Table -->
             <div class="card mt-4">
                 <div class="card-body">
-
                     <table>
                         <thead>
                         <tr>
                             <th>Class Name</th>
                             <th>Number of Interns</th>
                             <th>Manager</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                         </thead>
@@ -211,7 +296,7 @@
                         <td th:text="${classroom.className}"></td>
                             <td th:text="${classroom.getNumberOfIntern()}"></td>
                             <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}">
-
+                            <td th:text="${classroom.getStatus()}"></td>
                             </td>
                             <!-- Nút Delete -->
                             <td th:classappend="${classroom.isActive()} ? 'active' : 'inactive'">
@@ -224,11 +309,58 @@
                                 <a href="#" class="edit-class-status">
                                     <i class="flaticon-edit edit-class" style="cursor: pointer; color: blue;"></i>
                                 </a>
-
                             </td>
                         </tr>
                         </tbody>
                     </table>
+                    <!--                        pagination-->
+                    <div class="table-footer">
+                        <div class="records-selector">
+                            <span>Hiển thị</span>
+                            <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)" th:value="${pageSize}">
+                                <option value="5" th:selected="${pageSize == 5}">5</option>
+                                <option value="10" th:selected="${pageSize == 10}">10</option>
+                                <option value="20" th:selected="${pageSize == 20}">20</option>
+                                <option value="50" th:selected="${pageSize == 50}">50</option>
+                            </select>
+                            <span>bản ghi</span>
+                        </div>
+
+                        <div class="pagination-container">
+                            <ul class="pagination-list">
+                                <!-- Nút Previous -->
+                                <li th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-item">
+                                    <a th:href="@{/manage-class(page=${currentPage - 1}, size=${pageSize})}"
+                                       class="pagination-link pagination-arrow" aria-label="Previous page">
+                                        <span class="arrow-icon">&#8249;</span>
+                                    </a>
+                                </li>
+
+                                <!-- Hiển thị các số trang -->
+                                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                                    th:if="${(i >= currentPage - 2 && i <= currentPage + 2) || i == 0 || i == totalPages - 1}"
+                                    th:classappend="${i == currentPage} ? 'active'"
+                                    class="pagination-item">
+
+                                    <!-- Hiển thị dấu ... nếu có khoảng cách -->
+                                    <span class="ellipsis" th:if="${i == 0 && currentPage > 2}">...</span>
+
+                                    <a th:href="@{/manage-class(page=${i}, size=${pageSize})}"
+                                       class="pagination-link" th:text="${i + 1}"></a>
+
+                                    <span class="ellipsis" th:if="${i == totalPages - 1 && i > currentPage + 2}">...</span>
+                                </li>
+
+                                <!-- Nút Next -->
+                                <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'" class="pagination-item">
+                                    <a th:href="@{/manage-class(page=${currentPage + 1}, size=${pageSize})}"
+                                       class="pagination-link pagination-arrow" aria-label="Next page">
+                                        <span class="arrow-icon">&#8250;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -252,7 +384,6 @@
             </div>
         </div>
 
-
         <div class="modal fade" id="editClassModal" tabindex="-1" aria-labelledby="editClassModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -274,6 +405,15 @@
                                 <input type="number" class="form-control" id="editNumberOfInterns" required min="1">
                             </div>
 
+                            <div class="mb-3">
+                                <label for="editStatus" class="form-label">Status</label>
+                                <select class="form-control" id="editStatus" required>
+                                    <option value="NOT_STARTED">NOT_STARTED</option>
+                                    <option value="ON_GOING">ON_GOING</option>
+                                    <option value="ENDED">ENDED</option>
+                                </select>
+                            </div>
+
                             <label for="editManager">Select Manager:</label>
                             <select id="editManager" name="manager" class="form-control">
                                 <option th:each="userRole : ${userRoleList}"
@@ -293,9 +433,7 @@
             </div>
         </div>
 
-
-
-            <div class="modal fade" id="newClassModal" tabindex="-1" aria-labelledby="newClassModalLabel" aria-hidden="true">
+        <div class="modal fade" id="newClassModal" tabindex="-1" aria-labelledby="newClassModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -334,33 +472,10 @@
                     </div>
                 </div>
             </div>
-
-
-
-
-        <div class="pagination">
-            <button>&lt;</button>
-            <button class="active">1</button>
-            <button>2</button>
-            <button>3</button>
-            <button>4</button>
-            <button>&gt;</button>
-        </div>
     </section>
-
-
-
-
-
 </th:block>
-
 <footer th:replace="~{include/master-footer :: footer}"></footer>
-
-
-
-
 <script>
-
     document.addEventListener("click", function (event) {
         let icon = event.target.closest(".flaticon-padlock");
         if (!icon) return;
@@ -491,8 +606,6 @@
             .catch(error => alert("Error Create class: " + error.message));
     });
 
-
-
     // Xử lý khi click vào nút Edit
     document.addEventListener("click", function (event) {
         let editIcon = event.target.closest(".edit-class");
@@ -516,7 +629,7 @@
 
         let className = row.children[0].textContent.trim();
         let numberOfIntern = row.children[1].textContent.trim();
-
+        let status = row.children[3].textContent.trim();
         let rowId = row.id;
         let managerId = rowId.startsWith("manager-") ? rowId.split("-")[1] : null;
 
@@ -528,6 +641,7 @@
         document.getElementById("editClassId").value = classId;
         document.getElementById("editClassName").value = className;
         document.getElementById("editNumberOfInterns").value = numberOfIntern;
+        document.getElementById("editStatus").value = status;
         document.getElementById("editManager").value = managerId;
 
 
@@ -535,22 +649,20 @@
         editModal.show();
     });
 
-
-
-
     document.getElementById("editClassForm").addEventListener("submit", function (event) {
         event.preventDefault();
         event.stopPropagation();
 
-
         let classId = document.getElementById("editClassId").value;
         let className = document.getElementById("editClassName").value;
         let numberOfInterns = document.getElementById("editNumberOfInterns").value;
+        let status = document.getElementById("editStatus").value;
         let managerId = document.getElementById("editManager").value;
 
         let requestData = {
             className: className,
             numberOfIntern: numberOfInterns,
+            status: status,
             managerId: managerId
         };
 
@@ -567,34 +679,18 @@
             })
 
             .then(updatedClass => {
-                let row = document.getElementById(`class-${classId}`);
-                if (row) {
-                    row.children[0].textContent = updatedClass.className;
-                    row.children[1].textContent = updatedClass.numberOfIntern;
-                    row.children[2].setAttribute("data-manager-id", updatedClass.manager.id);
-                    row.children[2].textContent = updatedClass.manager.firstName + " " + updatedClass.manager.lastName;
-                }
-            })
-
-            .then(data => {
                 alert("Class updated successfully!");
-
-                let row = document.querySelector(`tr[id='manager-${classId}']`);
-                if (row) {
-                    row.children[0].textContent = className;
-                    row.children[1].textContent = numberOfInterns;
-                    row.children[2].textContent = document.querySelector(`#editManager option[value="${managerId}"]`).textContent;
-                }
-
-                let editModal = bootstrap.Modal.getInstance(document.getElementById("editClassModal"));
-                editModal.hide();
+                location.reload();
             })
             .catch(error => alert("Error updating class: " + error.message));
     });
 
+    function changePageSize(selectElement) {
+        var newSize = selectElement.value;
+        var currentPage = new URLSearchParams(window.location.search).get("page") || 0;
 
-
-
+        window.location.href = `/manage-class?page=0&size=${newSize}`;
+    }
 </script>
 </body>
 </html>
