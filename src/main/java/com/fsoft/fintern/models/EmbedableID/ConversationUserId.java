@@ -56,30 +56,6 @@ public class ConversationUserId implements Serializable {
                 Objects.equals(this.userId, entity.userId);
     }
 
-    public ConversationUserId() {
-    }
-
-    public ConversationUserId(Integer userId, Integer conversationId) {
-        this.userId = userId;
-        this.conversationId = conversationId;
-    }
-
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public Integer getConversationId() {
-        return conversationId;
-    }
-
-    public void setConversationId(Integer conversationId) {
-        this.conversationId = conversationId;
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(conversationId, userId);
