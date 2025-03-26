@@ -47,4 +47,15 @@ public class RecruitmentRestController {
         return this.recruitmentService.update(id, recruitmentDTO);
     }
 
+    @GetMapping("/recruitment/{id}")
+    @Operation(description = "Find recruitment by Id")
+    public ResponseEntity<Recruitment> findById(@PathVariable int id) throws BadRequestException {
+        return this.recruitmentService.findById(id);
+    }
+
+    @GetMapping("/recruitment/class/{classId}")
+    @Operation(description = "Find recruiment by class ID")
+    public ResponseEntity<Recruitment> findByClassId(@PathVariable int classId) throws BadRequestException {
+        return this.recruitmentService.findByClassId(classId);
+    }
 }
