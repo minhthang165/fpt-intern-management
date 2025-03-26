@@ -23,6 +23,12 @@
         transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     }
 
+    .table-footer {
+        justify-content: space-between;
+        display: flex;
+        margin-top: 16px;
+    }
+
     .records-per-page:focus {
         border-color: #3b82f6;
         outline: none;
@@ -281,7 +287,15 @@
             <!-- Table -->
             <div class="card mt-4">
                 <div class="card-body">
-                    <table>
+                    <div class="d-flex align-items-center mb-3">
+                        <input type="text" id="searchInput" class="form-control"
+                               style="width: 250px; margin-right: 10px;"
+                               placeholder="Search requirments..." onkeyup="filterTable()">
+                        <button class="btn btn-outline-primary btn-sm" onclick="sortTable(0)">Sort by Name</button>
+                        <button class="btn btn-outline-primary btn-sm mx-2" onclick="sortTable(1)">Sort by Number of Interns</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="sortTable(3)">Sort By Status</button>
+                    </div>
+                    <table id="classroomTable">
                         <thead>
                         <tr>
                             <th>Class Name</th>
@@ -291,75 +305,76 @@
                             <th>Action</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <tr th:each="classroom : ${classroomList}" th:id="'manager-' + ${classroom.manager.id}">
-                        <td th:text="${classroom.className}"></td>
-                            <td th:text="${classroom.getNumberOfIntern()}"></td>
-                            <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}">
-                            <td th:text="${classroom.getStatus()}"></td>
-                            </td>
-                            <!-- Nút Delete -->
-                            <td th:classappend="${classroom.isActive()} ? 'active' : 'inactive'">
-                                <a href="#" th:data-id="${classroom.id}" class="toggle-class-status open-modal">
-                                    <i th:data-id="${classroom.id}"
-                                       th:class="${classroom.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"
-                                       onclick="toggleActiveStatus(this, event)">
-                                    </i>
-                                </a>
-                                <a href="#" class="edit-class-status">
-                                    <i class="flaticon-edit edit-class" style="cursor: pointer; color: blue;"></i>
-                                </a>
-                            </td>
-                        </tr>
+                        <tbody id="table-content">
+<!--                        <tr th:each="classroom : ${classroomList}" th:id="'manager-' + ${classroom.manager.id}">-->
+<!--                        <td th:text="${classroom.className}"></td>-->
+<!--                            <td th:text="${classroom.getNumberOfIntern()}"></td>-->
+<!--                            <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}">-->
+<!--                            <td th:text="${classroom.getStatus()}"></td>-->
+<!--                            </td>-->
+<!--                            &lt;!&ndash; Nút Delete &ndash;&gt;-->
+<!--                            <td th:classappend="${classroom.isActive()} ? 'active' : 'inactive'">-->
+<!--                                <a href="#" th:data-id="${classroom.id}" class="toggle-class-status open-modal">-->
+<!--                                    <i th:data-id="${classroom.id}"-->
+<!--                                       th:class="${classroom.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"-->
+<!--                                       onclick="toggleActiveStatus(this, event)">-->
+<!--                                    </i>-->
+<!--                                </a>-->
+<!--                                <a href="#" class="edit-class-status">-->
+<!--                                    <i class="flaticon-edit edit-class" style="cursor: pointer; color: blue;"></i>-->
+<!--                                </a>-->
+<!--                            </td>-->
+<!--                        </tr>-->
                         </tbody>
                     </table>
                     <!--                        pagination-->
                     <div class="table-footer">
                         <div class="records-selector">
                             <span>Hiển thị</span>
-                            <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)" th:value="${pageSize}">
-                                <option value="5" th:selected="${pageSize == 5}">5</option>
-                                <option value="10" th:selected="${pageSize == 10}">10</option>
-                                <option value="20" th:selected="${pageSize == 20}">20</option>
-                                <option value="50" th:selected="${pageSize == 50}">50</option>
+                            <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
                             </select>
                             <span>bản ghi</span>
                         </div>
 
                         <div class="pagination-container">
-                            <ul class="pagination-list">
-                                <!-- Nút Previous -->
-                                <li th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-item">
-                                    <a th:href="@{/manage-class(page=${currentPage - 1}, size=${pageSize})}"
-                                       class="pagination-link pagination-arrow" aria-label="Previous page">
-                                        <span class="arrow-icon">&#8249;</span>
-                                    </a>
-                                </li>
+                            <ul id="pagination-list" class="pagination-list">
+<!--                                &lt;!&ndash; Nút Previous &ndash;&gt;-->
+<!--                                <li th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-item">-->
+<!--                                    <a th:href="@{/manage-class(page=${currentPage - 1}, size=${pageSize})}"-->
+<!--                                       class="pagination-link pagination-arrow" aria-label="Previous page">-->
+<!--                                        <span class="arrow-icon">&#8249;</span>-->
+<!--                                    </a>-->
+<!--                                </li>-->
 
-                                <!-- Hiển thị các số trang -->
-                                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-                                    th:if="${(i >= currentPage - 2 && i <= currentPage + 2) || i == 0 || i == totalPages - 1}"
-                                    th:classappend="${i == currentPage} ? 'active'"
-                                    class="pagination-item">
+<!--                                &lt;!&ndash; Hiển thị các số trang &ndash;&gt;-->
+<!--                                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"-->
+<!--                                    th:if="${(i >= currentPage - 2 && i <= currentPage + 2) || i == 0 || i == totalPages - 1}"-->
+<!--                                    th:classappend="${i == currentPage} ? 'active'"-->
+<!--                                    class="pagination-item">-->
 
-                                    <!-- Hiển thị dấu ... nếu có khoảng cách -->
-                                    <span class="ellipsis" th:if="${i == 0 && currentPage > 2}">...</span>
+<!--                                    &lt;!&ndash; Hiển thị dấu ... nếu có khoảng cách &ndash;&gt;-->
+<!--                                    <span class="ellipsis" th:if="${i == 0 && currentPage > 2}">...</span>-->
 
-                                    <a th:href="@{/manage-class(page=${i}, size=${pageSize})}"
-                                       class="pagination-link" th:text="${i + 1}"></a>
+<!--                                    <a th:href="@{/manage-class(page=${i}, size=${pageSize})}"-->
+<!--                                       class="pagination-link" th:text="${i + 1}"></a>-->
 
-                                    <span class="ellipsis" th:if="${i == totalPages - 1 && i > currentPage + 2}">...</span>
-                                </li>
+<!--                                    <span class="ellipsis" th:if="${i == totalPages - 1 && i > currentPage + 2}">...</span>-->
+<!--                                </li>-->
 
-                                <!-- Nút Next -->
-                                <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'" class="pagination-item">
-                                    <a th:href="@{/manage-class(page=${currentPage + 1}, size=${pageSize})}"
-                                       class="pagination-link pagination-arrow" aria-label="Next page">
-                                        <span class="arrow-icon">&#8250;</span>
-                                    </a>
-                                </li>
+<!--                                &lt;!&ndash; Nút Next &ndash;&gt;-->
+<!--                                <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'" class="pagination-item">-->
+<!--                                    <a th:href="@{/manage-class(page=${currentPage + 1}, size=${pageSize})}"-->
+<!--                                       class="pagination-link pagination-arrow" aria-label="Next page">-->
+<!--                                        <span class="arrow-icon">&#8250;</span>-->
+<!--                                    </a>-->
+<!--                                </li>-->
                             </ul>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -476,6 +491,14 @@
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        loadPage(0,5);
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) {
+            searchInput.addEventListener('keyup', filterTable);
+        }
+    })
+
     document.addEventListener("click", function (event) {
         let icon = event.target.closest(".flaticon-padlock");
         if (!icon) return;
@@ -685,12 +708,105 @@
             .catch(error => alert("Error updating class: " + error.message));
     });
 
-    function changePageSize(selectElement) {
-        var newSize = selectElement.value;
-        var currentPage = new URLSearchParams(window.location.search).get("page") || 0;
-
-        window.location.href = `/manage-class?page=0&size=${newSize}`;
+    function changePageSize(select) {
+        pageSize = parseInt(select.value);
+        loadPage(0, pageSize);
     }
+
+    function loadPage(page, size) {
+        fetch(`/api/class?page=${page}&size=${size}`)
+            .then(response => response.json())
+            .then(data => {
+                totalPages = data.totalPages;
+                currentPage = data.number;
+                pageSize = data.size;
+                renderTable(data.content);
+                renderPagination();
+            })
+            .catch(error => console.error("Error fetching data:", error));
+    }
+
+    function renderTable(classes) {
+        let tableContent = document.getElementById("table-content");
+        tableContent.innerHTML = classes.map(c => `
+        <tr id="manager-${c.manager.id}">
+            <td>${c.className}</td>
+            <td>${c.numberOfIntern}</td>
+            <td>${c.manager.first_name} ${c.manager.last_name}</td>
+            <td>${c.status}</td>
+            <td>
+                <a href="#" class="toggle-class-status open-modal" data-id="${c.id}">
+                    <i class="${c.active ? 'flaticon-padlock active' : 'flaticon-padlock inactive'}" onclick="toggleActiveStatus(this, event)"></i>
+                </a>
+                <a href="#" class="edit-class-status">
+                    <i class="flaticon-edit edit-class" style="cursor: pointer; color: blue;"></i>
+                </a>
+            </td>
+        </tr>
+    `).join('');
+    }
+
+    function renderPagination() {
+        let pagination = document.getElementById("pagination-list");
+        pagination.innerHTML = '';
+
+        if (currentPage > 0) {
+            pagination.innerHTML += `<li class="pagination-item"><a href="#" onclick="loadPage(${currentPage - 1}, ${pageSize})" class="pagination-link pagination-arrow">&#8249;</a></li>`;
+        }
+
+        for (let i = 0; i < totalPages; i++) {
+            if (i === 0 || i === totalPages - 1 || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pagination.innerHTML += `
+            <li class="pagination-item ${i === currentPage ? 'active' : ''}">
+                <a href="#" onclick="loadPage(${i}, ${pageSize})" class="pagination-link">${i + 1}</a>
+            </li>`;
+            }
+        }
+
+        if (currentPage < totalPages - 1) {
+            pagination.innerHTML += `<li class="pagination-item"><a href="#" onclick="loadPage(${currentPage + 1}, ${pageSize})" class="pagination-link pagination-arrow">&#8250;</a></li>`;
+        }
+    }
+
+    function filterTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("classroomTable");
+        let rows = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let match = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].textContent.toLowerCase().includes(input)) {
+                    match = true;
+                    break;
+                }
+            }
+            rows[i].style.display = match ? "" : "none";
+        }
+    }
+
+    function sortTable(columnIndex) {
+        let table = document.getElementById("classroomTable");
+        let rows = Array.from(table.rows).slice(1);
+        let isAscending = table.getAttribute("data-sort") !== "asc";
+
+        rows.sort((rowA, rowB) => {
+            let cellA = rowA.cells[columnIndex].textContent.trim().toLowerCase();
+            let cellB = rowB.cells[columnIndex].textContent.trim().toLowerCase();
+
+            if (!isNaN(cellA) && !isNaN(cellB)) {
+                return isAscending ? cellA - cellB : cellB - cellA;
+            } else {
+                return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            }
+        });
+
+        rows.forEach(row => table.appendChild(row));
+        table.setAttribute("data-sort", isAscending ? "asc" : "desc");
+    }
+
 </script>
 </body>
 </html>

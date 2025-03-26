@@ -34,26 +34,7 @@ public class ClassroomController {
 
 
     @GetMapping
-    public String redirectManageClassPage(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            Model model
-    ) {
-        try{
-            Pageable pageable = PageRequest.of(page, size);
-            ResponseEntity<Page<Classroom>> classrooms = classroomService.findAll(pageable);
-            ResponseEntity<Page<User>> users = userService.findUserByRole(Role.EMPLOYEE, pageable);
-
-            model.addAttribute("classroomList", classrooms.getBody());
-            model.addAttribute("userRoleList", users.getBody());
-            model.addAttribute("currentPage", page);
-            model.addAttribute("pageSize", size);
-            model.addAttribute("totalPages", classrooms.getBody().getTotalPages());
+    public String redirectManageClassPage() {
             return "admin/ManageClass";
-        } catch (BadRequestException e) {
-            model.addAttribute(ErrorDictionaryConstraints.CLASS_IS_EMPTY.getMessage());
-            return "admin/AdminDashboard";
         }
-
-    }
 }
