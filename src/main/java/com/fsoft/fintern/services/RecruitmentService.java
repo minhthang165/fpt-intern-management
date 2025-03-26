@@ -9,6 +9,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -35,7 +38,7 @@ public class RecruitmentService {
         }
     }
 
-    public ResponseEntity<List<Recruitment>> findAll() {
+    public ResponseEntity<List<Recruitment>> findAll2() throws BadRequestException {
         List<Recruitment> recruitments = this.recruitmentRepository.findAll();
         if (recruitments.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -45,6 +48,15 @@ public class RecruitmentService {
                 Integer applicationCount = recruitmentRepository.countByRecruitmentIdAndIsActiveTrue(recruitment.getId());
                 recruitment.setApplicationCount(applicationCount);
             }
+            return new ResponseEntity<>(recruitments, HttpStatus.OK);
+        }
+    }
+
+    public ResponseEntity<Page<Recruitment>> findAll(Pageable pageable) throws BadRequestException {
+        Page<Recruitment> recruitments = this.recruitmentRepository.findAll(pageable);
+        if (recruitments.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
             return new ResponseEntity<>(recruitments, HttpStatus.OK);
         }
     }

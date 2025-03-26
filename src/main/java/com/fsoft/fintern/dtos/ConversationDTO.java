@@ -4,6 +4,7 @@ public class ConversationDTO {
     private int conversation_id;
     private String conversationName;
     private String conversationAvatar;
+    private String type;
     private boolean is_Active;
 
     public String getConversation_avatar() {
@@ -36,5 +37,13 @@ public class ConversationDTO {
 
     public void setIs_Active(boolean is_Active) {
         this.is_Active = is_Active;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

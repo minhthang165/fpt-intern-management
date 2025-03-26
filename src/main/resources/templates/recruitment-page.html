@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="include/master-header :: head"></head>
@@ -295,6 +296,42 @@
 <section class="recruitment-list">
   <section id="" class="about__area p-relative pt-150 pb-90">
     <div class="container">
+      <div id="recruitment-board" class="row">
+<!--        <div class="col-md-4 col-sm-6 mb-4">-->
+<!--          <div class="card recruitment-card shadow-sm p-3">-->
+<!--            <div class="d-flex justify-content-between align-items-center mb-2">-->
+<!--            <span class="text-muted">-->
+<!--              <strong>Position:</strong> <span th:text="${recruitment.getPosition()}"></span>-->
+<!--            </span>-->
+<!--              <span class="text-muted">-->
+<!--              <strong>Publish Date:</strong> <span th:text="${#dates.format(recruitment.getCreatedAt(), 'dd-MM-yyyy')}"></span>-->
+<!--            </span>-->
+<!--            </div>-->
+<!--            <h5 class="card-title">-->
+<!--              <a href="#" th:text="${recruitment.getName()}"></a>-->
+<!--            </h5>-->
+<!--            <p class="text-muted"><i class="fas fa-map-marker-alt"></i>-->
+<!--              <span th:text="${recruitment.getTotalSlot()}"></span> Total slot-->
+<!--            </p>-->
+<!--            <div class="position-relative recruitment-image">-->
+<!--              <img th:src="@{/assets/img/event/default_Recruitment.jpg}" class="card-img-top img-fluid" alt="Recruitment Image">-->
+<!--              <div class="position-absolute top-0 start-0 m-2">-->
+<!--              <span class="badge bg-dark px-2 py-1">-->
+<!--                <strong></strong> <span th:text="${recruitment.getLanguage()}"></span>-->
+<!--              </span>-->
+<!--                <span class="badge bg-primary px-2 py-1 mt-1">-->
+<!--                <strong></strong> <span th:text="${recruitment.getExperienceRequirement()}"></span>-->
+<!--              </span>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <div class="card-body text-end mt-2">-->
+<!--              <a th:href="@{/recruitment/{id}(id=${recruitment.id})}"-->
+<!--                 class="btn btn-gradient btn-hover fw-bold text-uppercase px-4 py-2 rounded-pill">-->
+<!--                VIEW DETAIL-->
+<!--              </a>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
       <div class="row">
         <div class="col-md-4 col-sm-6 mb-4" th:each="recruitment : ${recruitments}">
           <div class="card recruitment-card shadow-sm p-3">
@@ -418,7 +455,72 @@
         }
       });
     }
+
+    loadPage(0, 20);
   });
+
+  function loadPage(page, size) {
+    fetch(`/api/recruitment?page=${page}&&size=${size}`)
+            .then(response => response.json())
+            .then(data => {
+              // totalPages = data.totalPages;
+              // currentPage = data.number;
+              // pageSize = data.size;
+              renderTable(data.content);
+              //renderPagination(); //load new data if scroll to the bottom
+            })
+  }
+
+  function renderTable(recruitments) {
+    let jobBoards = document.getElementById('recruitment-board');
+    for (let r of recruitments) {
+      let recruitmentDiv = `
+    <div class="col-md-4 col-sm-6 mb-4">
+          <div class="card recruitment-card shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted">
+                <strong>Position:</strong> <span>${r.position}</span>
+              </span>
+              <span class="text-muted">
+                <strong>Publish Date:</strong> <span>${new Date(r.createdAt).toLocaleDateString()}</span>
+              </span>
+            </div>
+            <h5 class="card-title">
+              <a href="#">${r.name}</a>
+            </h5>
+            <p class="text-muted"><i class="fas fa-map-marker-alt"></i>
+              <span>${r.totalSlot}</span> Total slot
+            </p>
+            <div class="position-relative recruitment-image">
+              <img src="/assets/img/event/default_Recruitment.jpg" class="card-img-top img-fluid" alt="Recruitment Image">
+              <div class="position-absolute top-0 start-0 m-2">
+                <span class="badge bg-dark px-2 py-1">
+                  <span>${r.language}</span>
+                </span>
+                <span class="badge bg-primary px-2 py-1 mt-1">
+                  <span>${r.experienceRequirement}</span>
+                </span>
+              </div>
+            </div>
+            <div class="card-body text-end mt-2">
+              <a href="/recruitment/${r.id}" class="btn btn-gradient btn-hover fw-bold text-uppercase px-4 py-2 rounded-pill">
+                VIEW DETAIL
+              </a>
+            </div>
+          </div>
+          </div>
+    `;
+      jobBoards.innerHTML += recruitmentDiv;
+    }
+  }
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+

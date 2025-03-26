@@ -348,11 +348,12 @@
         <form>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2 flex justify-center mb-6">
-                    <div class="profile-image-container">
+                    <div class="profile-image-container" onclick="document.getElementById('avatarFile').click()">
                         <img id="picture" alt="Profile Picture" class="profile-image" src="/placeholder.svg?height=120&width=120">
                         <button type="button" class="image-edit-button">
                             <i class="fas fa-camera"></i>
                         </button>
+                        <input type="file" id="avatarFile" style="display: none" onchange="updateAvatar(event)">
                     </div>
                 </div>
 
