@@ -37,6 +37,9 @@ public class Recruitment extends BaseModel {
     @Column(name = "end_time", nullable = false)
     private Timestamp endTime;
 
+    @Transient
+    private Integer applicationCount;
+
     public Integer getId() {
         return id;
     }
@@ -107,6 +110,19 @@ public class Recruitment extends BaseModel {
 
     public void setEndTime(Timestamp endTime) {
         this.endTime = endTime;
+    }
+
+    public Integer getApplicationCount() {
+        return applicationCount != null ? applicationCount : 0;
+    }
+
+    public void setApplicationCount(Integer applicationCount) {
+        this.applicationCount = applicationCount;
+    }
+
+    public Integer getRemainingSlot() {
+        int applications = getApplicationCount();
+        return totalSlot - applications;
     }
 }
 

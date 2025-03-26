@@ -160,22 +160,7 @@ public class CVInfoService {
                 currentCVInfo.setActive(false);
                 cvInfoRepository.save(currentCVInfo);
             }
-            
-            // 9. Kiểm tra xem lớp đã đủ số lượng chưa
-            Integer currentCount = classroom.getNumberOfIntern();
-            Integer totalSlot = recruitment.getTotalSlot();
-            
-            // 10. Nếu đã đủ số lượng, deactivate các CV khác
-            if (currentCount >= totalSlot) {
-                deactivateOtherCVs(recruitmentId, fileId);
-                result.put("isFull", true);
-            } else {
-                result.put("isFull", false);
-            }
-            
-            // 11. Thêm thông tin vào kết quả
-            result.put("totalSlot", totalSlot);
-            result.put("filledSlots", currentCount);
+
             result.put("position", recruitment.getPosition());
             result.put("success", true);
             
@@ -186,19 +171,5 @@ public class CVInfoService {
         
         return result;
     }
-    
-    /**
-     * Vô hiệu hóa các CV khác khi lớp đã đủ người
-     */
-    @Transactional
-    public void deactivateOtherCVs(Integer recruitmentId, Integer approvedFileId) {
-        List<CVInfo> cvInfos = cvInfoRepository.findAllByRecruitmentId(recruitmentId);
-        
-        for (CVInfo cvInfo : cvInfos) {
-            if (!cvInfo.getId().getFileId().equals(approvedFileId)) {
-                cvInfo.setActive(false);
-                cvInfoRepository.save(cvInfo);
-            }
-        }
-    }
 }
+
