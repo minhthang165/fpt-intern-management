@@ -471,8 +471,8 @@
                         <div class="records-selector">
                             <span>Hiển thị</span>
                             <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)">
-                                <option value="5">5</option>
-                                <option value="10" selected>10</option>
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
                                 <option value="20">20</option>
                                 <option value="50">50</option>
                             </select>
@@ -1060,7 +1060,7 @@
 
     function filterTable() {
         let input = document.getElementById("searchInput").value.toLowerCase();
-        let table = document.getElementById("recruitmentTable");
+        let table = document.getElementById("table-content");
         let rows = table.getElementsByTagName("tr");
 
         for (let i = 1; i < rows.length; i++) {
@@ -1078,7 +1078,7 @@
     }
 
     function sortTable(columnIndex) {
-        let table = document.getElementById("recruitmentTable");
+        let table = document.getElementById("table-content");
         let rows = Array.from(table.rows).slice(1);
         let isAscending = table.getAttribute("data-sort") !== "asc";
 
@@ -1099,6 +1099,7 @@
 
     function renderTable(requirements) {
         let tableContent = document.getElementById("table-content");
+        tableContent.innerHTML = '';
         tableContent.innerHTML = requirements.map(r => `
         <tr class="requirement-row" onclick="openCandidateModal(this)" data-id="${r.id}">
             <td>${r.name}</td>

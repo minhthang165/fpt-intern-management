@@ -305,35 +305,15 @@
                             <th>Action</th>
                         </tr>
                         </thead>
-                        <tbody id="table-content">
-<!--                        <tr th:each="classroom : ${classroomList}" th:id="'manager-' + ${classroom.manager.id}">-->
-<!--                        <td th:text="${classroom.className}"></td>-->
-<!--                            <td th:text="${classroom.getNumberOfIntern()}"></td>-->
-<!--                            <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}">-->
-<!--                            <td th:text="${classroom.getStatus()}"></td>-->
-<!--                            </td>-->
-<!--                            &lt;!&ndash; Nút Delete &ndash;&gt;-->
-<!--                            <td th:classappend="${classroom.isActive()} ? 'active' : 'inactive'">-->
-<!--                                <a href="#" th:data-id="${classroom.id}" class="toggle-class-status open-modal">-->
-<!--                                    <i th:data-id="${classroom.id}"-->
-<!--                                       th:class="${classroom.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"-->
-<!--                                       onclick="toggleActiveStatus(this, event)">-->
-<!--                                    </i>-->
-<!--                                </a>-->
-<!--                                <a href="#" class="edit-class-status">-->
-<!--                                    <i class="flaticon-edit edit-class" style="cursor: pointer; color: blue;"></i>-->
-<!--                                </a>-->
-<!--                            </td>-->
-<!--                        </tr>-->
-                        </tbody>
+                        <tbody id="table-content"></tbody>
                     </table>
                     <!--                        pagination-->
                     <div class="table-footer">
                         <div class="records-selector">
                             <span>Hiển thị</span>
                             <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)">
-                                <option value="5">5</option>
-                                <option value="10" selected>10</option>
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
                                 <option value="20">20</option>
                                 <option value="50">50</option>
                             </select>
@@ -341,38 +321,7 @@
                         </div>
 
                         <div class="pagination-container">
-                            <ul id="pagination-list" class="pagination-list">
-<!--                                &lt;!&ndash; Nút Previous &ndash;&gt;-->
-<!--                                <li th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-item">-->
-<!--                                    <a th:href="@{/manage-class(page=${currentPage - 1}, size=${pageSize})}"-->
-<!--                                       class="pagination-link pagination-arrow" aria-label="Previous page">-->
-<!--                                        <span class="arrow-icon">&#8249;</span>-->
-<!--                                    </a>-->
-<!--                                </li>-->
-
-<!--                                &lt;!&ndash; Hiển thị các số trang &ndash;&gt;-->
-<!--                                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"-->
-<!--                                    th:if="${(i >= currentPage - 2 && i <= currentPage + 2) || i == 0 || i == totalPages - 1}"-->
-<!--                                    th:classappend="${i == currentPage} ? 'active'"-->
-<!--                                    class="pagination-item">-->
-
-<!--                                    &lt;!&ndash; Hiển thị dấu ... nếu có khoảng cách &ndash;&gt;-->
-<!--                                    <span class="ellipsis" th:if="${i == 0 && currentPage > 2}">...</span>-->
-
-<!--                                    <a th:href="@{/manage-class(page=${i}, size=${pageSize})}"-->
-<!--                                       class="pagination-link" th:text="${i + 1}"></a>-->
-
-<!--                                    <span class="ellipsis" th:if="${i == totalPages - 1 && i > currentPage + 2}">...</span>-->
-<!--                                </li>-->
-
-<!--                                &lt;!&ndash; Nút Next &ndash;&gt;-->
-<!--                                <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'" class="pagination-item">-->
-<!--                                    <a th:href="@{/manage-class(page=${currentPage + 1}, size=${pageSize})}"-->
-<!--                                       class="pagination-link pagination-arrow" aria-label="Next page">-->
-<!--                                        <span class="arrow-icon">&#8250;</span>-->
-<!--                                    </a>-->
-<!--                                </li>-->
-                            </ul>
+                            <ul id="pagination-list" class="pagination-list"></ul>
                         </div>
 
                     </div>
@@ -728,6 +677,7 @@
 
     function renderTable(classes) {
         let tableContent = document.getElementById("table-content");
+        tableContent.innerHTML='';
         tableContent.innerHTML = classes.map(c => `
         <tr id="manager-${c.manager.id}">
             <td>${c.className}</td>
@@ -770,7 +720,7 @@
 
     function filterTable() {
         let input = document.getElementById("searchInput").value.toLowerCase();
-        let table = document.getElementById("classroomTable");
+        let table = document.getElementById("table-content");
         let rows = table.getElementsByTagName("tr");
 
         for (let i = 1; i < rows.length; i++) {
@@ -788,7 +738,7 @@
     }
 
     function sortTable(columnIndex) {
-        let table = document.getElementById("classroomTable");
+        let table = document.getElementById("table-content");
         let rows = Array.from(table.rows).slice(1);
         let isAscending = table.getAttribute("data-sort") !== "asc";
 
