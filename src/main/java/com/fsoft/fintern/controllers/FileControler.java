@@ -65,6 +65,10 @@ public class FileControler {
     public ResponseEntity<List<File>> findCVsByUserId(@PathVariable Integer userId) {
         return fileService.findCVsByUserId(userId);
     }
+    @DeleteMapping("/fully-delete/{id}")
+    public ResponseEntity<String> fullyDeleteFile(@PathVariable int id) throws BadRequestException {
+        return fileService.fullyDelete(id);
+    }
 }
 
 

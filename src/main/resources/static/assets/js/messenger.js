@@ -5,6 +5,7 @@ var typeChat = "user";
 var messages;
 var conversationAvatar = null;
 var conversationName = null;
+var converstionType = null;
 var conversationMember = {};
 var back = null;
 var rightSide = null;
@@ -71,7 +72,7 @@ function renderHtmlConversation(conversation_list) {
     if (conversation_list.length > 0) {
         conversation_list.forEach(conversation => {
             let conversationHTML = `    
-                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" data-id="${conversation.id}" data-conversationName="${conversation.conversationName}" data-conversationAvatar="${conversation.conversationAvatar}" onclick="setConversation(this)">
+                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" data-id="${conversation.id}" data-conversationName="${conversation.conversationName}" data-conversation-type="${conversation.type}" data-conversationAvatar="${conversation.conversationAvatar}" onclick="setConversation(this)">
                     <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversation.conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" width="40"/>
                     <div>
                         <div class="font-bold">${conversation.conversationName}</div>
@@ -87,7 +88,7 @@ function renderHtmlConversation(conversation_list) {
 }
 
 function setConversation(element) {
-    document.getElementById('messengerBox').innerHTML = ''; // Clear UI
+    document.getElementById("chat-container").innerHTML = ''; // Clear UI
     conversationId = null;
     conversationName = '';
     conversationAvatar = '';
@@ -96,6 +97,7 @@ function setConversation(element) {
     conversationId = element.getAttribute('data-id');
     conversationName = element.getAttribute(`data-conversationName`);
     conversationAvatar = element.getAttribute(`data-conversationAvatar`);
+    converstionType = element.getAttribute(`data-conversation-type`);
     selectedRecipientId = element.getAttribute('data-track-user-id');
     let existingConversation = conversation_list.find(conver => conver.conversationName === conversationName);
     if (existingConversation) {
@@ -104,45 +106,54 @@ function setConversation(element) {
     console.log("Thanh cong");
     // New chat section
     var rightSide = `
-    <div class="flex flex-col flex-grow pb-1" data-id="${conversationId}">
-        <div class="flex items-center justify-between p-2">
-            <div class="flex items-center space-x-2">
-                <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationAvatar}" width="40"/>
-                <div>
-                    <div class="font-bold conversation-name">
-                        ${conversationName}
-                    </div>
-                    <div class="text-green-500 text-sm">
-                        Đang hoạt động
-                    </div>
-                </div>
-            </div>
-            <div class="p-5 btn_conversation_information" onclick="toggleConversationInfo()">
-                <i class="fas fa-ellipsis-v text-black"></i>
-            </div>
-        </div>
-        <div class="flex-grow space-y-4 overflow-y-auto p-4" id="chat" style="height: 400px;"> <!-- Set a fixed height -->
-            <!-- Messages will be loaded dynamically here -->
-        </div>
-        <div class="flex items-center space-x-2 mb-1 mt-1 mr-3 relative">
-            <label for="media-upload">
-                <i class="fas fa-paperclip text-black text-xl"></i>
-                <input id="media-upload" accept="*/*" multiple type="file" style="display: none;">
-            </label>
-            <i class="fas fa-smile text-black text-xl"></i>
-            <div class="flex flex-col flex-grow">
-                <ul class="w-100 flex bottom-full list-file space-x-2 absolute"></ul>
-                <input class="flex-grow p-2 rounded-full bg-white border border-gray-300" id="message" placeholder="Enter Here" type="text"/>
-            </div>
-        <i class="fas fa-paper-plane text-black text-xl" onclick="conversationId ? sendMessage() : startNewConversation(this)"></i>
-    </div>
-</div>
-`;
+
+                        <!-- Conversation Header -->
+                        <div class="flex items-center justify-between p-2 border-b">
+                            <div class="flex items-center space-x-2">
+                                <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationAvatar}" width="40"/>
+                                <div>
+                                    <div class="font-bold conversation-name">
+                                        ${conversationName}
+                                    </div>
+                                    <div class="text-green-500 text-sm">
+                                        Đang hoạt động
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-2 rounded-full hover:bg-gray-100 cursor-pointer btn_conversation_information" onclick="toggleConversationInfo()">
+                                <i class="fas fa-ellipsis-v text-gray-600"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Messages -->
+                        <div class="flex-grow space-y-4 overflow-y-auto p-4" id="chat" style="height: 400px;">
+                            <!-- Messages will be loaded dynamically here -->
+                        </div>
+                        
+                        <!-- Message Input -->
+                        <div class="flex items-center space-x-2 p-3 border-t">
+                            <label for="media-upload" class="p-2 rounded-full hover:bg-gray-100 cursor-pointer">
+                                <i class="fas fa-paperclip text-gray-600 text-xl"></i>
+                                <input id="media-upload" accept="*/*" multiple type="file" style="display: none;">
+                            </label>
+                            <button class="p-2 rounded-full hover:bg-gray-100">
+                                <i class="fas fa-smile text-gray-600 text-xl"></i>
+                            </button>
+                            <div class="flex flex-col flex-grow relative">
+                                <ul class="w-100 flex bottom-full list-file space-x-2 absolute"></ul>
+                                <input class="flex-grow p-2 rounded-full bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" id="message" placeholder="Enter Here" type="text"/>
+                            </div>
+                            <button class="p-2 rounded-full hover:bg-gray-100" onclick="conversationId ? sendMessage() : startNewConversation(this)">
+                                <i class="fas fa-paper-plane text-blue-500 text-xl"></i>
+                            </button>
+                        </div>
+    `;
 
 
     // Select the div and append the HTML
-    document.getElementById('messengerBox').innerHTML = rightSide;
+    document.getElementById("chat-container").innerHTML += rightSide;
 
+    // If for temp conversation scenario
     if (conversationId != null) {
         // After adding the HTML, load messages
         loadMessages(conversationId);
@@ -239,29 +250,51 @@ function printMessage(payload) {
 function customLoadMessage(message) {
     var imgSrc = "";
     var msgDisplay = '';
+    var isMediaMessage = message.messageType.startsWith("image") || message.messageType.startsWith("video");
     if (message.messageType.startsWith("image")) {
-        message.messageContent = '<img class="w-full h-auto" src="' + message.messageContent + '" alt="">'
+        // Don't modify the original messageContent, create a formatted HTML instead
+        message.messageContent = '<img class="w-full h-auto max-w-xs rounded" src="' + message.messageContent + '" alt="Image">';
     } else if (message.messageType.startsWith("video")) {
-        message.messageContent = '<video width="400" controls>'
-            + '<source src="' + message.messageContent + '">'
-            + '</video>';
+        message.messageContent = '<video class="w-full max-w-xs rounded" controls>' +
+            '<source src="' + message.messageContent + '">' +
+            'Your browser does not support the video tag.' +
+            '</video>';
     }
 
+    var messageContainerClass = isMediaMessage
+        ? "message-text rounded-lg shadow-sm overflow-hidden" // No padding for media
+        : "message-text p-2 rounded-lg shadow-sm";
+
     if (message.createdBy != user_id) {
+        messageContainerClass += isMediaMessage ? "" : " bg-slate-200";
+    } else {
+        messageContainerClass += isMediaMessage ? "" : " bg-blue-500 text-white";
+    }
+
+    // Handle different message types
+    if (message.createdBy != user_id) {
+        // Message from other user
         msgDisplay += '<div class="flex items-start space-x-2 message">';
         imgSrc = message.sender.avatar_path;
         return msgDisplay
             + '<div class="message-img">'
             + '<img class="rounded-full" width="40px" src="' + imgSrc + '" alt="">'
             + '</div>'
-            + '<div class="message-text bg-white p-2 rounded-lg">' + message.messageContent
+            + '<div class="flex flex-col">'
+            + '<span class="text-xs text-gray-600 font-medium mb-1">' + message.sender.first_name + " " + message.sender.last_name + '</span>'
+            + '<div class="' + messageContainerClass + '">' + message.messageContent
+            + '</div>'
             + '</div>'
             + '</div>';
     } else {
-        msgDisplay += '<div class="flex items-end justify-end space-x-2 message">';
+        // Message from current user
+        msgDisplay += '<div class="flex items-start justify-end space-x-2 message">';
         imgSrc = user_avatar;
         return msgDisplay
-            + '<div class="message-text bg-white p-2 rounded-lg">' + message.messageContent
+            + '<div class="flex flex-col items-end">'
+            + '<span class="text-xs text-gray-600 font-medium mb-1"> You </span>'
+            + '<div class="' + messageContainerClass + '">' + message.messageContent
+            + '</div>'
             + '</div>'
             + '<div class="message-img">'
             + '<img class="rounded-full" width="40px" src="' + imgSrc + '" alt="">'
@@ -286,11 +319,20 @@ async function loadMessages(conversationId) {
 
         chatContainer.innerHTML = messages.map(msg => customLoadMessage(msg)).join('');
 
+        await waitForImagesToLoad(chatContainer);
+
         scrollToLatestMessage();
     } catch (error) {
         console.error("Error loading messages:", error);
         chatContainer.innerHTML = '<div class="text-center p-4 text-red-500">Failed to load messages</div>';
     }
+}
+
+function waitForImagesToLoad(container) {
+    const images = container.querySelectorAll("img");
+    return Promise.all([...images].map(img =>
+        img.complete ? Promise.resolve() : new Promise(resolve => img.onload = img.onerror = resolve)
+    ));
 }
 
 function sendMessage() {
@@ -301,6 +343,7 @@ function sendMessage() {
     } else {
         sendAttachments();
     }
+    scrollToLatestMessage()
     return false;
 }
 
@@ -455,22 +498,22 @@ function toggleModal(option) {
                 modal.remove();
             }
             break;
-            case 'showMembers':
-                let membersContainer = document.getElementById("chat-members");
-                membersContainer.innerHTML = "";
-                conversationMember.forEach(member => {
-                    let memberItem = `
-                        <div class="flex align-middle w-auto items-center p-2" data-track-user-id="${member.id}" data-conversationName="${member.first_name} ${member.last_name}" data-conversationAvatar="${member.avatar_path}" onclick="if (${member.id} != user_id) setConversation(this);">
+        case 'showMembers':
+            let membersContainer = document.getElementById("chat-members");
+            membersContainer.innerHTML = "";
+            conversationMember.forEach(member => {
+                let memberItem = `
+                        <div class="flex align-middle w-auto items-center p-2" data-track-user-id="${member.id}" data-conversationName="${member.first_name} ${member.last_name}" data-conversationAvatar="${member.avatar_path}" data-conversation-type="OneToOne" onclick="if (${member.id} != user_id) setConversation(this);">
                             <img class="w-14 rounded-full" src=${member.avatar_path} alt="">
-                            <span class="ml-2">${member.first_name} ${member.last_name}</span>
+                            <span class="ml-2"> if (${member.id} != user_id) ${member.first_name} ${member.last_name}</span>
                         </div>
                         `
-                    ;
-                    membersContainer.innerHTML += memberItem;
-                });
+                ;
+                membersContainer.innerHTML += memberItem;
+            });
 
-                membersContainer.classList.toggle("hidden");
-                break;
+            membersContainer.classList.toggle("hidden");
+            break;
         case 'showMediaFiles':
             let mediaContainer = document.getElementById("media-files");
             mediaContainer.innerHTML = "";
@@ -490,122 +533,127 @@ function toggleModal(option) {
 
             mediaContainer.classList.toggle("hidden");
             break;
+        case 'startOneToOneChat':
+
+            break;
+        case 'startGroupChat' :
+            break;
     }
 }
 
 function toggleConversationInfo() {
+    const infoBox = document.getElementById('conversation-info-box');
+    const chatContainer = document.getElementById('chat-container');
 
-    let container = document.querySelector('.flex.flex-grow.bg-blue-100.right-side.p-3');
-    let existingBox = document.querySelector(".conversation-info-box");
-
-    if (existingBox) {
-        // If the info box exists, remove it (close)
-        existingBox.remove();
+    if (infoBox.classList.contains('hidden')) {
+        infoBox.classList.remove('hidden');
+        chatContainer.classList.add('w-[70%]'); // Reduce chat width
     } else {
-        var conversationInfoBox = `
-            <div class="w-2/6 p-5 conversation-info-box overflow-y-auto">
-           <div class="flex flex-col items-center">
-            <img alt="Profile picture of a whale with a small fish" id="conversation-avatar" class="rounded-full mb-2" height="100" src="${conversationAvatar}" width="100"/>
-            <div class="text-center">
-             <p class="text-lg font-semibold">
-              ${conversationName}
-             </p>
-             <p class="text-sm text-gray-400">
-              Active now
-             </p>
-            </div>
-           </div>
-           <div class="mt-6">
-            <div class="flex justify-between items-center">
-             <p class="text-sm">
-              Chat Info
-             </p>
-             <i class="fas fa-chevron-down">
-             </i>
-            </div>
-            <div class="mt-2">
-             <div class="flex items-center space-x-1">
-              <i class="fas fa-thumbtack">
-              </i>
-              <p class="text-sm">
-               View pinned messages
-              </p>
-             </div>
-            </div>
-           </div>
-           <div class="mt-6">
-            <div class="flex justify-between items-center p-1">
-             <p class="text-sm">
-              Customise chat
-             </p>
-             <i class="fas fa-chevron-down">
-             </i>
-            </div>
-            <div class="mt-2 space-y-2">
-             <div class="flex items-center space-x-2 p-1" onclick="toggleModal('changeName')">
-              <i class="fas fa-pencil-alt">
-              </i>
-              <p class="text-sm">
-               Change chat name
-              </p>
-             </div>
-             <div class="flex items-center space-x-2 p-1" onclick="document.getElementById('conversationAvatarModal').click()">
-              <i class="fas fa-image">
-              </i>
-              <p class="text-sm">
-               Change photo
-              </p>
-              <input type="file" id="conversationAvatarModal" style="display:none;" onchange="changeConversationAvatar(event)">
-             </div>
-             <div class="flex items-center space-x-2 p-1">
-              <i class="fas fa-circle text-blue-500">
-              </i>
-              <p class="text-sm">
-               Change theme
-              </p>
-             </div>
-             <div class="flex items-center space-x-2 p-1">
-              <i class="fas fa-thumbs-up text-blue-500">
-              </i>
-              <p class="text-sm">
-               Change emoji
-              </p>
-             </div>
-            </div>
-           </div>
-           <div class="mt-6">
-            <div>
-                 <div>
-                     <div class="flex justify-between items-center" onclick="toggleModal('showMembers')">
-                        <p class="text-sm">
-                            Chat members
-                        </p>
-                        <i class="fas fa-chevron-down">
-                        </i>
-                     </div>
-                     <div id="chat-members" class="hidden mt-3 flex flex-col">
-                        <!-- Members will be appended here -->
-                     </div>                    
-                 </div>   
-            </div>
-           </div>
-           <div class="mt-6">
-           <div onclick="toggleModal('showMediaFiles')">
-           <div>
-            <div class="flex justify-between items-center">
-             <p class="text-sm">
-              Media, files and links
-             </p>
-             <i class="fas fa-chevron-down">
-             </i>
-             </div>
-             <div id="media-files" class="hidden mt-3 flex flex-col flex-grow">
-                <!-- Sent media file will be loaded here -->
-             </div>
-             </div>
-            </div>`
-        container.innerHTML += conversationInfoBox;
+        infoBox.classList.add('hidden');
+        chatContainer.classList.remove('w-[70%]'); // Reset to full width
     }
+
+    infoBox.innerHTML = '';
+    var conversationInfoBox = `
+                        <!-- Profile Section -->
+                        <div class="flex flex-col items-center pt-4 pb-6 border-b">
+                            <div class="relative">
+                                <img alt="Profile picture" id="conversation-avatar" class="rounded-full mb-2 border-4 border-blue-100" height="80" src="${conversationAvatar}" width="80"/>
+                                <div class="absolute bottom-2 right-0 bg-green-500 h-3 w-3 rounded-full border-2 border-white"></div>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-lg font-semibold">
+                                    ${conversationName}
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    Active now
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Info Section -->
+                        <div class="py-3 px-4 border-b">
+                            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer">
+                                <p class="font-medium text-gray-700 text-sm">
+                                    Chat Info
+                                </p>
+                                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+                            </div>
+                            <div class="mt-2 pl-2">
+                                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                    <i class="fas fa-thumbtack text-blue-500 text-sm"></i>
+                                    <p class="text-xs">
+                                        View pinned messages
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Customize Chat Section -->
+                        <div class="py-3 px-4 border-b">
+                            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer">
+                                <p class="font-medium text-gray-700 text-sm">
+                                    Customize chat
+                                </p>
+                                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+                            </div>
+                            <div class="mt-1 space-y-1 pl-2">
+                                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer" onclick="toggleModal('changeName')">
+                                    <i class="fas fa-pencil-alt text-blue-500 text-sm"></i>
+                                    <p class="text-xs">
+                                        Change chat name
+                                    </p>
+                                </div>
+                                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer" onclick="document.getElementById('conversationAvatarModal').click()">
+                                    <i class="fas fa-image text-blue-500 text-sm"></i>
+                                    <p class="text-xs">
+                                        Change photo
+                                    </p>
+                                    <input type="file" id="conversationAvatarModal" style="display:none;" onchange="changeConversationAvatar(event)">
+                                </div>
+                                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                    <i class="fas fa-circle text-blue-500 text-sm"></i>
+                                    <p class="text-xs">
+                                        Change theme
+                                    </p>
+                                </div>
+                                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                    <i class="fas fa-thumbs-up text-blue-500 text-sm"></i>
+                                    <p class="text-xs">
+                                        Change emoji
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Members Section -->
+                        <div class="py-3 px-4 border-b">
+                            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer" onclick="toggleModal('showMembers')">
+                                <p class="font-medium text-gray-700 text-sm">
+                                    Chat members
+                                </p>
+                                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+                            </div>
+                            <div id="chat-members" class="hidden mt-2 pl-2">
+                                <!-- Members will be appended here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Media Files Section -->
+                        <div class="py-3 px-4 border-b">
+                            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer" onclick="toggleModal('showMediaFiles')">
+                                <p class="font-medium text-gray-700 text-sm">
+                                    Media, files and links
+                                </p>
+                                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+                            </div>
+                            <div id="media-files" class="hidden mt-2 pl-2">
+                                <!-- Sent media file will be loaded here -->
+                            </div>
+                        </div>
+                    `
+
+    infoBox.innerHTML += conversationInfoBox;
 }
 
 async function startNewConversation(element) {
@@ -615,7 +663,8 @@ async function startNewConversation(element) {
     let chatListContainer = document.querySelector(".space-y-4");
     let tempConversation = {
         conversation_name: conversationName,
-        conversation_avatar: conversationAvatar
+        conversation_avatar: conversationAvatar,
+        type: converstionType
     };
 
     let response = await fetch('/api/conversation/group/create', {
@@ -674,7 +723,7 @@ async function startNewConversation(element) {
 
     // Step 4: Update the send button to send messages normally
     let sendButton = document.querySelector(".fa-paper-plane");
-    sendButton.onclick = function(event) {
+    sendButton.onclick = function (event) {
         sendMessage();
     };
     await sendMessage();
