@@ -53,7 +53,10 @@ public class AuthController {
         LoginUserDTO loginUserDTO = convertToLoginUserDTO(user);
         model.addAttribute("user", loginUserDTO);
 
-        return user.getRole() == Role.ADMIN ? "redirect:/manage-user" : "redirect:/home";
+        if (user.getRole() == Role.ADMIN || user.getRole() == Role.EMPLOYEE || user.getRole() == Role.INTERN) {
+            return "redirect:/manage-user";
+        }
+        return "redirect:/home";
     }
 
     private User createNewUser(OAuth2User oauth2User) {

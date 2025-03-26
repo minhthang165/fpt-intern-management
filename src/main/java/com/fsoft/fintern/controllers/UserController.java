@@ -74,6 +74,14 @@ public class UserController {
                 model.addAttribute("errorMessage", ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage());
             }
         }
+
+        if (user.getRole() == Role.EMPLOYEE) {
+            return "employee/EmployeeDashboard";
+        }
+
+        if (user.getRole() == Role.INTERN) {
+            return "intern/InternDashboard";
+        }
         return "admin/AdminDashboard";
     }
   

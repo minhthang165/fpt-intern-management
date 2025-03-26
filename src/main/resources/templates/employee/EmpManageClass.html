@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="include/master-header :: head"></head>
+<body class="body-area">
+<th:block th:replace="~{include/employee-sidebar :: sidebar(~{::content})}">
+    <!--header breadcrumb area-->
+    <div class="app__slide-wrapper" th:fragment="content">
+        <div class="breadcrumb__area">
+            <div class="breadcrumb__wrapper mb-35" style="padding: 0px;">
+                <div class="breadcrumb__main">
+                    <div class="breadcrumb__inner">
+                        <div class="breadcrumb__icon">
+                            <i class="flaticon-home"></i>
+                        </div>
+                        <div class="breadcrumb__menu">
+                            <nav>
+                                <ul>
+                                    <li style="margin-bottom: 20px; margin-top: 20px"><span>Dashboard</span></li>
+                                    <li class="active"><span>Classroom</span></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classroom List Section -->
+        <div class="classroom__list-area">
+            <div class="classroom__list-wrapper">
+                <div class="classroom__list-header">
+                    <h3>Managed Classrooms</h3>
+                </div>
+
+                <!-- Alert for no classrooms -->
+                <div class="alert alert-info" th:if="${#lists.isEmpty(classrooms)}">
+                    <p>You are not currently managing any classrooms.</p>
+                </div>
+
+                <!-- Classroom cards -->
+                <div class="classroom__list-content" th:unless="${#lists.isEmpty(classrooms)}">
+                    <div class="row">
+                        <div class="col-xxl-4 col-xl-4 col-lg-6 col-md-6" th:each="classroom : ${classrooms}">
+                            <div class="classroom__card">
+                                <div class="classroom__card-header">
+                                    <h4 th:text="${classroom.name}">Classroom Name</h4>
+                                    <span class="badge" th:classappend="${classroom.status == 'Active'} ? 'badge-success' : 'badge-warning'"
+                                          th:text="${classroom.status}">Status</span>
+                                </div>
+                                <div class="classroom__card-body">
+                                    <p th:text="${classroom.description}">Description goes here</p>
+                                    <div class="classroom__details">
+                                        <div class="detail-item">
+                                            <span class="label">Location:</span>
+                                            <span class="value" th:text="${classroom.location}">Room 101</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="label">Capacity:</span>
+                                            <span class="value" th:text="${classroom.capacity}">30</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="label">Schedule:</span>
+                                            <span class="value" th:text="${classroom.schedule}">MWF 9:00-10:30</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="classroom__card-footer">
+                                    <a th:href="@{/employee/classrooms/{id}(id=${classroom.id})}" class="btn btn-primary">View Details</a>
+                                    <a th:href="@{/employee/classrooms/{id}/edit(id=${classroom.id})}" class="btn btn-secondary">Edit</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+<footer th:replace="~{include/master-footer :: footer}"></footer>
+
+<!-- Add CSS for classroom cards -->
+<style>
+    .classroom__list-area {
+        padding: 20px;
+    }
+
+    .classroom__list-header {
+        margin-bottom: 20px;
+    }
+
+    .classroom__card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .classroom__card:hover {
+        transform: translateY(-5px);
+    }
+
+    .classroom__card-header {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .classroom__card-body {
+        padding: 15px;
+    }
+
+    .classroom__details {
+        margin-top: 15px;
+    }
+
+    .detail-item {
+        margin-bottom: 8px;
+        display: flex;
+    }
+
+    .detail-item .label {
+        font-weight: bold;
+        width: 80px;
+    }
+
+    .classroom__card-footer {
+        padding: 15px;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .badge {
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+</style>
+</body>
+</html>
