@@ -473,16 +473,6 @@
                             <td th:text="${recruitment.minGPA}"></td>
                             <td th:text="${recruitment.totalSlot}"></td>
                             <td th:text="${#dates.format(recruitment.endTime, 'yyyy-MM-dd')}"></td>
-<!--                            <td>-->
-<!--                                <a href="#" th:data-id="${recruitment.id}" class="edit-recruitment-modal"-->
-<!--                                   onclick="openEditRecruitmentModal(this, event)">-->
-<!--                                    <i class="flaticon-edit" style="cursor: pointer"></i>-->
-<!--                                </a>-->
-<!--                                <a href="#" th:data-id="${recruitment.id}" class="delete-recruitment-modal"-->
-<!--                                   onclick="confirmDeleteRecruitment(this, event)">-->
-<!--                                    <i class="flaticon-delete" style="cursor: pointer; color: red"></i>-->
-<!--                                </a>-->
-<!--                            </td>-->
                         </tr>
                         </tbody>
                     </table>
@@ -656,15 +646,15 @@
         // Prevent event bubbling
         event.stopPropagation();
     }
-    
+
     function closeModal() {
         const modal = document.getElementById("candidateModal");
         modal.style.display = "none";
-        
+
         // Remove blur effect
         document.body.classList.remove('modal-open');
     }
-    
+
     function loadCandidates(recruitmentId) {
         // Fetch CV_Info data from the server based on the recruitment ID
         const tableBody = document.getElementById("candidateTableBody");
@@ -1007,12 +997,12 @@
         // Xóa ứng viên khỏi danh sách toàn cục
         if (window.allCandidates) {
             window.allCandidates = window.allCandidates.filter(candidate => candidate.fileId != fileId);
-            
+
             // Cập nhật lại danh sách hiển thị
             const pageSize = 5;
             const totalCandidates = window.allCandidates.length;
             const totalPages = Math.ceil(totalCandidates / pageSize);
-            
+
             // Kiểm tra nếu trang hiện tại lớn hơn tổng số trang sau khi xóa
             if (window.currentPage > totalPages && totalPages > 0) {
                 window.currentPage = totalPages;

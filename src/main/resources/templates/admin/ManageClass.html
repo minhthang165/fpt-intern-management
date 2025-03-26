@@ -237,6 +237,151 @@
         outline: none;
         border-color: #218838;
     }
+
+
+    /* Định dạng chung cho modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Làm mờ nền */
+        justify-content: center;
+        align-items: center;
+        display: flex;
+    }
+
+    /* Nội dung modal */
+    .modal-content {
+        background: white;
+        width: 60%;
+        max-width: 800px;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    /* Header của modal */
+    .modal .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+    }
+
+    .modal .header h3 {
+        margin: 0;
+        font-size: 20px;
+        color: #007bff;
+    }
+
+    /* Nút đóng modal */
+    .close-modal {
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .close-modal:hover {
+        color: #ff4d4d;
+    }
+
+    /* Thanh tìm kiếm */
+    .search-bar {
+        margin-top: 10px;
+    }
+
+    .search-input {
+        width: 200px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    /* Bảng danh sách */
+    .table-container {
+        margin-top: 15px;
+        max-height: 400px;
+        overflow-y: auto;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th {
+        background-color: #007bff;
+        color: white;
+        padding: 10px;
+        text-align: left;
+    }
+
+    .table td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    /* Hàng lẻ có nền xám nhạt */
+    .table tr:nth-child(odd) {
+        background-color: #f9f9f9;
+    }
+
+    /* Hàng khi hover */
+    .table tr:hover {
+        background-color: #f1f1f1;
+        cursor: pointer;
+    }
+
+    /* Nút Action */
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-info:hover {
+        background-color: #117a8b;
+    }
+
+    /* Hiệu ứng fadeIn khi mở modal */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+
+
+
 </style>
 
 <body class="body-area">
@@ -277,7 +422,6 @@
     <section th:fragment="content">
         <div class="flex-grow-1 p-4">
             <h5 class="classroom-title">Classroom List</h5>
-
             <!-- Table -->
             <div class="card mt-4">
                 <div class="card-body">
@@ -292,13 +436,14 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="classroom : ${classroomList}" th:id="'manager-' + ${classroom.manager.id}">
-                        <td th:text="${classroom.className}"></td>
+                        <tr th:each="classroom : ${classroomList}"
+                            class="classroom-row"
+                            onclick="openUserModal(this)" th:data-id="${classroom.id}">
+                            <td th:text="${classroom.className}"></td>
                             <td th:text="${classroom.getNumberOfIntern()}"></td>
-                            <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}">
+                            <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}"></td>
                             <td th:text="${classroom.getStatus()}"></td>
-                            </td>
-                            <!-- Nút Delete -->
+                        <!-- Nút Delete -->
                             <td th:classappend="${classroom.isActive()} ? 'active' : 'inactive'">
                                 <a href="#" th:data-id="${classroom.id}" class="toggle-class-status open-modal">
                                     <i th:data-id="${classroom.id}"
@@ -313,7 +458,7 @@
                         </tr>
                         </tbody>
                     </table>
-                    <!--                        pagination-->
+                    <!--pagination-->
                     <div class="table-footer">
                         <div class="records-selector">
                             <span>Hiển thị</span>
@@ -364,7 +509,40 @@
                 </div>
             </div>
         </div>
+        <!-- User Modal -->
+        <div id="userModal" class="modal fade">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeModal()">x</span>
+                <div class="header">
+                    <h3 id="userModalTitle">User List</h3>
+                    <div class="search-bar">
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="text" id="searchUserInput" class="search-input"
+                                   placeholder="Search users...">
+                            <button class="btn btn-primary" id="searchUserButton">Search</button>
+                        </div>
+                    </div>
+                </div>
 
+                <div class="card mt-4">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Phone Number</th>
+                                <th>Gender</th>
+                            </tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                            <!-- User data will be loaded here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Modal xác nhận khóa/mở khóa lớp -->
         <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
@@ -498,6 +676,8 @@
         });
     });
 
+
+
     function toggleClassStatus(classId, action) {
         let url = action === "unlock" ? `/api/class/setIsActiveTrue/${classId}` : `/api/class/delete/${classId}`;
         let method = action === "unlock" ? "PATCH" : "DELETE";
@@ -553,7 +733,7 @@
         modal.show();
     }
 
-// XỬ lý khi click vào nút newCLass
+    // XỬ lý khi click vào nút newCLass
     document.addEventListener("click", function (event) {
         let newClassButton = event.target.closest(".new_class");
         if (!newClassButton) return;
@@ -648,7 +828,6 @@
         let editModal = new bootstrap.Modal(document.getElementById("editClassModal"));
         editModal.show();
     });
-
     document.getElementById("editClassForm").addEventListener("submit", function (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -684,13 +863,106 @@
             })
             .catch(error => alert("Error updating class: " + error.message));
     });
-
+    //Paging
     function changePageSize(selectElement) {
         var newSize = selectElement.value;
         var currentPage = new URLSearchParams(window.location.search).get("page") || 0;
 
         window.location.href = `/manage-class?page=0&size=${newSize}`;
     }
+
+
+    //Mở modal UserList
+    function openUserModal(row) {
+        // Get the data from the clicked row
+        const classId = row.getAttribute('data-id');
+        const className = row.cells[0].textContent;
+        const managerName = row.cells[2].textContent;
+
+
+        const modal = document.getElementById("userModal");
+        const modalTitle = document.getElementById("userModalTitle");
+        modalTitle.textContent = className + " - Managed by " + managerName;
+
+        // Load User
+        loadUsers(classId);
+
+
+        // Add blur effect to sidebar and content
+        document.body.classList.add('modal-open');
+
+        // Display the modal
+        modal.style.display = "block";
+
+        // Prevent event bubbling
+        event.stopPropagation();
+    }
+
+    //Đóng modal UserList
+    function closeModal() {
+        const modal = document.getElementById("userModal");
+        modal.style.display = "none";
+
+        // Remove blur effect
+        document.body.classList.remove('modal-open');
+    }
+
+    function loadUsers(classId) {
+        // Fetch CV_Info data from the server based on the classID
+        const tableBody = document.getElementById("userTableBody");
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Loading Interns...</td></tr>';
+
+        // Call the API to get CV_Info data
+        fetch(`/api/class/${classId}/users`)
+                .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch users: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                displayUsers(data, classId);
+            })
+            .catch(error => {
+                console.error('Error fetching users:', error);
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading candidates: ' + error.message + '</td></tr>';
+
+                // For demo purposes, load sample data if API fails
+                setTimeout(() => {
+                    loadSampleCandidates(classId);
+                }, 1000);
+            });
+    }
+
+    function displayUsers(users) {
+        const tableBody = document.getElementById("userTableBody");
+        tableBody.innerHTML = "";
+
+        // Lọc danh sách user nếu cần (ví dụ: chỉ lấy user đang hoạt động)
+        users = users.filter(user => user.isActive !== false);
+
+        if (!users || users.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No users found</td></tr>';
+            return;
+        }
+
+        // Hiển thị tất cả user
+        users.forEach(user => {
+            const fullName = `${user.first_name} ${user.last_name}`;
+            const row = `
+            <tr>
+                <td>${fullName}</td>
+                <td>${user.email}</td>
+                <td>${user.phone_number}</td>
+                <td>${user.gender}</td>
+            </tr>
+        `;
+            tableBody.innerHTML += row;
+        });
+    }
+
+
+
 </script>
 </body>
 </html>
