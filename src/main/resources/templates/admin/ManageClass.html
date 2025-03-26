@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="include/master-header :: head"></head>
 
+
 <style>
     /*css pagination*/
     /* Records selector styling */
@@ -21,6 +22,12 @@
         font-size: 0.875rem;
         cursor: pointer;
         transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .table-footer {
+        justify-content: space-between;
+        display: flex;
+        margin-top: 16px;
     }
 
     .records-per-page:focus {
@@ -172,217 +179,118 @@
     .inactive {
         color: red; /* Màu đỏ khi lớp bị khóa */
     }
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1050;
+        width: 100%;
+        height: 100%;
+        outline: 0;
+    }
 
+    /* Đảm bảo nội dung modal hiển thị trên cùng */
     .modal-content {
         position: relative;
         z-index: 1070;
+        background-color: #fff;
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        border: none;
     }
 
+    /* Cấu hình backdrop - chỉ hiển thị khi modal mở */
     .modal-backdrop {
-        display: none;
-    }
-
-
-    select {
-        width: 100%;
-        padding: 10px;
-        border: 2px solid #98b2da;
-        border-radius: 8px;
-        font-size: 16px;
-        background-color: white;
-        color: #333;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-
-    select:hover {
-        border-color: #85b7ec;
-    }
-
-    select:focus {
-        outline: none;
-        border-color: #ff9800;
-        box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
-    }
-
-    .custom-dropdown {
-        position: relative;
-        display: inline-block;
-        width: 200px;
-    }
-
-    .custom-dropdown select {
-        width: 100%;
-        padding: 10px;
-        border: 2px solid #28a745;
-        border-radius: 8px;
-        font-size: 16px;
-        appearance: none;
-        background-color: white;
-        color: #333;
-        cursor: pointer;
-    }
-
-    .custom-dropdown::after {
-        content: "▼";
-        position: absolute;
-        top: 50%;
-        right: 10px;
-        transform: translateY(-50%);
-        color: #28a745;
-        font-size: 14px;
-    }
-
-    .custom-dropdown select:focus {
-        outline: none;
-        border-color: #218838;
-    }
-
-
-    /* Định dạng chung cho modal */
-    .modal {
-        display: none;
         position: fixed;
-        z-index: 1000;
-        left: 0;
         top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.5); /* Làm mờ nền */
-        justify-content: center;
-        align-items: center;
-        display: flex;
+        background-color: #000;
+        opacity: 0.5;
+        pointer-events: none;
+        z-index: 1000 !important;
+
     }
 
-    /* Nội dung modal */
-    .modal-content {
-        background: white;
-        width: 60%;
+    /* Ẩn backdrop khi không cần thiết */
+    body:not(.modal-open) .modal-backdrop {
+        display: none !important;
+    }
+
+    /* Căn giữa modal */
+    .modal-dialog {
+        position: relative;
+        width: auto;
+        margin: 1.75rem auto;
         max-width: 800px;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    /* Căn giữa modal theo chiều dọc */
+    .modal-dialog-centered {
+        display: flex;
+        align-items: center;
+        min-height: calc(100% - 3.5rem);
     }
 
     /* Header của modal */
-    .modal .header {
+    .modal-header {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        border-bottom: 2px solid #007bff;
-        padding-bottom: 10px;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
     }
 
-    .modal .header h3 {
+    /* Tiêu đề modal */
+    .modal-title {
         margin: 0;
-        font-size: 20px;
-        color: #007bff;
+        font-size: 1.25rem;
+        font-weight: 500;
     }
 
     /* Nút đóng modal */
-    .close-modal {
-        font-size: 24px;
+    .btn-close {
+        background: transparent;
+        border: 0;
+        font-size: 1.5rem;
         cursor: pointer;
-        color: #666;
+        padding: 0.5rem;
+        margin: -0.5rem -0.5rem -0.5rem auto;
     }
 
-    .close-modal:hover {
-        color: #ff4d4d;
-    }
-
-    /* Thanh tìm kiếm */
-    .search-bar {
-        margin-top: 10px;
-    }
-
-    .search-input {
-        width: 200px;
-        padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-        padding: 5px 10px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-    }
-
-    /* Bảng danh sách */
-    .table-container {
-        margin-top: 15px;
-        max-height: 400px;
+    /* Phần thân modal */
+    .modal-body {
+        position: relative;
+        flex: 1 1 auto;
+        padding: 1rem;
+        max-height: 70vh;
         overflow-y: auto;
-        border-radius: 8px;
-        border: 1px solid #ddd;
     }
 
-    .table {
-        width: 100%;
-        border-collapse: collapse;
+    /* Hiệu ứng mở modal */
+    .modal.fade .modal-dialog {
+        transition: transform 0.3s ease-out;
+        transform: translate(0, -50px);
     }
 
-    .table th {
-        background-color: #007bff;
+    .modal.show .modal-dialog {
+        transform: translate(0, 0);
+    }
+
+    /* Đảm bảo nút Search có màu cam giống FPT */
+    #userModal #searchUserButton {
+        background-color: #f38321;
+        border-color: #f38321;
         color: white;
-        padding: 10px;
-        text-align: left;
     }
 
-    .table td {
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
+    #userModal #searchUserButton:hover {
+        background-color: #e67812;
+        border-color: #e67812;
     }
 
-    /* Hàng lẻ có nền xám nhạt */
-    .table tr:nth-child(odd) {
-        background-color: #f9f9f9;
-    }
-
-    /* Hàng khi hover */
-    .table tr:hover {
-        background-color: #f1f1f1;
-        cursor: pointer;
-    }
-
-    /* Nút Action */
-    .btn-info {
-        background-color: #17a2b8;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .btn-info:hover {
-        background-color: #117a8b;
-    }
-
-    /* Hiệu ứng fadeIn khi mở modal */
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-
-
-
-</style>
+    </style>
 
 <body class="body-area">
 <th:block  th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
@@ -405,13 +313,13 @@
                         </div>
                     </div>
                     <div class="search_add d-flex justify-content-between align-items-center">
-                               <div class="new_class">
-                                   <div class="breadcrum__button">
-                                       <button class="element__btn  yellow-bg" data-bs-toggle="modal" data-bs-target="#newClassModal">
-                                           Add Class +
-                                       </button>
-                                   </div>
-                               </div>
+                        <div class="new_class">
+                            <div class="breadcrum__button">
+                                <button class="element__btn  yellow-bg" data-bs-toggle="modal" data-bs-target="#newClassModal">
+                                    Add Class +
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -422,10 +330,19 @@
     <section th:fragment="content">
         <div class="flex-grow-1 p-4">
             <h5 class="classroom-title">Classroom List</h5>
+
             <!-- Table -->
             <div class="card mt-4">
                 <div class="card-body">
-                    <table>
+                    <div class="d-flex align-items-center mb-3">
+                        <input type="text" id="searchInput" class="form-control"
+                               style="width: 250px; margin-right: 10px;"
+                               placeholder="Search requirments..." onkeyup="filterTable()">
+                        <button class="btn btn-outline-primary btn-sm" onclick="sortTable(0)">Sort by Name</button>
+                        <button class="btn btn-outline-primary btn-sm mx-2" onclick="sortTable(1)">Sort by Number of Interns</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="sortTable(3)">Sort By Status</button>
+                    </div>
+                    <table id="classroomTable">
                         <thead>
                         <tr>
                             <th>Class Name</th>
@@ -435,110 +352,59 @@
                             <th>Action</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <tr th:each="classroom : ${classroomList}"
-                            class="classroom-row"
-                            onclick="openUserModal(this)" th:data-id="${classroom.id}">
-                            <td th:text="${classroom.className}"></td>
-                            <td th:text="${classroom.getNumberOfIntern()}"></td>
-                            <td th:text="${classroom.manager.first_name + ' ' + classroom.manager.last_name}"></td>
-                            <td th:text="${classroom.getStatus()}"></td>
-                        <!-- Nút Delete -->
-                            <td th:classappend="${classroom.isActive()} ? 'active' : 'inactive'">
-                                <a href="#" th:data-id="${classroom.id}" class="toggle-class-status open-modal">
-                                    <i th:data-id="${classroom.id}"
-                                       th:class="${classroom.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"
-                                       onclick="toggleActiveStatus(this, event)">
-                                    </i>
-                                </a>
-                                <a href="#" class="edit-class-status">
-                                    <i class="flaticon-edit edit-class" style="cursor: pointer; color: blue;"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        </tbody>
+                        <tbody id="table-content"></tbody>
                     </table>
-                    <!--pagination-->
+                    <!--                        pagination-->
                     <div class="table-footer">
                         <div class="records-selector">
                             <span>Hiển thị</span>
-                            <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)" th:value="${pageSize}">
-                                <option value="5" th:selected="${pageSize == 5}">5</option>
-                                <option value="10" th:selected="${pageSize == 10}">10</option>
-                                <option value="20" th:selected="${pageSize == 20}">20</option>
-                                <option value="50" th:selected="${pageSize == 50}">50</option>
+                            <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)">
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
                             </select>
                             <span>bản ghi</span>
                         </div>
 
                         <div class="pagination-container">
-                            <ul class="pagination-list">
-                                <!-- Nút Previous -->
-                                <li th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-item">
-                                    <a th:href="@{/manage-class(page=${currentPage - 1}, size=${pageSize})}"
-                                       class="pagination-link pagination-arrow" aria-label="Previous page">
-                                        <span class="arrow-icon">&#8249;</span>
-                                    </a>
-                                </li>
-
-                                <!-- Hiển thị các số trang -->
-                                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-                                    th:if="${(i >= currentPage - 2 && i <= currentPage + 2) || i == 0 || i == totalPages - 1}"
-                                    th:classappend="${i == currentPage} ? 'active'"
-                                    class="pagination-item">
-
-                                    <!-- Hiển thị dấu ... nếu có khoảng cách -->
-                                    <span class="ellipsis" th:if="${i == 0 && currentPage > 2}">...</span>
-
-                                    <a th:href="@{/manage-class(page=${i}, size=${pageSize})}"
-                                       class="pagination-link" th:text="${i + 1}"></a>
-
-                                    <span class="ellipsis" th:if="${i == totalPages - 1 && i > currentPage + 2}">...</span>
-                                </li>
-
-                                <!-- Nút Next -->
-                                <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'" class="pagination-item">
-                                    <a th:href="@{/manage-class(page=${currentPage + 1}, size=${pageSize})}"
-                                       class="pagination-link pagination-arrow" aria-label="Next page">
-                                        <span class="arrow-icon">&#8250;</span>
-                                    </a>
-                                </li>
-                            </ul>
+                            <ul id="pagination-list" class="pagination-list"></ul>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
-        <!-- User Modal -->
-        <div id="userModal" class="modal fade">
-            <div class="modal-content">
-                <span class="close-modal" onclick="closeModal()">x</span>
-                <div class="header">
-                    <h3 id="userModalTitle">User List</h3>
-                    <div class="search-bar">
-                        <div class="d-flex gap-2 align-items-center">
-                            <input type="text" id="searchUserInput" class="search-input"
-                                   placeholder="Search users...">
+
+
+
+        <div id="userModal" class="modal fade" tabindex="-1" aria-labelledby="userModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="userModalTitle">User List</h5>
+                        <button type="button" class="btn-close" onclick="closeModal()" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="search-bar d-flex gap-2 align-items-center">
+                            <input type="text" id="searchUserInput" class="form-control" placeholder="Search users...">
                             <button class="btn btn-primary" id="searchUserButton">Search</button>
                         </div>
-                    </div>
-                </div>
-
-                <div class="card mt-4">
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <th>Full Name</th>
-                                <th>Email</th>
-                                <th>Phone Number</th>
-                                <th>Gender</th>
-                            </tr>
-                            </thead>
-                            <tbody id="userTableBody">
-                            <!-- User data will be loaded here dynamically -->
-                            </tbody>
-                        </table>
+                        <div class="table-responsive mt-4">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Phone Number</th>
+                                    <th>Gender</th>
+                                </tr>
+                                </thead>
+                                <tbody id="userTableBody">
+                                <!-- User data sẽ được load vào đây -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -612,49 +478,153 @@
         </div>
 
         <div class="modal fade" id="newClassModal" tabindex="-1" aria-labelledby="newClassModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="newClassModalLabel">Create a new Class</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="newClassForm">
-                                <input type="hidden" id="newClassId">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newClassModalLabel">Create a new Class</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="newClassForm">
+                            <input type="hidden" id="newClassId">
 
-                                <div class="mb-3">
-                                    <label for="newClassName" class="form-label">Class Name</label>
-                                    <input type="text" class="form-control" id="newClassName" required>
-                                </div>
+                            <div class="mb-3">
+                                <label for="newClassName" class="form-label">Class Name</label>
+                                <input type="text" class="form-control" id="newClassName" required>
+                            </div>
 
-                                <div class="mb-3">
-                                    <label for="newNumberOfInterns" class="form-label">Number of Interns</label>
-                                    <input type="number" class="form-control" id="newNumberOfInterns" required min="1">
-                                </div>
+                            <div class="mb-3">
+                                <label for="newNumberOfInterns" class="form-label">Number of Interns</label>
+                                <input type="number" class="form-control" id="newNumberOfInterns" required min="1">
+                            </div>
 
-                                <label for="newManager">Select Manager:</label>
-                                <select id="newManager" name="manager" class="form-control">
-                                    <option th:each="userRole : ${userRoleList}"
-                                            th:value="${userRole.id}"
-                                            th:text="${userRole.first_name + ' ' + userRole.last_name}">
-                                    </option>
-                                </select>
+                            <label for="newManager">Select Manager:</label>
+                            <select id="newManager" name="manager" class="form-control">
+                                <option th:each="userRole : ${userRoleList}"
+                                        th:value="${userRole.id}"
+                                        th:text="${userRole.first_name + ' ' + userRole.last_name}">
+                                </option>
+                            </select>
 
 
-                                <div class="modal-footer">
-                                    <button type="submit" class="btn btn-primary">Save a new class</button>
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                </div>
-                            </form>
-                        </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Save a new class</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
+        </div>
     </section>
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
+
+    // Hàm sử dụng UserModal
+    document.addEventListener("DOMContentLoaded", function () {
+        loadPage(0, 5);
+
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) {
+            searchInput.addEventListener('keyup', filterTable);
+        }
+
+        // Bắt sự kiện click vào từng row (trừ nút action)
+        document.getElementById("table-content").addEventListener("click", function (event) {
+            let row = event.target.closest("tr");
+            if (!row || event.target.closest("td:last-child")) return;
+
+            openUserModal(row);
+        });
+    });
+    function openUserModal(row) {
+        // Lấy dữ liệu từ hàng được nhấp
+        const classId = row.getAttribute('data-id');
+        const className = row.cells[0].textContent;
+        const managerName = row.cells[2].textContent;
+
+        // Cập nhật tiêu đề modal
+        document.getElementById("userModalTitle").textContent = `${className} - MANAGER BY: ${managerName}`;
+
+        // Tải danh sách người dùng
+        loadUsers(classId);
+
+        // Lấy tham chiếu đến modal
+        const modalElement = document.getElementById("userModal");
+
+        // Đảm bảo modal có thuộc tính data-bs-backdrop="static" để hiển thị backdrop đen
+        modalElement.setAttribute('data-bs-backdrop', 'static');
+
+        // Khởi tạo và hiển thị modal với các tùy chọn
+        const userModal = new bootstrap.Modal(modalElement, {
+            backdrop: true,  // Bật backdrop
+            keyboard: true,  // Cho phép đóng bằng phím Esc
+            focus: true      // Tự động focus vào modal
+        });
+
+        // Hiển thị modal
+        userModal.show();
+
+        // Thêm class để căn giữa modal sau khi nó được hiển thị
+        modalElement.addEventListener('shown.bs.modal', function () {
+            document.querySelector('.modal-dialog').classList.add('modal-dialog-centered');
+        }, { once: true });
+    }
+    function closeModal() {
+        const userModal = bootstrap.Modal.getInstance(document.getElementById("userModal"));
+        if (userModal) {
+            userModal.hide();
+
+            // Đảm bảo xóa backdrop nếu còn sót lại
+            setTimeout(() => {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
+                document.body.classList.remove('modal-open');
+            }, 300); // Đợi hiệu ứng đóng modal hoàn tất
+        }
+    }
+    function loadUsers(classId) {
+        const tableBody = document.getElementById("userTableBody");
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Loading users...</td></tr>';
+
+        fetch(`/api/class/${classId}/users`)
+            .then(response => {
+                if (!response.ok) throw new Error(`Failed to fetch users: ${response.status}`);
+                return response.json();
+            })
+            .then(users => {
+                displayUsers(users); // Đổ dữ liệu vào bảng
+            })
+            .catch(error => {
+                console.error("Error fetching users:", error);
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading users</td></tr>';
+            });
+    }
+    function displayUsers(users) {
+        const tableBody = document.getElementById("userTableBody");
+        tableBody.innerHTML = "";
+
+        if (!users || users.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No Interns found in this class</td></tr>';
+            return;
+        }
+
+        users.forEach(user => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+            <td>${user.first_name} ${user.last_name}</td>
+            <td>${user.email}</td>
+            <td>${user.phone_number}</td>
+            <td>${user.gender}</td>
+        `;
+            tableBody.appendChild(row);
+        });
+    }
+
+
     document.addEventListener("click", function (event) {
+
         let icon = event.target.closest(".flaticon-padlock");
         if (!icon) return;
 
@@ -675,9 +645,6 @@
             toggleClassStatus(classId, action);
         });
     });
-
-
-
     function toggleClassStatus(classId, action) {
         let url = action === "unlock" ? `/api/class/setIsActiveTrue/${classId}` : `/api/class/delete/${classId}`;
         let method = action === "unlock" ? "PATCH" : "DELETE";
@@ -701,6 +668,60 @@
             })
             .catch(error => showModal("Error", "Error: " + error.message));
     }
+    function toggleActiveStatus(icon, event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        let element = icon;
+        let classId = null;
+
+        // Duyệt ngược lên cha để tìm data-id
+        while (element) {
+            if (element.hasAttribute("data-id")) {
+                classId = element.getAttribute("data-id");
+                break;
+            }
+            element = element.parentElement; // Duyệt lên thẻ cha
+        }
+
+        if (!classId) {
+            showModal("Error", "Missing class ID!");
+            return;
+        }
+
+        let isUnlock = icon.classList.contains("inactive");
+        let action = isUnlock ? "unlock" : "lock";
+        let message = isUnlock
+            ? "Are you sure you want to unlock this class?"
+            : "Are you sure you want to lock this class?";
+
+        showModal("Confirm", message, true, function () {
+            let url = action === "unlock"
+                ? `/api/class/setIsActiveTrue/${classId}`
+                : `/api/class/delete/${classId}`;
+            let method = action === "unlock" ? "PATCH" : "DELETE";
+
+            fetch(url, { method: method })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text); });
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    let successMessage = action === "unlock"
+                        ? "Class has been unlocked!"
+                        : "Class has been locked!";
+                    showModal("Success", successMessage);
+
+                    // Cập nhật trạng thái icon trên UI
+                    icon.classList.toggle("inactive");
+                    icon.classList.toggle("active");
+                })
+                .catch(error => showModal("Error", "Error: " + error.message));
+        });
+    }
+
 
     function showModal(title, message, isConfirm = false, confirmCallback = null) {
 
@@ -743,7 +764,6 @@
         let addNewClassModal = new bootstrap.Modal(document.getElementById("newClassModal"));
         addNewClassModal.show();
     });
-
     document.getElementById("newClassForm").addEventListener("submit", function (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -786,11 +806,12 @@
             .catch(error => alert("Error Create class: " + error.message));
     });
 
+
     // Xử lý khi click vào nút Edit
     document.addEventListener("click", function (event) {
         let editIcon = event.target.closest(".edit-class");
         if (!editIcon) return;
-            event.preventDefault();
+        event.preventDefault();
 
         let row = editIcon.closest("tr");
         if (!row) return;
@@ -863,112 +884,103 @@
             })
             .catch(error => alert("Error updating class: " + error.message));
     });
-    //Paging
-    function changePageSize(selectElement) {
-        var newSize = selectElement.value;
-        var currentPage = new URLSearchParams(window.location.search).get("page") || 0;
 
-        window.location.href = `/manage-class?page=0&size=${newSize}`;
+
+    function changePageSize(select) {
+        pageSize = parseInt(select.value);
+        loadPage(0, pageSize);
     }
-
-
-    //Mở modal UserList
-    function openUserModal(row) {
-        // Get the data from the clicked row
-        const classId = row.getAttribute('data-id');
-        const className = row.cells[0].textContent;
-        const managerName = row.cells[2].textContent;
-
-
-        const modal = document.getElementById("userModal");
-        const modalTitle = document.getElementById("userModalTitle");
-        modalTitle.textContent = className + " - Managed by " + managerName;
-
-        // Load User
-        loadUsers(classId);
-
-
-        // Add blur effect to sidebar and content
-        document.body.classList.add('modal-open');
-
-        // Display the modal
-        modal.style.display = "block";
-
-        // Prevent event bubbling
-        event.stopPropagation();
-    }
-
-    //Đóng modal UserList
-    function closeModal() {
-        const modal = document.getElementById("userModal");
-        modal.style.display = "none";
-
-        // Remove blur effect
-        document.body.classList.remove('modal-open');
-    }
-
-    function loadUsers(classId) {
-        // Fetch CV_Info data from the server based on the classID
-        const tableBody = document.getElementById("userTableBody");
-        tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Loading Interns...</td></tr>';
-
-        // Call the API to get CV_Info data
-        fetch(`/api/class/${classId}/users`)
-                .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch users: ' + response.status);
-                }
-                return response.json();
-            })
+    function loadPage(page, size) {
+        fetch(`/api/class?page=${page}&size=${size}`)
+            .then(response => response.json())
             .then(data => {
-                displayUsers(data, classId);
+                totalPages = data.totalPages;
+                currentPage = data.number;
+                pageSize = data.size;
+                renderTable(data.content);
+                renderPagination();
             })
-            .catch(error => {
-                console.error('Error fetching users:', error);
-                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading candidates: ' + error.message + '</td></tr>';
-
-                // For demo purposes, load sample data if API fails
-                setTimeout(() => {
-                    loadSampleCandidates(classId);
-                }, 1000);
-            });
+            .catch(error => console.error("Error fetching data:", error));
     }
+    function renderTable(classes) {
+        let tableContent = document.getElementById("table-content");
+        tableContent.innerHTML='';
+        tableContent.innerHTML = classes.map(c => `
+      <tr id="${c.manager ? 'manager-' + c.manager.id : ''}" data-id="${c.id}">
+            <td>${c.className}</td>
+            <td>${c.numberOfIntern}</td>
+            <td>${c.manager.first_name} ${c.manager.last_name}</td>
+            <td>${c.status}</td>
+            <td>
+                <a href="#" class="toggle-class-status open-modal" data-id="${c.id}">
+                    <i class="${c.active ? 'flaticon-padlock active' : 'flaticon-padlock inactive'}" onclick="toggleActiveStatus(this, event)"></i>
+                </a>
+                <a href="#" class="edit-class-status">
+                    <i class="flaticon-edit edit-class" style="cursor: pointer; color: blue;"></i>
+                </a>
+            </td>
+        </tr>
+    `).join('');
+    }
+    function renderPagination() {
+        let pagination = document.getElementById("pagination-list");
+        pagination.innerHTML = '';
 
-    function displayUsers(users) {
-        const tableBody = document.getElementById("userTableBody");
-        tableBody.innerHTML = "";
-
-        // Lọc danh sách user nếu cần (ví dụ: chỉ lấy user đang hoạt động)
-        users = users.filter(user => user.isActive !== false);
-
-        if (!users || users.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No users found</td></tr>';
-            return;
+        if (currentPage > 0) {
+            pagination.innerHTML += `<li class="pagination-item"><a href="#" onclick="loadPage(${currentPage - 1}, ${pageSize})" class="pagination-link pagination-arrow">&#8249;</a></li>`;
         }
 
-        // Hiển thị tất cả user
-        users.forEach(user => {
-            const fullName = `${user.first_name} ${user.last_name}`;
-            const row = `
-            <tr>
-                <td>${fullName}</td>
-                <td>${user.email}</td>
-                <td>${user.phone_number}</td>
-                <td>${user.gender}</td>
-            </tr>
-        `;
-            tableBody.innerHTML += row;
-        });
+        for (let i = 0; i < totalPages; i++) {
+            if (i === 0 || i === totalPages - 1 || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pagination.innerHTML += `
+            <li class="pagination-item ${i === currentPage ? 'active' : ''}">
+                <a href="#" onclick="loadPage(${i}, ${pageSize})" class="pagination-link">${i + 1}</a>
+            </li>`;
+            }
+        }
+
+        if (currentPage < totalPages - 1) {
+            pagination.innerHTML += `<li class="pagination-item"><a href="#" onclick="loadPage(${currentPage + 1}, ${pageSize})" class="pagination-link pagination-arrow">&#8250;</a></li>`;
+        }
     }
+    function filterTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("table-content");
+        let rows = table.getElementsByTagName("tr");
 
+        for (let i = 1; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName("td");
+            let match = false;
 
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].textContent.toLowerCase().includes(input)) {
+                    match = true;
+                    break;
+                }
+            }
+            rows[i].style.display = match ? "" : "none";
+        }
+    }
+    function sortTable(columnIndex) {
+        let table = document.getElementById("table-content");
+        let rows = Array.from(table.rows).slice(1);
+        let isAscending = table.getAttribute("data-sort") !== "asc";
+
+        rows.sort((rowA, rowB) => {
+            let cellA = rowA.cells[columnIndex].textContent.trim().toLowerCase();
+            let cellB = rowB.cells[columnIndex].textContent.trim().toLowerCase();
+
+            if (!isNaN(cellA) && !isNaN(cellB)) {
+                return isAscending ? cellA - cellB : cellB - cellA;
+            } else {
+                return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+            }
+        });
+
+        rows.forEach(row => table.appendChild(row));
+        table.setAttribute("data-sort", isAscending ? "asc" : "desc");
+    }
 
 </script>
 </body>
 </html>
-
-
-
-
-
-
