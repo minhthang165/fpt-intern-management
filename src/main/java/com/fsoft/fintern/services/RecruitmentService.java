@@ -25,10 +25,14 @@ public class RecruitmentService {
     public RecruitmentService(RecruitmentRepository recruitRepository) {
         this.recruitmentRepository = recruitRepository;
     }
+
     public ResponseEntity<Recruitment> findById(int id) throws BadRequestException {
         Optional<Recruitment> recruitment = this.recruitmentRepository.findById(id);
         if (recruitment.isPresent()) {
-            return new ResponseEntity<>(recruitment.get(), HttpStatus.OK);
+            Recruitment recruitmentObj = recruitment.get();
+            Integer applicationCount = recruitmentRepository.countByRecruitmentIdAndIsActiveTrue(recruitmentObj.getId());
+            recruitmentObj.setApplicationCount(applicationCount);
+            return new ResponseEntity<>(recruitmentObj, HttpStatus.OK);
         } else {
             throw new BadRequestException();
         }
@@ -39,6 +43,11 @@ public class RecruitmentService {
         if (recruitments.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
+            // Set application count for each recruitment
+            for (Recruitment recruitment : recruitments) {
+                Integer applicationCount = recruitmentRepository.countByRecruitmentIdAndIsActiveTrue(recruitment.getId());
+                recruitment.setApplicationCount(applicationCount);
+            }
             return new ResponseEntity<>(recruitments, HttpStatus.OK);
         }
     }

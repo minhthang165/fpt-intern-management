@@ -351,8 +351,10 @@
   });
 
   // Make the upload area clickable
-  document.getElementById('uploadArea').addEventListener('click', function() {
-    document.getElementById('fileInput').click();
+  document.getElementById('uploadArea').addEventListener('click', function(event) {
+    if (event.target.id !== 'fileInput') {
+      document.getElementById('fileInput').click();
+    }
   });
 
   // Add drag and drop functionality

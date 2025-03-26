@@ -263,6 +263,114 @@
             background-color: var(--fpt-orange-dark);
         }
 
+        /* Delete button styles */
+        .cv-list-item .delete-button {
+            background-color: transparent;
+            color: var(--error);
+            border: 1px solid var(--error);
+            padding: 6px 12px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            margin-left: 8px;
+        }
+
+        .cv-list-item .delete-button:hover {
+            background-color: var(--error);
+            color: white;
+        }
+
+        /* Confirmation modal styles */
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirm-modal-content {
+            background-color: white;
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .confirm-modal-header {
+            background: linear-gradient(90deg, var(--error), #c41017);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .confirm-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        .confirm-modal-header .warning-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .confirm-modal-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .confirm-modal-footer {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .confirm-modal-footer button {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cancel-button {
+            background-color: var(--gray-200);
+            color: var(--gray-700);
+            border: none;
+        }
+
+        .cancel-button:hover {
+            background-color: var(--gray-300);
+        }
+
+        .confirm-delete-button {
+            background-color: var(--error);
+            color: white;
+            border: none;
+        }
+
+        .confirm-delete-button:hover {
+            background-color: #c41017;
+        }
+
+        .confirm-delete-button:disabled {
+            background-color: var(--gray-400);
+            cursor: not-allowed;
+        }
+
         .user__dropdown {
             display: none;
             position: absolute;
@@ -447,14 +555,35 @@
     </div>
 </section>
 
+<!-- Delete Confirmation Modal -->
+<div id="confirmDeleteModal" class="confirm-modal">
+    <div class="confirm-modal-content">
+        <div class="confirm-modal-header">
+            <h3><i class="fas fa-exclamation-triangle warning-icon"></i> Confirm Deletion</h3>
+            <button id="closeConfirmModal" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
+        </div>
+        <div class="confirm-modal-body">
+            <p>Are you sure you want to delete <span id="fileToDeleteName" style="font-weight: 500;"></span>?</p>
+            <p style="margin-top: 10px; font-size: 14px; color: var(--gray-600);">This action cannot be undone.</p>
+        </div>
+        <div class="confirm-modal-footer">
+            <button id="cancelDeleteButton" class="cancel-button">Cancel</button>
+            <button id="confirmDeleteButton" class="confirm-delete-button">Delete</button>
+        </div>
+    </div>
+</div>
+
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 
 <script>
+    // Global variable to store the file to be deleted
+    let currentFileToDelete = null;
+
     document.addEventListener("DOMContentLoaded", async function () {
         const id = document.getElementById("user_id").value;
         document.getElementById("uploadForm").addEventListener("submit", uploadFile);
 
-
+        // File input change event
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const fileNameEl = document.getElementById('fileName');
             if (e.target.files[0]) {
@@ -468,12 +597,15 @@
             }
         });
 
-
-        document.getElementById('uploadArea').addEventListener('click', function() {
-            document.getElementById('fileInput').click();
+        // Upload area click event
+        document.getElementById('uploadArea').addEventListener('click', function(event) {
+            if (event.target.id !== 'fileInput') {
+                document.getElementById('fileInput').click();
+            }
         });
 
 
+        // Drag and drop functionality
         const uploadArea = document.getElementById('uploadArea');
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -519,6 +651,7 @@
             }
         }
 
+        // Fetch user data
         try {
             let response = await fetch(`/api/user/` + id);
             if (!response.ok) throw new Error("User not found");
@@ -531,59 +664,10 @@
             console.error("Error fetching user:", error);
         }
 
-        try {
-            let cvResponse = await fetch(`/file/user/${id}/all`);
-            let cvData = await cvResponse.json();
-            let cv_list = document.getElementById("cv_list");
+        // Fetch CV list
+        await refreshCVList(id);
 
-
-            cv_list.innerHTML = "";
-
-            // Check if the response contains data
-            if (Array.isArray(cvData) && cvData.length > 0) {
-                cvData.forEach(cv => {
-                    let listItem = document.createElement("li");
-                    listItem.className = "cv-list-item";
-
-                    // Add file icon based on file type
-                    let fileIcon = document.createElement("i");
-                    const fileExt = cv.displayName.split('.').pop().toLowerCase();
-
-                    if (fileExt === 'pdf') {
-                        fileIcon.className = "fas fa-file-pdf file-icon";
-                        fileIcon.style.color = "#e74c3c";
-                    } else if (['doc', 'docx'].includes(fileExt)) {
-                        fileIcon.className = "fas fa-file-word file-icon";
-                        fileIcon.style.color = "#ff923a";
-                    } else {
-                        fileIcon.className = "fas fa-file-alt file-icon";
-                    }
-
-                    let nameSpan = document.createElement("span");
-                    nameSpan.className = "file-name";
-                    nameSpan.textContent = cv.displayName;
-
-                    let viewButton = document.createElement("button");
-                    viewButton.className = "view-button";
-                    viewButton.innerHTML = '<i class="fas fa-eye mr-1"></i> View';
-                    viewButton.onclick = (e) => {
-                        e.preventDefault();
-                        showPreview(cv.path);
-                    };
-
-                    listItem.appendChild(fileIcon);
-                    listItem.appendChild(nameSpan);
-                    listItem.appendChild(viewButton);
-                    cv_list.appendChild(listItem);
-                });
-            } else {
-                cv_list.innerHTML = '<li class="cv-list-item text-gray-500 italic">No CV documents found</li>';
-            }
-        } catch (error) {
-            console.error("Error fetching CV list:", error);
-            document.getElementById("cv_list").innerHTML = '<li class="cv-list-item text-red-500">Error loading CV documents</li>';
-        }
-
+        // Set up user dropdown if it exists
         const userPortfolio = document.getElementById("userportfolio");
         const userDropdown = document.querySelector(".user__dropdown");
 
@@ -599,8 +683,31 @@
                 }
             });
         }
+
+        // Set up delete confirmation modal event listeners
+        document.getElementById('closeConfirmModal').addEventListener('click', function() {
+            document.getElementById('confirmDeleteModal').style.display = 'none';
+        });
+
+        document.getElementById('cancelDeleteButton').addEventListener('click', function() {
+            document.getElementById('confirmDeleteModal').style.display = 'none';
+        });
+
+        document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+            if (currentFileToDelete) {
+                deleteFile(currentFileToDelete);
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('confirmDeleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
     });
 
+    // Upload file function
     async function uploadFile(event) {
         event.preventDefault();
         const userId = document.getElementById("user_id").value;
@@ -612,13 +719,13 @@
         const progressBar = document.getElementById("progressBar");
         const cv_list = document.getElementById("cv_list");
 
-        // Kiểm tra các phần tử cần thiết
+        // Check required elements
         if (!cv_list || !messageEl) {
-            console.error("❌ Một hoặc nhiều phần tử giao diện không tồn tại!");
+            console.error("❌ One or more UI elements don't exist!");
             return;
         }
 
-        // Thiết lập giao diện ban đầu
+        // Set up initial UI
         messageEl.textContent = "";
         messageEl.className = "";
         messageEl.style.display = "none";
@@ -626,7 +733,7 @@
         progressContainer.style.display = "block";
         progressBar.style.width = "0%";
 
-        // Mô phỏng thanh tiến trình
+        // Simulate progress bar
         let progress = 0;
         const progressInterval = setInterval(() => {
             progress += Math.random() * 10;
@@ -634,7 +741,7 @@
             progressBar.style.width = progress + "%";
         }, 300);
 
-        // Kiểm tra file
+        // Check file
         if (!fileInput.files.length) {
             messageEl.textContent = "❌ Please select a file!";
             messageEl.className = "message-error";
@@ -687,7 +794,7 @@
             if (data.success && data.data && data.data.url) {
                 let fileUrl = data.data.url;
 
-                // Thêm file mới vào danh sách tạm thời
+                // Add new file to temporary list
                 if (cv_list.innerHTML.includes("No CV documents found")) {
                     cv_list.innerHTML = "";
                 }
@@ -712,6 +819,10 @@
                 nameSpan.className = "file-name";
                 nameSpan.textContent = fileName;
 
+                let buttonContainer = document.createElement("div");
+                buttonContainer.style.display = "flex";
+                buttonContainer.style.gap = "8px";
+
                 let viewButton = document.createElement("button");
                 viewButton.className = "view-button";
                 viewButton.innerHTML = '<i class="fas fa-eye mr-1"></i> View';
@@ -720,9 +831,11 @@
                     showPreview(fileUrl);
                 };
 
+                buttonContainer.appendChild(viewButton);
                 listItem.appendChild(fileIcon);
                 listItem.appendChild(nameSpan);
-                listItem.appendChild(viewButton);
+                listItem.appendChild(buttonContainer);
+
                 if (cv_list.firstChild) {
                     cv_list.insertBefore(listItem, cv_list.firstChild);
                 } else {
@@ -734,10 +847,9 @@
                     listItem.style.backgroundColor = "";
                 }, 1000);
 
-                // Làm mới danh sách CV từ server
-                console.log("🔄 Làm mới danh sách CV...");
+                // Refresh CV list from server
+                console.log("🔄 Refreshing CV list...");
                 await refreshCVList(userId);
-            } else {
             }
         } catch (error) {
             messageEl.textContent = "❌ Upload error: " + error.message;
@@ -748,11 +860,12 @@
             loadingEl.style.display = "none";
             setTimeout(() => {
                 progressContainer.style.display = "none";
-                fileNameEl.textContent = ""; 
+                fileNameEl.textContent = "";
             }, 500);
         }
     }
 
+    // Refresh CV list function
     async function refreshCVList(userId) {
         try {
             const cvResponse = await fetch(`/file/user/${userId}/all`);
@@ -763,7 +876,7 @@
 
             const cv_list = document.getElementById("cv_list");
             if (!cv_list) {
-                throw new Error("Phần tử cv_list không tồn tại trong DOM!");
+                throw new Error("CV list element doesn't exist in the DOM!");
             }
 
             cv_list.innerHTML = "";
@@ -773,6 +886,7 @@
                 cvArray.forEach(cv => {
                     const listItem = document.createElement("li");
                     listItem.className = "cv-list-item";
+                    listItem.dataset.fileId = cv.id || ''; // Store file ID for deletion
 
                     const fileIcon = document.createElement("i");
                     const fileExt = cv.displayName.split('.').pop().toLowerCase();
@@ -790,29 +904,104 @@
                     nameSpan.className = "file-name";
                     nameSpan.textContent = cv.displayName;
 
+                    const buttonContainer = document.createElement("div");
+                    buttonContainer.style.display = "flex";
+                    buttonContainer.style.gap = "8px";
+
                     const viewButton = document.createElement("button");
                     viewButton.className = "view-button";
                     viewButton.innerHTML = '<i class="fas fa-eye mr-1"></i> View';
                     viewButton.onclick = (e) => {
                         e.preventDefault();
-                        // Sửa path thành url để khớp với response
                         showPreview(cv.url || cv.path);
                     };
 
+                    const deleteButton = document.createElement("button");
+                    deleteButton.className = "delete-button";
+                    deleteButton.innerHTML = '<i class="fas fa-times"></i>';
+                    deleteButton.onclick = (e) => {
+                        e.preventDefault();
+                        showDeleteConfirmation(cv);
+                    };
+
+                    buttonContainer.appendChild(viewButton);
+                    buttonContainer.appendChild(deleteButton);
+
                     listItem.appendChild(fileIcon);
                     listItem.appendChild(nameSpan);
-                    listItem.appendChild(viewButton);
+                    listItem.appendChild(buttonContainer);
                     cv_list.appendChild(listItem);
                 });
             } else {
                 cv_list.innerHTML = '<li class="cv-list-item text-gray-500 italic">No CV documents found</li>';
-                console.log("📭 Không có CV nào được tìm thấy");
+                console.log("📭 No CVs found");
             }
         } catch (error) {
             const cv_list = document.getElementById("cv_list");
             if (cv_list) {
                 cv_list.innerHTML = '<li class="cv-list-item text-red-500">Error loading CV list</li>';
             }
+        }
+    }
+
+    // Function to show delete confirmation
+    function showDeleteConfirmation(file) {
+        currentFileToDelete = file;
+        const modal = document.getElementById('confirmDeleteModal');
+        const fileNameSpan = document.getElementById('fileToDeleteName');
+        const confirmButton = document.getElementById('confirmDeleteButton');
+
+        fileNameSpan.textContent = file.displayName;
+        confirmButton.disabled = false;
+        confirmButton.textContent = 'Delete';
+
+        modal.style.display = 'flex';
+    }
+
+    // Function to delete file
+    async function deleteFile(file) {
+        const confirmButton = document.getElementById('confirmDeleteButton');
+        confirmButton.disabled = true;
+        confirmButton.textContent = 'Deleting...';
+
+        try {
+            // Replace with your actual delete API endpoint
+            const response = await fetch(`/file/fully-delete/${file.id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete file');
+            }
+
+            // Close modal
+            document.getElementById('confirmDeleteModal').style.display = 'none';
+
+            // Show success message
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = '✅ File deleted successfully';
+            messageEl.className = 'message-success';
+            messageEl.style.display = 'block';
+
+            // Refresh CV list
+            const userId = document.getElementById('user_id').value;
+            await refreshCVList(userId);
+
+            // Hide message after 3 seconds
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        } catch (error) {
+            console.error('Error deleting file:', error);
+
+            // Show error message
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = '❌ Error deleting file: ' + error.message;
+            messageEl.className = 'message-error';
+            messageEl.style.display = 'block';
+
+            // Close modal
+            document.getElementById('confirmDeleteModal').style.display = 'none';
         }
     }
 
@@ -909,7 +1098,6 @@
 
         // Append modal only when needed
         document.body.appendChild(previewContainer);
-
 
         previewContainer.onclick = (e) => {
             if (e.target === previewContainer) {
