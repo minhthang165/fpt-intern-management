@@ -15,4 +15,6 @@ public interface RecruitmentRepository extends JpaRepository<Recruitment, Intege
 
     @Query(value = "SELECT COUNT(c.file_id) FROM CV_Info c WHERE c.recruitment_id = :recruitmentId AND c.is_active = 1", nativeQuery = true)
     Integer countByRecruitmentIdAndIsActiveTrue(@Param("recruitmentId") Integer recruitmentId);
+
+    Recruitment findByClassId(Integer classId);
 }

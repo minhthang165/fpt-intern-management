@@ -76,9 +76,7 @@ public class RecruitmentService {
         if (recruitment == null) {
             throw new BadRequestException();
         }
-        recruitment.setActive(false);
-        recruitment.setDeletedAt(Timestamp.from(Instant.now().plus((Duration.ofHours(6)))));
-        this.recruitmentRepository.save(recruitment);
+        this.recruitmentRepository.delete(recruitment);
         return new ResponseEntity<>(recruitment, HttpStatus.OK);
     }
 
@@ -107,6 +105,13 @@ public class RecruitmentService {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRecruitment);
     }
 
-
+    public ResponseEntity<Recruitment> findByClassId(int classId) throws BadRequestException {
+        Recruitment recruitment = this.recruitmentRepository.findByClassId(classId);
+        if (recruitment != null) {
+            return new ResponseEntity<>(recruitment, HttpStatus.OK);
+        } else {
+            throw new BadRequestException();
+        }
+    }
 
 }

@@ -15,4 +15,5 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Integer> {
 
     @Query("SELECT c FROM Classroom c WHERE c.manager.id = :employeeId")
     List<Classroom> findClassroomsByEmployeeId(Long employeeId);
+
 }
