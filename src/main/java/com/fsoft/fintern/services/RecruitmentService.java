@@ -34,6 +34,15 @@ public class RecruitmentService {
         }
     }
 
+    public ResponseEntity<List<Recruitment>> findAll2() throws BadRequestException {
+        List<Recruitment> recruitments = this.recruitmentRepository.findAll();
+        if (recruitments.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(recruitments, HttpStatus.OK);
+        }
+    }
+
     public ResponseEntity<Page<Recruitment>> findAll(Pageable pageable) throws BadRequestException {
         Page<Recruitment> recruitments = this.recruitmentRepository.findAll(pageable);
         if (recruitments.isEmpty()) {

@@ -679,7 +679,7 @@
         let tableContent = document.getElementById("table-content");
         tableContent.innerHTML='';
         tableContent.innerHTML = classes.map(c => `
-        <tr id="manager-${c.manager.id}">
+        <tr id="manager-${c.manager.id}" data-class-id="${c.id}">
             <td>${c.className}</td>
             <td>${c.numberOfIntern}</td>
             <td>${c.manager.first_name} ${c.manager.last_name}</td>
