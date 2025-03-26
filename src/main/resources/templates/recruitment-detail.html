@@ -188,31 +188,42 @@
       transition: all 0.3s ease;
     }
 
-    /* Progress bar container */
-    .progress-container {
-      position: absolute;
+    /* Spinner Overlay */
+    .spinner-overlay {
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
-      height: 6px;
-      background-color: transparent;
-      overflow: hidden;
-      display: none;
-      border-top-left-radius: var(--border-radius);
-      border-top-right-radius: var(--border-radius);
-    }
-
-    /* Progress bar */
-    .progress-bar {
       height: 100%;
-      width: 0%;
-      background-color: var(--primary-color);
-      transition: width 0.5s ease;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s, visibility 0.3s;
     }
 
-    /* Show progress container when loading */
-    .container.loading .progress-container {
-      display: block;
+    .spinner-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @media (max-width: 768px) {
@@ -245,11 +256,6 @@
 
 <input type="hidden" id="user_id" th:value="${user_id}">
 <div class="container" id="mainContainer">
-  <!-- Progress bar at the top of container -->
-  <div class="progress-container">
-    <div class="progress-bar" id="progressBar"></div>
-  </div>
-
   <div class="header">
     <h1 class="job-title" th:text="${recruitment.position}"></h1>
     <a href="/recruitment/recruitments">
@@ -299,6 +305,11 @@
   <div id="message"></div>
 </div>
 
+<!-- Spinner Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+  <div class="spinner"></div>
+</div>
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("applyButton").addEventListener("click", applyJob);
@@ -344,11 +355,17 @@
     }
   }
 
+  function showSpinner() {
+    document.getElementById("spinnerOverlay").classList.add("active");
+  }
+
+  function hideSpinner() {
+    document.getElementById("spinnerOverlay").classList.remove("active");
+  }
+
   async function applyJob() {
     let messageEl = document.getElementById("message");
     let applyButton = document.getElementById("applyButton");
-    let mainContainer = document.getElementById("mainContainer");
-    let progressBar = document.getElementById("progressBar");
     let { recruitmentId } = getIdsFromPath();
     const userId = document.getElementById("user_id").value;
     const cvSelect = document.getElementById("cvSelect");
@@ -372,24 +389,11 @@
       return;
     }
 
-    // Show loading state
-    mainContainer.classList.add("loading");
+    // Show loading spinner
+    showSpinner();
     applyButton.disabled = true;
     messageEl.textContent = "";
     messageEl.style.backgroundColor = "transparent";
-
-    // Start progress animation
-    progressBar.style.width = "0%";
-
-    // Simulate progress
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-      progress += 5;
-      if (progress > 90) {
-        clearInterval(progressInterval);
-      }
-      progressBar.style.width = progress + "%";
-    }, 150);
 
     try {
       const fileId = selectedCV.value;
@@ -398,9 +402,7 @@
       // Nếu driveLink không có trong dataset, fetch từ /file/file/path/{fileId}
       if (!driveLink) {
         console.log("No driveLink in dataset, fetching from API for fileId:", fileId);
-        progressBar.style.width = "30%";
         let pathResponse = await fetch(`/file/file/path/${fileId}`);
-        progressBar.style.width = "50%";
         console.log("File path API response status:", pathResponse.status);
 
         if (!pathResponse.ok) {
@@ -422,14 +424,12 @@
       formData.append("recruitmentId", recruitmentId);
 
       console.log("Sending data:", { driveLink, fileId, recruitmentId });
-      progressBar.style.width = "70%";
 
       let applyResponse = await fetch("/cv/save", {
         method: "POST",
         body: formData
       });
 
-      progressBar.style.width = "90%";
       console.log("Apply API response status:", applyResponse.status);
 
       if (!applyResponse.ok) {
@@ -439,7 +439,6 @@
 
       let applyData = await applyResponse.text();
       console.log("Apply response data:", applyData);
-      progressBar.style.width = "100%";
 
       messageEl.textContent = "Apply thành công!";
       messageEl.style.color = "green";
@@ -449,19 +448,10 @@
       messageEl.textContent = error.message;
       messageEl.style.color = "red";
       messageEl.style.backgroundColor = "#ffebee";
-      progressBar.style.width = "100%";
     } finally {
-      // Clear the interval if it's still running
-      clearInterval(progressInterval);
-
-      // Complete the progress bar
-      progressBar.style.width = "100%";
-
-      // Hide loading state after a short delay to show the completed progress
-      setTimeout(() => {
-        mainContainer.classList.remove("loading");
-        applyButton.disabled = false;
-      }, 500);
+      // Hide loading spinner
+      hideSpinner();
+      applyButton.disabled = false;
     }
   }
 </script>
