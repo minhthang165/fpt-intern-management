@@ -536,7 +536,7 @@
             openUserModal(row);
         });
     });
-  
+
     function openUserModal(row) {
         // Lấy dữ liệu từ hàng được nhấp
         const classId = row.getAttribute('data-class-id');
@@ -570,7 +570,7 @@
             document.querySelector('.modal-dialog').classList.add('modal-dialog-centered');
         }, { once: true });
     }
-  
+
     function closeModal() {
         const userModal = bootstrap.Modal.getInstance(document.getElementById("userModal"));
         if (userModal) {
@@ -584,7 +584,7 @@
             }, 300); // Đợi hiệu ứng đóng modal hoàn tất
         }
     }
-  
+
     function loadUsers(classId) {
         const tableBody = document.getElementById("userTableBody");
         tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Loading users...</td></tr>';
@@ -602,7 +602,7 @@
                 tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading users</td></tr>';
             });
     }
-  
+
     function displayUsers(users) {
         const tableBody = document.getElementById("userTableBody");
         tableBody.innerHTML = "";
@@ -796,7 +796,7 @@
                     row.children[0].textContent = newClass.className;
                     row.children[1].textContent = newClass.numberOfIntern;
                     row.children[2].setAttribute("data-manager-id", newClass.manager.id);
-                    row.children[2].textContent = newClass.manager.firstName + " " + newClass.manager.lastName;
+                    row.children[2].textContent = newClass.manager.first_nameName + " " + newClass.manager.last_name;
                 }
 
                 alert("Created a new class successfully!");
@@ -885,7 +885,7 @@
             })
             .catch(error => alert("Error updating class: " + error.message));
     });
-  
+
     function changePageSize(select) {
         pageSize = parseInt(select.value);
         loadPage(0, pageSize);
