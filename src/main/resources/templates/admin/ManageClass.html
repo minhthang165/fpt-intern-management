@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="include/master-header :: head"></head>
 
+
 <style>
     /*css pagination*/
     /* Records selector styling */
@@ -178,71 +179,120 @@
     .inactive {
         color: red; /* Màu đỏ khi lớp bị khóa */
     }
-
-    .modal-content {
-        position: relative;
-        z-index: 1070;
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 30000;
+        width: 100%;
+        height: 100%;
+        outline: 0;
+        background: rgba(0, 0, 0, 0.6);
     }
 
+    /* Đảm bảo nội dung modal hiển thị trên cùng */
+    .modal-content {
+        position: relative;
+        z-index: 200 !important;
+        background-color: #fff;
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        border: none;
+    }
+
+    /* Cấu hình backdrop - chỉ hiển thị khi modal mở */
     .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        opacity: 0.3;
+        pointer-events: none;
+        z-index: 90;
         display: none;
     }
 
-
-    select {
-        width: 100%;
-        padding: 10px;
-        border: 2px solid #98b2da;
-        border-radius: 8px;
-        font-size: 16px;
-        background-color: white;
-        color: #333;
-        cursor: pointer;
-        transition: 0.3s;
+    /* Ẩn backdrop khi không cần thiết */
+    body:not(.modal-open) .modal-backdrop {
+        display: none;
     }
 
-    select:hover {
-        border-color: #85b7ec;
-    }
-
-    select:focus {
-        outline: none;
-        border-color: #ff9800;
-        box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
-    }
-
-    .custom-dropdown {
+    /* Căn giữa modal */
+    .modal-dialog {
         position: relative;
-        display: inline-block;
-        width: 200px;
+        width: auto;
+        margin: 1.75rem auto;
+        max-width: 800px;
     }
 
-    .custom-dropdown select {
-        width: 100%;
-        padding: 10px;
-        border: 2px solid #28a745;
-        border-radius: 8px;
-        font-size: 16px;
-        appearance: none;
-        background-color: white;
-        color: #333;
+    /* Căn giữa modal theo chiều dọc */
+    .modal-dialog-centered {
+        display: flex;
+        align-items: center;
+        min-height: calc(100% - 3.5rem);
+    }
+
+    /* Header của modal */
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    /* Tiêu đề modal */
+    .modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 500;
+    }
+
+    /* Nút đóng modal */
+    .btn-close {
+        background: transparent;
+        border: 0;
+        font-size: 1.5rem;
         cursor: pointer;
+        padding: 0.5rem;
+        margin: -0.5rem -0.5rem -0.5rem auto;
     }
 
-    .custom-dropdown::after {
-        content: "▼";
-        position: absolute;
-        top: 50%;
-        right: 10px;
-        transform: translateY(-50%);
-        color: #28a745;
-        font-size: 14px;
+    /* Phần thân modal */
+    .modal-body {
+        position: relative;
+        flex: 1 1 auto;
+        padding: 1rem;
+        max-height: 70vh;
+        overflow-y: auto;
     }
 
-    .custom-dropdown select:focus {
-        outline: none;
-        border-color: #218838;
+    /* Hiệu ứng mở modal */
+    .modal.fade .modal-dialog {
+        transition: transform 0.3s ease-out;
+        transform: translate(0, -50px);
     }
+
+    .modal.show .modal-dialog {
+        transform: translate(0, 0);
+    }
+
+    /* Đảm bảo nút Search có màu cam giống FPT */
+    #userModal #searchUserButton {
+        background-color: #f38321;
+        border-color: #f38321;
+        color: white;
+    }
+
+    #userModal #searchUserButton:hover {
+        background-color: #e67812;
+        border-color: #e67812;
+    }
+
+
+
 </style>
 
 <body class="body-area">
@@ -266,24 +316,22 @@
                         </div>
                     </div>
                     <div class="search_add d-flex justify-content-between align-items-center">
-                               <div class="new_class">
-                                   <div class="breadcrum__button">
-                                       <button class="element__btn  yellow-bg" data-bs-toggle="modal" data-bs-target="#newClassModal">
-                                           Add Class +
-                                       </button>
-                                   </div>
-                               </div>
+                        <div class="new_class">
+                            <div class="breadcrum__button">
+                                <button class="element__btn  yellow-bg" data-bs-toggle="modal" data-bs-target="#newClassModal">
+                                    Add Class +
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
     <!--List Classroom-->
     <section th:fragment="content">
         <div class="flex-grow-1 p-4">
             <h5 class="classroom-title">Classroom List</h5>
-
             <!-- Table -->
             <div class="card mt-4">
                 <div class="card-body">
@@ -329,6 +377,39 @@
             </div>
         </div>
 
+
+
+        <div id="userModal" class="modal fade" aria-labelledby="userModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="userModalTitle">User List</h5>
+                        <button type="button" class="btn-close" onclick="closeModal()" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="search-bar d-flex gap-2 align-items-center">
+                            <input type="text" id="searchUserInput" class="form-control" placeholder="Search users...">
+                            <button class="btn btn-primary" id="searchUserButton">Search</button>
+                        </div>
+                        <div class="table-responsive mt-4">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Phone Number</th>
+                                    <th>Gender</th>
+                                </tr>
+                                </thead>
+                                <tbody id="userTableBody">
+                                <!-- User data sẽ được load vào đây -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Modal xác nhận khóa/mở khóa lớp -->
         <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
@@ -398,57 +479,155 @@
         </div>
 
         <div class="modal fade" id="newClassModal" tabindex="-1" aria-labelledby="newClassModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="newClassModalLabel">Create a new Class</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="newClassForm">
-                                <input type="hidden" id="newClassId">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newClassModalLabel">Create a new Class</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="newClassForm">
+                            <input type="hidden" id="newClassId">
 
-                                <div class="mb-3">
-                                    <label for="newClassName" class="form-label">Class Name</label>
-                                    <input type="text" class="form-control" id="newClassName" required>
-                                </div>
+                            <div class="mb-3">
+                                <label for="newClassName" class="form-label">Class Name</label>
+                                <input type="text" class="form-control" id="newClassName" required>
+                            </div>
 
-                                <div class="mb-3">
-                                    <label for="newNumberOfInterns" class="form-label">Number of Interns</label>
-                                    <input type="number" class="form-control" id="newNumberOfInterns" required min="1">
-                                </div>
+                            <div class="mb-3">
+                                <label for="newNumberOfInterns" class="form-label">Number of Interns</label>
+                                <input type="number" class="form-control" id="newNumberOfInterns" required min="1">
+                            </div>
 
-                                <label for="newManager">Select Manager:</label>
-                                <select id="newManager" name="manager" class="form-control">
-                                    <option th:each="userRole : ${userRoleList}"
-                                            th:value="${userRole.id}"
-                                            th:text="${userRole.first_name + ' ' + userRole.last_name}">
-                                    </option>
-                                </select>
+                            <label for="newManager">Select Manager:</label>
+                            <select id="newManager" name="manager" class="form-control">
+                                <option th:each="userRole : ${userRoleList}"
+                                        th:value="${userRole.id}"
+                                        th:text="${userRole.first_name + ' ' + userRole.last_name}">
+                                </option>
+                            </select>
 
 
-                                <div class="modal-footer">
-                                    <button type="submit" class="btn btn-primary">Save a new class</button>
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                </div>
-                            </form>
-                        </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Save a new class</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
+        </div>
     </section>
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
+    // Hàm sử dụng UserModal
     document.addEventListener("DOMContentLoaded", function () {
-        loadPage(0,5);
+        loadPage(0, 5);
         const searchInput = document.getElementById("searchInput");
         if (searchInput) {
             searchInput.addEventListener('keyup', filterTable);
         }
+        // Bắt sự kiện click vào từng row (trừ nút action)
+        document.getElementById("table-content").addEventListener("click", function (event) {
+            let row = event.target.closest("tr");
+            if (!row || event.target.closest("td:last-child")) return;
+
+            openUserModal(row);
+        });
+    });
+  
+    function openUserModal(row) {
+        // Lấy dữ liệu từ hàng được nhấp
+        const classId = row.getAttribute('data-id');
+        const className = row.cells[0].textContent;
+        const managerName = row.cells[2].textContent;
+
+        // Cập nhật tiêu đề modal
+        document.getElementById("userModalTitle").textContent = `${className} - MANAGER BY: ${managerName}`;
+
+        // Tải danh sách người dùng
+        loadUsers(classId);
+
+        // Lấy tham chiếu đến modal
+        const modalElement = document.getElementById("userModal");
+
+        // Đảm bảo modal có thuộc tính data-bs-backdrop="static" để hiển thị backdrop đen
+        modalElement.setAttribute('data-bs-backdrop', 'static');
+
+        // Khởi tạo và hiển thị modal với các tùy chọn
+        const userModal = new bootstrap.Modal(modalElement, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+
+        // Hiển thị modal
+        userModal.show();
+
+        // Thêm class để căn giữa modal sau khi nó được hiển thị
+        modalElement.addEventListener('shown.bs.modal', function () {
+            document.querySelector('.modal-dialog').classList.add('modal-dialog-centered');
+        }, { once: true });
+    }
+  
+    function closeModal() {
+        const userModal = bootstrap.Modal.getInstance(document.getElementById("userModal"));
+        if (userModal) {
+            userModal.hide();
+
+            // Đảm bảo xóa backdrop nếu còn sót lại
+            setTimeout(() => {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
+                document.body.classList.remove('modal-open');
+            }, 300); // Đợi hiệu ứng đóng modal hoàn tất
+        }
+    }
+  
+    function loadUsers(classId) {
+        const tableBody = document.getElementById("userTableBody");
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Loading users...</td></tr>';
+
+        fetch(`/api/class/${classId}/users`)
+            .then(response => {
+                if (!response.ok) throw new Error(`Failed to fetch users: ${response.status}`);
+                return response.json();
+            })
+            .then(users => {
+                displayUsers(users); // Đổ dữ liệu vào bảng
+            })
+            .catch(error => {
+                console.error("Error fetching users:", error);
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading users</td></tr>';
+            });
+    }
+  
+    function displayUsers(users) {
+        const tableBody = document.getElementById("userTableBody");
+        tableBody.innerHTML = "";
+
+        if (!users || users.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No Interns found in this class</td></tr>';
+            return;
+        }
+
+        users.forEach(user => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+            <td>${user.first_name} ${user.last_name}</td>
+            <td>${user.email}</td>
+            <td>${user.phone_number}</td>
+            <td>${user.gender}</td>
+        `;
+            tableBody.appendChild(row);
+        });
+    }
+  
     })
 
     document.addEventListener("click", function (event) {
+
         let icon = event.target.closest(".flaticon-padlock");
         if (!icon) return;
 
@@ -469,7 +648,6 @@
             toggleClassStatus(classId, action);
         });
     });
-
     function toggleClassStatus(classId, action) {
         let url = action === "unlock" ? `/api/class/setIsActiveTrue/${classId}` : `/api/class/delete/${classId}`;
         let method = action === "unlock" ? "PATCH" : "DELETE";
@@ -493,6 +671,60 @@
             })
             .catch(error => showModal("Error", "Error: " + error.message));
     }
+    function toggleActiveStatus(icon, event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        let element = icon;
+        let classId = null;
+
+        // Duyệt ngược lên cha để tìm data-id
+        while (element) {
+            if (element.hasAttribute("data-id")) {
+                classId = element.getAttribute("data-id");
+                break;
+            }
+            element = element.parentElement; // Duyệt lên thẻ cha
+        }
+
+        if (!classId) {
+            showModal("Error", "Missing class ID!");
+            return;
+        }
+
+        let isUnlock = icon.classList.contains("inactive");
+        let action = isUnlock ? "unlock" : "lock";
+        let message = isUnlock
+            ? "Are you sure you want to unlock this class?"
+            : "Are you sure you want to lock this class?";
+
+        showModal("Confirm", message, true, function () {
+            let url = action === "unlock"
+                ? `/api/class/setIsActiveTrue/${classId}`
+                : `/api/class/delete/${classId}`;
+            let method = action === "unlock" ? "PATCH" : "DELETE";
+
+            fetch(url, { method: method })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text); });
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    let successMessage = action === "unlock"
+                        ? "Class has been unlocked!"
+                        : "Class has been locked!";
+                    showModal("Success", successMessage);
+
+                    // Cập nhật trạng thái icon trên UI
+                    icon.classList.toggle("inactive");
+                    icon.classList.toggle("active");
+                })
+                .catch(error => showModal("Error", "Error: " + error.message));
+        });
+    }
+
 
     function showModal(title, message, isConfirm = false, confirmCallback = null) {
 
@@ -525,7 +757,7 @@
         modal.show();
     }
 
-// XỬ lý khi click vào nút newCLass
+    // XỬ lý khi click vào nút newCLass
     document.addEventListener("click", function (event) {
         let newClassButton = event.target.closest(".new_class");
         if (!newClassButton) return;
@@ -535,7 +767,6 @@
         let addNewClassModal = new bootstrap.Modal(document.getElementById("newClassModal"));
         addNewClassModal.show();
     });
-
     document.getElementById("newClassForm").addEventListener("submit", function (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -578,11 +809,12 @@
             .catch(error => alert("Error Create class: " + error.message));
     });
 
+
     // Xử lý khi click vào nút Edit
     document.addEventListener("click", function (event) {
         let editIcon = event.target.closest(".edit-class");
         if (!editIcon) return;
-            event.preventDefault();
+        event.preventDefault();
 
         let row = editIcon.closest("tr");
         if (!row) return;
@@ -620,7 +852,6 @@
         let editModal = new bootstrap.Modal(document.getElementById("editClassModal"));
         editModal.show();
     });
-
     document.getElementById("editClassForm").addEventListener("submit", function (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -656,7 +887,7 @@
             })
             .catch(error => alert("Error updating class: " + error.message));
     });
-
+  
     function changePageSize(select) {
         pageSize = parseInt(select.value);
         loadPage(0, pageSize);
@@ -759,10 +990,4 @@
 
 </script>
 </body>
-</html>
-
-
-
-
-
-
+</html

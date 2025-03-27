@@ -121,6 +121,10 @@ public class ClassroomService {
         return null;
     }
 
+    public List<User> getUsersByClassId(Integer classId) {
+        return class_repository.findByClassIdAndIsActiveTrue(classId);
+    }
+
     public ResponseEntity<Classroom> setIsActiveTrue(int id) throws BadRequestException {
         Classroom existedClassroom = this.class_repository.findById(id).orElse(null);
         if (existedClassroom == null) {
