@@ -36,9 +36,21 @@ public class Recruitment extends BaseModel {
 
     @Column(name = "end_time", nullable = false)
     private Timestamp endTime;
-
+  
+    @Column(name = "class_id")
+    private Integer classId;
+   
     @Transient
     private Integer applicationCount;
+  
+    public Integer getClassId() {
+        return classId;
+    }
+
+    public void setClassId(Integer classId) {
+        this.classId = classId;
+    }
+
 
     public Integer getId() {
         return id;

@@ -73,8 +73,5 @@ public class RecruitmentController {
     public ResponseEntity<Recruitment> update(@PathVariable int id, @RequestBody RecruitmentDTO recruitmentDTO) throws BadRequestException {
         return this.recruitmentService.update(id, recruitmentDTO);
     }
-    
-
-
 
 }

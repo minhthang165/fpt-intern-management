@@ -115,20 +115,14 @@ public class CVInfoService {
                 throw new RuntimeException("Không tìm thấy yêu cầu tuyển dụng");
             }
             
-            // 2. Lấy classId từ recruitment_request
-            Integer classId = recruitmentRequestRepository.findClassIdByRecruitmentId(recruitmentId);
-            if (classId == null) {
-                throw new RuntimeException("Không tìm thấy lớp cho yêu cầu tuyển dụng này");
-            }
-            
-            // 3. Lấy thông tin classroom
-            Optional<Classroom> classroomOptional = classroomRepository.findById(classId);
+            // 2. Lấy thông tin classroom
+            Optional<Classroom> classroomOptional = classroomRepository.findById(recruitment.getClassId());
             if (classroomOptional.isEmpty()) {
                 throw new RuntimeException("Không tìm thấy lớp học");
             }
             Classroom classroom = classroomOptional.get();
             
-            // 4. Lấy thông tin user từ file
+            // 3. Lấy thông tin user từ file
             Optional<File> fileOptional = fileRepository.findById(fileId);
             if (fileOptional.isEmpty()) {
                 throw new RuntimeException("Không tìm thấy file CV");
@@ -139,19 +133,19 @@ public class CVInfoService {
                 throw new RuntimeException("Không tìm thấy thông tin người dùng");
             }
             
-            // 5. Cập nhật role của user thành INTERN nếu là GUEST
+            // 4. Cập nhật role của user thành INTERN nếu là GUEST
             if (user.getRole() == Role.GUEST) {
                 user.setRole(Role.INTERN);
             }
             
-            // 6. Thêm user vào lớp học
+            // 5. Thêm user vào lớp học
             user.setClassroom(classroom);
             userRepository.save(user);
             
-            // 7. Cập nhật số lượng intern trong lớp
+            // 6. Cập nhật số lượng intern trong lớp
             classroom.setNumberOfIntern(classroom.getNumberOfIntern() + 1);
             classroomRepository.save(classroom);
-            
+
             // 8. Đánh dấu CV hiện tại là inactive (đã được approve)
             CVInfoId cvInfoId = new CVInfoId(recruitmentId, fileId);
             Optional<CVInfo> currentCVInfoOptional = cvInfoRepository.findById(cvInfoId);

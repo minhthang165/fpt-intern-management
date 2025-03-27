@@ -1,6 +1,7 @@
 package com.fsoft.fintern.controllers;
 import com.fsoft.fintern.dtos.ClassroomDTO;
 import com.fsoft.fintern.models.Classroom;
+import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.ClassroomService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.apache.coyote.BadRequestException;
@@ -56,6 +57,12 @@ public class ClassroomRestController {
     @Operation(description = "Delete class by id")
     public ResponseEntity<Classroom> delete(@PathVariable int id) throws BadRequestException {
         return this.classroomService.delete(id);
+    }
+
+    @GetMapping("/{classId}/users")
+    public ResponseEntity<List<User>> getUsersByClass(@PathVariable Integer classId) {
+        List<User> users = classroomService.getUsersByClassId(classId);
+        return ResponseEntity.ok(users);
     }
 
     @PatchMapping("/setIsActiveTrue/{id}")
