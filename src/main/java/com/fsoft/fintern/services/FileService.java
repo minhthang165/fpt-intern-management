@@ -117,4 +117,28 @@ public class FileService {
         return new ResponseEntity<>("File with ID " + id + " has been permanently deleted", HttpStatus.OK);
     }
 
+    public ResponseEntity<User> findUserByFileId(int fileId) throws BadRequestException {
+        // Tìm file theo fileId
+        Optional<File> fileOptional = fileRepository.findById(fileId);
+
+        // Kiểm tra xem file có tồn tại không
+        if (fileOptional.isEmpty()) {
+            throw new BadRequestException("File not found with ID: " + fileId);
+        }
+
+        // Lấy file từ Optional
+        File file = fileOptional.get();
+
+        // Lấy thông tin User (submitter) từ file
+        User user = file.getSubmitter();
+
+        // Kiểm tra xem user có tồn tại không
+        if (user == null) {
+            throw new BadRequestException("No user associated with file ID: " + fileId);
+        }
+
+        // Trả về ResponseEntity với thông tin User
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
 }

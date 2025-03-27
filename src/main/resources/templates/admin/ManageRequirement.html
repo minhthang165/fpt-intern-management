@@ -32,7 +32,7 @@
         width: 400px;
         height: fit-content;
     }
-    
+
     /* Toast Notification Styles */
     .toast-notification {
         position: fixed;
@@ -49,23 +49,23 @@
         border-left: 4px solid #ff6600;
         animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
     }
-    
+
     .toast-content {
         display: flex;
         align-items: center;
     }
-    
+
     .toast-icon {
         color: #ff6600;
         font-size: 22px;
         margin-right: 15px;
     }
-    
+
     .toast-message {
         font-size: 14px;
         font-weight: 500;
     }
-    
+
     @keyframes slideIn {
         from {
             transform: translateX(100%);
@@ -76,7 +76,7 @@
             opacity: 1;
         }
     }
-    
+
     @keyframes fadeOut {
         from {
             opacity: 1;
@@ -535,10 +535,10 @@
                                    onclick="openEditRecruitmentModal(this, event)">
                                     <i class="flaticon-edit" style="cursor: pointer"></i>
                                 </a>
-<!--                                <a href="#" th:data-id="${recruitment.id}" class="delete-recruitment-modal"-->
-<!--                                   onclick="confirmDeleteRecruitment(this, event)">-->
-<!--                                    <i class="flaticon-padlock" style="cursor: pointer; color: red"></i>-->
-<!--                                </a>-->
+                                <!--                                <a href="#" th:data-id="${recruitment.id}" class="delete-recruitment-modal"-->
+                                <!--                                   onclick="confirmDeleteRecruitment(this, event)">-->
+                                <!--                                    <i class="flaticon-padlock" style="cursor: pointer; color: red"></i>-->
+                                <!--                                </a>-->
                             </td>
                         </tr>
                         </tbody>
@@ -599,7 +599,7 @@
                 </div>
             </div>
         </div>
-      
+
         <!-- Edit Recruitment Modal -->
         <div class="modal fade" id="editRecruitmentModal" tabindex="-1" aria-labelledby="editRecruitmentModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -674,7 +674,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Toast Notification -->
         <div id="toastNotification" class="toast-notification">
             <div class="toast-content">
@@ -849,7 +849,7 @@
         tableBody.innerHTML = "";
 
         // Lọc chỉ lấy các CV chưa được duyệt (isActive = true)
-        
+
         // Lọc chỉ lấy các CV chưa được duyệt
 
         candidates = candidates.filter(candidate => candidate.isActive !== false);
@@ -972,17 +972,18 @@
             };
 
             // Create reject button
-            // const rejectButton = document.createElement("button");
-            // rejectButton.className = "action-icon x-icon";
-            // rejectButton.title = "Reject Candidate";
-            // rejectButton.innerHTML = '<i class="fas fa-times"></i>';
-            // rejectButton.onclick = function() {
-            //     rejectCandidate(candidate.fileId, recruitmentId);
-            // };
+            const rejectButton = document.createElement("button");
+            rejectButton.className = "action-icon x-icon";
+            rejectButton.title = "Reject Candidate";
+            rejectButton.innerHTML = '<i class="fas fa-times"></i>';
+            rejectButton.onclick = function() {
+                console.log("Reject button clicked for fileId:", candidate.fileId);
+                rejectCandidate(candidate.fileId, recruitmentId);
+            };
 
             // Add buttons to container
             actionIcons.appendChild(acceptButton);
-            // actionIcons.appendChild(rejectButton);
+            actionIcons.appendChild(rejectButton);
 
             // Add container to cell
             actionCell.appendChild(actionIcons);
@@ -993,6 +994,64 @@
             // Add row to table
             tableBody.appendChild(row);
         });
+    }
+
+    function rejectCandidate(fileId, recruitmentId) {
+        // First, get user info by fileId
+        fetch(`/file/${fileId}/user`, {
+            method: 'GET'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user information');
+                }
+                return response.json();
+            })
+            .then(userData => {
+                const userEmail = userData.email; // Giả sử User object có field email
+
+                // Call API to reject the candidate
+                return fetch(`/api/cv-info/reject?fileId=${fileId}&recruitmentId=${recruitmentId}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error(text || 'Failed to reject candidate');
+                            });
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        console.log('Rejection response:', data);
+                        showToast('Candidate rejected successfully!', 'success');
+
+                        // Reload candidates data
+                        loadCandidates(recruitmentId);
+
+                        // Send email notification
+                        return fetch("/api/email/send-mail", {
+                            method: "POST",
+                            headers: {"Content-Type": "application/json"},
+                            body: JSON.stringify({
+                                recipient: userEmail,  // Sử dụng email lấy được từ user
+                                msgBody: "Chào bạn,Trước hết rất không vui khi phải thông báo rằng hồ sơ của bạn đã không được thông qua. Hẹn bạn 1 lần khác ở công ty chúng tôi. Xin cảm ơn",
+                                subject: "Hồ sơ của bạn đã không được chấp nhận",
+                                attachment: null
+                            })
+                        });
+                    });
+            })
+            .then(emailResponse => {
+                if (emailResponse && !emailResponse.ok) {
+                    throw new Error('Failed to send email');
+                }
+                console.log('Email sent successfully');
+            })
+            .catch(error => {
+                console.error('Error in rejection process:', error);
+                showToast('Error: ' + error.message, 'error');
+            });
     }
 
     function createPagination(totalPages, currentPage) {
@@ -1087,30 +1146,63 @@
     }
 
     function approveCandidate(fileId, recruitmentId) {
-        // Call API to approve the candidate
-        fetch('/api/cv-info/approve?fileId=' + fileId + '&recruitmentId=' + recruitmentId, {
-            method: 'POST'
+        // First, get user info by fileId
+        fetch(`/file/${fileId}/user`, {
+            method: 'GET'
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.error || 'Failed to approve candidate');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Approval response:', data);
-            // Show toast notification for success
-            showToast('Candidate approved successfully!', 'success');
-            
-            // Remove the approved candidate from the list without reloading
-            removeApprovedCandidate(fileId);
-        })
-        .catch(error => {
-            console.error('Error approving candidate:', error);
-            showToast('Error approving candidate: ' + error.message, 'error');
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user information');
+                }
+                return response.json();
+            })
+            .then(userData => {
+                const userEmail = userData.email; // Giả sử User object có field email
+
+                // Call API to approve the candidate
+                return fetch(`/api/cv-info/approve?fileId=${fileId}&recruitmentId=${recruitmentId}`, {
+                    method: 'POST'
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.error || 'Failed to approve candidate');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Approval response:', data);
+
+                        // Show toast notification for success
+                        showToast('Candidate approved successfully!', 'success');
+
+                        // Remove the approved candidate from the list without reloading
+                        removeApprovedCandidate(fileId);
+
+                        // Send email notification
+                        return fetch("/api/email/send-mail", {
+                            method: "POST",
+                            headers: {"Content-Type": "application/json"},
+                            body: JSON.stringify({
+                                recipient: userEmail,  // Sử dụng email lấy được từ user
+                                msgBody: "Chào bạn ,chúc mừng bạn đã qua được vòng phỏng vấn xin vui lòng đến công ty vào ngày mai để nhận công việc.Xin cảm ơn..",
+                                subject: "Hồ sơ của bạn đã được thông qua",
+                                attachment: null
+                            })
+                        });
+                    });
+            })
+            .then(emailResponse => {
+                if (emailResponse && !emailResponse.ok) {
+                    throw new Error('Failed to send email');
+                }
+                console.log('Email sent successfully');
+            })
+            .catch(error => {
+                console.error('Error in approval process:', error);
+                showToast('Error: ' + error.message, 'error');
+            });
     }
 
     /**
@@ -1122,10 +1214,10 @@
         const toast = document.getElementById('toastNotification');
         const toastMessage = document.getElementById('toastMessage');
         const toastIcon = toast.querySelector('.toast-icon');
-        
+
         // Set message
         toastMessage.textContent = message;
-        
+
         // Set appropriate icon and color based on type
         if (type === 'success') {
             toastIcon.className = 'fas fa-check-circle toast-icon';
@@ -1136,21 +1228,21 @@
             toast.style.borderLeftColor = '#dc3545';
             toastIcon.style.color = '#dc3545';
         }
-        
+
         // Show the toast
         toast.style.display = 'block';
-        
+
         // Reset the animation
         toast.style.animation = 'none';
         toast.offsetHeight; // Trigger reflow
         toast.style.animation = 'slideIn 0.3s, fadeOut 0.5s 2.5s forwards';
-        
+
         // Hide the toast after 3 seconds
         setTimeout(() => {
             toast.style.display = 'none';
         }, 3000);
     }
-    
+
     /**
      * Xóa ứng viên đã được approve khỏi danh sách hiển thị
      */
@@ -1191,29 +1283,6 @@
                 tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No candidates found for this requirement</td></tr>';
             }
         }
-    }
-
-    function rejectCandidate(fileId, recruitmentId) {
-        // Call API to reject the candidate
-        fetch('/api/cv-info/reject?fileId=' + fileId + '&recruitmentId=' + recruitmentId, {
-            method: 'POST'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to reject candidate');
-            }
-            return response.text();
-        })
-        .then(data => {
-            console.log('Rejection response:', data);
-            showToast('Candidate rejected successfully!', 'success');
-            // Reload candidates data
-            loadCandidates(recruitmentId);
-        })
-        .catch(error => {
-            console.error('Error rejecting candidate:', error);
-            showToast('Error rejecting candidate: ' + error.message, 'error');
-        });
     }
 
     function renderPagination() {
@@ -1299,8 +1368,13 @@
             <td>${r.experienceRequirement}</td>
             <td>${r.language}</td>
             <td>${r.minGPA}</td>
-            <td>${r.totalSlot}</td>
-            <td>${r.endTime}</td>
+            <td>${new Date (r.endTime).toLocaleDateString('en-GB')}</td>
+            <td>
+                <a href="#" data-id="${r.id}" class="edit-recruitment-modal"
+                   onclick="openEditRecruitmentModal(this, event)">
+                    <i class="flaticon-edit" style="cursor: pointer"></i>
+                </a>
+            </td>
         </tr>
     `).join('');
     }
@@ -1501,9 +1575,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
