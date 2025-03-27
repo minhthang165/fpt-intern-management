@@ -26,6 +26,25 @@ var conversation_list = [];
 document.addEventListener("DOMContentLoaded", async function () {
     await loadConversation(user_id);
     connectWebSocket();
+    var chatDropdown = document.getElementById('chatDropdown');
+    var userList = document.getElementById('userList');
+    var userSearchInput = document.getElementById('userSearchInput');
+    var groupModal = document.getElementById('groupModal');
+    var groupNameInput = document.getElementById('groupNameInput');
+    var addPeopleInput = document.getElementById('addPeopleInput');
+    var selectedUsers = document.getElementById('selectedUsers');
+    var createGroupBtn = document.getElementById('createGroupBtn');
+    groupModal.addEventListener('click', (event) => {
+        if (event.target === groupModal) {
+            groupModal.classList.add('hidden');
+        }
+    });
+    document.addEventListener('click', function(event) {
+        const isClickInside = chatDropdown.contains(event.target) || event.target.closest('.bg-blue-500');
+        if (!isClickInside) {
+            chatDropdown.classList.add('hidden');
+        }
+    });
 });
 
 //---------------------------------------- WEBSOCKET SETUP ----------------------------------------------
@@ -534,9 +553,19 @@ function toggleModal(option) {
             mediaContainer.classList.toggle("hidden");
             break;
         case 'startOneToOneChat':
-
+            if (chatDropdown.classList.contains('hidden')) {
+                chatDropdown.classList.remove('hidden');
+                let userSearchInput = document.getElementById('userSearchInput');
+                userSearchInput.focus();
+            } else {
+                chatDropdown.classList.add('hidden');
+            }
             break;
         case 'startGroupChat' :
+            groupModal.classList.remove('hidden');
+            groupNameInput.focus();
+            listUserAdd = [];
+            //updateSelectedUsers();
             break;
     }
 }
