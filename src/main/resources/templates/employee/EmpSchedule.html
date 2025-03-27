@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="include/master-header :: head"></head>
+<body class="body-area">
+<th:block th:replace="~{include/employee-sidebar :: sidebar(~{::content})}">
+  <!--header breadcrumb area-->
+  <div class="app__slide-wrapper" th:fragment="content">
+    <div class="breadcrumb__area">
+      <div class="breadcrumb__wrapper mb-35" style="padding: 0px;">
+        <div class="breadcrumb__main">
+          <div class="breadcrumb__inner">
+            <div class="breadcrumb__icon">
+              <i class="flaticon-home"></i>
+            </div>
+            <div class="breadcrumb__menu">
+              <nav>
+                <ul>
+                  <li class="active" style="margin-bottom: 20px; margin-top: 20px"><span>Dashboard</span></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- insert main content here -->
+  <section th:fragment="content">
+    <main class="min-h-screen bg-black-05">
+      <div class="container mx-auto px-4">
+        <!-- Calendar Header -->
+        <div class="py-4">
+          <div class="flex justify-between items-center mb-4 header-container">
+            <div class="flex items-center gap-2">
+              <!-- Calendar Icon -->
+              <svg class="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <h1 class="text-xl font-medium">Calendar</h1>
+            </div>
+            <div class="flex items-center gap-2 action-buttons">
+              <button class="btn btn-outline">
+                <!-- Hash Icon -->
+                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4" y1="9" x2="20" y2="9"></line>
+                  <line x1="4" y1="15" x2="20" y2="15"></line>
+                  <line x1="10" y1="3" x2="8" y2="21"></line>
+                  <line x1="16" y1="3" x2="14" y2="21"></line>
+                </svg>
+                <span>Join with an ID</span>
+              </button>
+              <button class="btn btn-outline">
+                <!-- Monitor Icon -->
+                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                <span>Meet now</span>
+              </button>
+              <button class="btn btn-primary">
+                <!-- Plus Icon -->
+                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>New meeting</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center nav-container">
+            <div class="flex items-center gap-4">
+              <button class="btn btn-ghost btn-sm btn-today">
+                Today
+              </button>
+              <div class="month-nav-container">
+                <button class="btn btn-ghost btn-icon h-8 w-8" id="prev-month">
+                  <!-- ChevronLeft Icon -->
+                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button class="btn btn-ghost btn-icon h-8 w-8" id="next-month">
+                  <!-- ChevronRight Icon -->
+                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="flex items-center gap-1 ml-2">
+                  <span class="font-medium" id="current-month">March 2025</span>
+                  <!-- ChevronDown Icon -->
+                  <!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m6 9 6 6 6-6" />
+                  </svg> -->
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <div class="select-container">
+                <button class="select-trigger" id="view-selector">
+                  <span id="current-view">Work week</span>
+                  <!-- ChevronDown Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+                <div class="select-content" id="view-options">
+                  <div class="select-item" data-value="Work week">Work week</div>
+                  <div class="select-item" data-value="Week">Week</div>
+                  <div class="select-item" data-value="Month">Month</div>
+                  <div class="select-item" data-value="Year">Year</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="calendar-container">
+          <!-- Header row with days -->
+          <div class="calendar-header">
+            <div class="calendar-header-cell"></div>
+            <div class="calendar-header-cell">
+              <div class="day-number">24</div>
+              <div class="day-name">Monday</div>
+            </div>
+            <div class="calendar-header-cell">
+              <div class="day-number">25</div>
+              <div class="day-name">Tuesday</div>
+            </div>
+            <div class="calendar-header-cell active-day">
+              <div class="day-number">26</div>
+              <div class="day-name">Wednesday</div>
+            </div>
+            <div class="calendar-header-cell">
+              <div class="day-number">27</div>
+              <div class="day-name">Thursday</div>
+            </div>
+            <div class="calendar-header-cell">
+              <div class="day-number">28</div>
+              <div class="day-name">Friday</div>
+            </div>
+          </div>
+
+          <!-- Scrollable time slots container -->
+          <div class="calendar-body">
+            <!-- 12 AM -->
+            <div class="time-label">12 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 1 AM -->
+            <div class="time-label">1 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 2 AM -->
+            <div class="time-label">2 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 3 AM -->
+            <div class="time-label">3 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 4 AM -->
+            <div class="time-label">4 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 5 AM -->
+            <div class="time-label">5 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 6 AM -->
+            <div class="time-label">6 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 7 AM -->
+            <div class="time-label">7 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 8 AM -->
+            <div class="time-label">8 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 9 AM -->
+            <div class="time-label">9 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 10 AM -->
+            <div class="time-label">10 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 11 AM -->
+            <div class="time-label">11 AM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 12 PM -->
+            <div class="time-label">12 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 1 PM -->
+            <div class="time-label">1 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 2 PM -->
+            <div class="time-label">2 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 3 PM -->
+            <div class="time-label">3 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 4 PM -->
+            <div class="time-label">4 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 5 PM -->
+            <div class="time-label">5 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 6 PM -->
+            <div class="time-label">6 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 7 PM -->
+            <div class="time-label">7 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 8 PM -->
+            <div class="time-label">8 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 9 PM -->
+            <div class="time-label">9 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 10 PM -->
+            <div class="time-label">10 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+
+            <!-- 11 PM -->
+            <div class="time-label">11 PM</div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+            <div class="calendar-cell"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </section>
+</th:block>
+<footer th:replace="~{include/master-footer :: footer}"></footer>
+<script src="/assets/js/schedule.js"></script>
+</body>
+</html>

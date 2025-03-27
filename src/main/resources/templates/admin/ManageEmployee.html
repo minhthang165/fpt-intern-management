@@ -170,6 +170,20 @@
         text-align: center;
         cursor: pointer;
     }
+
+    .form-check-input {
+        cursor: pointer;
+    }
+
+    #selectedActions {
+        display: flex;
+        align-items: center;
+    }
+
+    /* Improve hover effect on rows */
+    #userTable tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
 </style>
 <body class="body-area">
 <th:block th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
@@ -275,7 +289,6 @@
                             </select>
                             <span>bản ghi</span>
                         </div>
-
                         <div class="pagination-container">
                             <ul id="pagination-list" class="pagination-list">
                             </ul>
@@ -893,8 +906,59 @@
             pagination.innerHTML += `<li class="pagination-item"><a href="#" onclick="loadPage(${currentPage + 1}, ${pageSize})" class="pagination-link pagination-arrow">&#8250;</a></li>`;
         }
     }
+    // Track selected rows
+    let selectedRows = [];
 
-</script>
+    // Toggle all checkboxes
+    function toggleSelectAll(checkbox) {
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+        rowCheckboxes.forEach(cb => {
+            cb.checked = checkbox.checked;
+            const id = cb.getAttribute('data-id');
+
+            if (checkbox.checked && !selectedRows.includes(id)) {
+                selectedRows.push(id);
+            } else if (!checkbox.checked) {
+                selectedRows = selectedRows.filter(rowId => rowId !== id);
+            }
+        });
+
+        updateSelectedCount();
+    }
+
+    // Update the selected count and show/hide action buttons
+    function updateSelectedCount() {
+        selectedRows = [];
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+
+        rowCheckboxes.forEach(cb => {
+            const id = cb.getAttribute('data-id');
+            if (!selectedRows.includes(id)) {
+                selectedRows.push(id);
+            }
+        });
+
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const allCheckboxes = document.querySelectorAll('.row-checkbox');
+        selectAllCheckbox.checked = rowCheckboxes.length > 0 && rowCheckboxes.length === allCheckboxes.length;
+
+        const selectedCount = document.getElementById('selectedCount');
+        selectedCount.textContent = selectedRows.length;
+
+        const selectedActions = document.getElementById('selectedActions');
+        selectedActions.style.display = selectedRows.length > 0 ? 'block' : 'none';
+    }
+
+    // Add this to your existing filterTable function
+    function filterTable() {
+        // Your existing filter code
+        // ...
+
+        // After filtering, update the selected count
+        updateSelectedCount();
+    }
+
+    </script>
 </body>
 </html>
 
