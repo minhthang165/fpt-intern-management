@@ -105,5 +105,5 @@ public class User extends BaseModel {
         this.role = role;
     }
 
-  
+
 }
