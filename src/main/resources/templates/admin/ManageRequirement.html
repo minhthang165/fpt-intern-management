@@ -878,7 +878,7 @@
         <!-- Add Requirement Modal -->
         <div id="addRequirementModal" class="modal">
             <div class="modal-content">
-                <span class="close-modal" onclick="closeAddRequirementModal()">&times;</span>
+                <span class="close-modal" onclick="closeAddRequirementModal()">×</span>
                 <div class="header">
                     <h3>Create Requirement</h3>
                 </div>
@@ -925,6 +925,15 @@
                         <input type="date" class="form-control" id="endTime" name="endTime" required>
                     </div>
 
+                    <!-- Thêm khung lựa chọn classId -->
+                    <div class="form-group mb-3">
+                        <label for="classId">Classroom <span class="text-danger">*</span></label>
+                        <select class="form-control" id="classId" name="classId" required>
+                            <option value="">Select a Classroom</option>
+                            <!-- Options sẽ được điền bằng JavaScript -->
+                        </select>
+                    </div>
+
                     <div class="text-end mt-4">
                         <button type="button" class="btn btn-secondary me-2" onclick="closeAddRequirementModal()">Cancel</button>
                         <button type="submit" class="btn btn-primary" id="saveButton" style="background-color: #ff6600; border-color: #ff6600;">Save</button>
@@ -932,7 +941,6 @@
                 </form>
             </div>
         </div>
-
         <!-- Toast Notification -->
         <div id="toastNotification" class="toast-notification">
             <div class="toast-content">
@@ -944,6 +952,32 @@
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
+    // Function to fetch Classrooms and populate the select
+    function populateClassroomSelect() {
+        fetch('/api/class/all') // Fetch từ endpoint /api/classrooms/all
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch classrooms');
+                }
+                return response.json();
+            })
+            .then(classrooms => {
+                const classSelect = document.getElementById('classId');
+                classSelect.innerHTML = '<option value="">Select a Classroom</option>'; // Reset options
+                classrooms.forEach(classroom => {
+                    const option = document.createElement('option');
+                    option.value = classroom.id;
+                    option.textContent = classroom.className || `Class ${classroom.id}`; // Hiển thị name hoặc id
+                    classSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching classrooms:', error);
+                const classSelect = document.getElementById('classId');
+                classSelect.innerHTML = '<option value="">Error loading classrooms</option>';
+            });
+    }
+
     // Function to open the Add Requirement modal
     function openAddRequirementModal() {
         const modal = document.getElementById("addRequirementModal");
@@ -962,10 +996,12 @@
 
         document.getElementById("totalSlot").value = 1;
         document.getElementById("minGPA").value = 2.5;
-        document.getElementById("experience").value = "No experience required";
+        document.getElementById("experienceRequirement").value = "No experience required";
         document.getElementById("language").value = "English";
-    }
 
+        // Fetch và điền danh sách classrooms khi mở modal
+        populateClassroomSelect();
+    }
     // Function to close the Add Requirement modal
     function closeAddRequirementModal() {
         const modal = document.getElementById("addRequirementModal");

@@ -73,6 +73,7 @@ public class RecruitmentService {
         newRecruitment.setPosition(recruitmentDTO.getPosition());
         newRecruitment.setExperienceRequirement(recruitmentDTO.getExperience());
         newRecruitment.setMinGPA(recruitmentDTO.getMinGPA());
+        newRecruitment.setClassId(recruitmentDTO.getClass().getModifiers());
         newRecruitment.setLanguage(recruitmentDTO.getLanguage());
         newRecruitment.setTotalSlot(recruitmentDTO.getTotalSlot());
         newRecruitment.setDescription(recruitmentDTO.getDescription());
