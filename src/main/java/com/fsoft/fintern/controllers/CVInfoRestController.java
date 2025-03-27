@@ -43,6 +43,16 @@ public class CVInfoRestController {
             return ResponseEntity.badRequest().body(result);
         }
     }
-    
+
+    @DeleteMapping("/reject")
+    public ResponseEntity<?> deleteCVInfo(@RequestParam Integer fileId, @RequestParam Integer recruitmentId) {
+        boolean result = cvInfoService.deleteCVInfo(fileId, recruitmentId);
+
+        if (result) {
+            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa CVInfo thành công"));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Không tìm thấy CVInfo để xóa"));
+        }
+    }
 
 } 

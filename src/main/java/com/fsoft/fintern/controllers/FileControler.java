@@ -3,6 +3,7 @@ package com.fsoft.fintern.controllers;
 import com.fsoft.fintern.dtos.FileDTO;
 import com.fsoft.fintern.models.File;
 import com.fsoft.fintern.models.Recruitment;
+import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.repositories.FileRepository;
 import com.fsoft.fintern.services.FileService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -68,6 +69,11 @@ public class FileControler {
     @DeleteMapping("/fully-delete/{id}")
     public ResponseEntity<String> fullyDeleteFile(@PathVariable int id) throws BadRequestException {
         return fileService.fullyDelete(id);
+    }
+
+    @GetMapping("/{fileId}/user")
+    public ResponseEntity<User> getUserByFileId(@PathVariable int fileId) throws BadRequestException {
+        return fileService.findUserByFileId(fileId);
     }
 }
 
