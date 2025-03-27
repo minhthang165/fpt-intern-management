@@ -146,7 +146,7 @@ public class CVInfoService {
             classroom.setNumberOfIntern(classroom.getNumberOfIntern() + 1);
             classroomRepository.save(classroom);
 
-            // 8. Đánh dấu CV hiện tại là inactive (đã được approve)
+            // 7. Đánh dấu CV hiện tại là inactive (đã được approve)
             CVInfoId cvInfoId = new CVInfoId(recruitmentId, fileId);
             Optional<CVInfo> currentCVInfoOptional = cvInfoRepository.findById(cvInfoId);
             if (currentCVInfoOptional.isPresent()) {

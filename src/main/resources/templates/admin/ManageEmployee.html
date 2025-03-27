@@ -160,6 +160,20 @@
         text-align: center;
         cursor: pointer;
     }
+
+    .form-check-input {
+        cursor: pointer;
+    }
+
+    #selectedActions {
+        display: flex;
+        align-items: center;
+    }
+
+    /* Improve hover effect on rows */
+    #userTable tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
 </style>
 <body class="body-area">
     <th:block  th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
@@ -215,11 +229,21 @@
                             <button class="btn btn-outline-primary btn-sm" onclick="sortTable(0)">Sort by Name</button>
                             <button class="btn btn-outline-primary btn-sm mx-2" onclick="sortTable(2)">Sort by Phone</button>
                             <button class="btn btn-outline-primary btn-sm" onclick="sortTable(4)">Sort by Role</button>
+
+                            <!-- Selected rows action buttons -->
+                            <div id="selectedActions" class="ms-auto" style="display: none;">
+                                <span class="me-2">Selected: <span id="selectedCount">0</span></span>
+                                <button class="btn btn-danger btn-sm">Delete Selected</button>
+                            </div>
                         </div>
 
                         <table id="userTable" class="table table-striped">
                             <thead>
                             <tr>
+                                <!-- New checkbox column for selecting all rows -->
+                                <th>
+                                    <input type="checkbox" id="selectAll" class="form-check-input" onclick="toggleSelectAll(this)">
+                                </th>
                                 <th>Full Name</th>
                                 <th>Email</th>
                                 <th>Phone number</th>
@@ -230,6 +254,11 @@
                             </thead>
                             <tbody>
                             <tr th:each="user : ${userList}" th:if="${user.role.name()== 'EMPLOYEE'}">
+                                <!-- New checkbox for each row -->
+                                <td>
+                                    <input type="checkbox" class="form-check-input row-checkbox"
+                                           th:data-id="${user.id}" onclick="updateSelectedCount()">
+                                </td>
                                 <td th:text="${user.first_name + ' ' + user.last_name}"></td>
                                 <td th:text="${user.email}"></td>
                                 <td th:text="${user.phone_number}"></td>
@@ -250,7 +279,7 @@
                             </tr>
                             </tbody>
                         </table>
-<!--                        pagination-->
+                        <!--pagination-->
                         <div class="table-footer">
                             <div class="records-selector">
                                 <span>Hiển thị</span>
@@ -840,6 +869,58 @@
         var role = new URLSearchParams(window.location.search).get("role") || "employee";
 
         window.location.href = `/manage-user?page=0&size=${newSize}&role=${role}`;
+    }
+
+    // Track selected rows
+    let selectedRows = [];
+
+    // Toggle all checkboxes
+    function toggleSelectAll(checkbox) {
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+        rowCheckboxes.forEach(cb => {
+            cb.checked = checkbox.checked;
+            const id = cb.getAttribute('data-id');
+
+            if (checkbox.checked && !selectedRows.includes(id)) {
+                selectedRows.push(id);
+            } else if (!checkbox.checked) {
+                selectedRows = selectedRows.filter(rowId => rowId !== id);
+            }
+        });
+
+        updateSelectedCount();
+    }
+
+    // Update the selected count and show/hide action buttons
+    function updateSelectedCount() {
+        selectedRows = [];
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+
+        rowCheckboxes.forEach(cb => {
+            const id = cb.getAttribute('data-id');
+            if (!selectedRows.includes(id)) {
+                selectedRows.push(id);
+            }
+        });
+
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const allCheckboxes = document.querySelectorAll('.row-checkbox');
+        selectAllCheckbox.checked = rowCheckboxes.length > 0 && rowCheckboxes.length === allCheckboxes.length;
+
+        const selectedCount = document.getElementById('selectedCount');
+        selectedCount.textContent = selectedRows.length;
+
+        const selectedActions = document.getElementById('selectedActions');
+        selectedActions.style.display = selectedRows.length > 0 ? 'block' : 'none';
+    }
+
+    // Add this to your existing filterTable function
+    function filterTable() {
+        // Your existing filter code
+        // ...
+
+        // After filtering, update the selected count
+        updateSelectedCount();
     }
 
     </script>
