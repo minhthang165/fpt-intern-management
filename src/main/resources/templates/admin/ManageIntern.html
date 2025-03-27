@@ -11,6 +11,12 @@
         color: #6b7280;
     }
 
+    .table-footer {
+        justify-content: space-between;
+        display: flex;
+        margin-top: 16px;
+    }
+
     .records-per-page {
         height: 2.25rem;
         padding: 0.25rem 0.75rem;
@@ -234,74 +240,43 @@
                             <th>Action</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <tr th:each="user : ${userList}" th:if="${user.role.name()== 'INTERN'}">
-                            <td th:text="${user.first_name + ' ' + user.last_name}"></td>
-                            <td th:text="${user.email}"></td>
-                            <td th:text="${user.phone_number}"></td>
-                            <td th:text="${user.gender}"></td>
-                            <td th:text="${user.role}"></td>
-                            <td th:classappend="${user.isActive()} ? 'active' : 'inactive'">
-                                <a href="#" th:data-id="${user.id}" class="toggle-class-status open-modal">
-                                    <i th:data-id="${user.id}" th:data-user-email="${user.email}"
-                                       th:class="${user.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"
-                                       onclick="showModal()">
-                                    </i>
-                                </a>
-                                <a href="#" class="edit-user-modal" th:data-id="${user.id}"
-                                   onclick="openEditUserModal(this, event)">
-                                    <i class="flaticon-edit edit-user-modal" style="cursor: pointer"></i>
-                                </a>
-                            </td>
-                        </tr>
+                        <tbody id="table-body">
+<!--                        <tr th:each="user : ${userList}" th:if="${user.role.name()== 'INTERN'}">-->
+<!--                            <td th:text="${user.first_name + ' ' + user.last_name}"></td>-->
+<!--                            <td th:text="${user.email}"></td>-->
+<!--                            <td th:text="${user.phone_number}"></td>-->
+<!--                            <td th:text="${user.gender}"></td>-->
+<!--                            <td th:text="${user.role}"></td>-->
+<!--                            <td th:classappend="${user.isActive()} ? 'active' : 'inactive'">-->
+<!--                                <a href="#" th:data-id="${user.id}" class="toggle-class-status open-modal">-->
+<!--                                    <i th:data-id="${user.id}" th:data-user-email="${user.email}"-->
+<!--                                       th:class="${user.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"-->
+<!--                                       onclick="showModal()">-->
+<!--                                    </i>-->
+<!--                                </a>-->
+<!--                                <a href="#" class="edit-user-modal" th:data-id="${user.id}"-->
+<!--                                   onclick="openEditUserModal(this, event)">-->
+<!--                                    <i class="flaticon-edit edit-user-modal" style="cursor: pointer"></i>-->
+<!--                                </a>-->
+<!--                            </td>-->
+<!--                        </tr>-->
                         </tbody>
                     </table>
                     <!--                        pagination-->
                     <div class="table-footer">
                         <div class="records-selector">
                             <span>Hiển thị</span>
-                            <select class="records-per-page" onchange="changePageSize(this)" th:value="${pageSize}">
-                                <option value="5" th:selected="${pageSize == 5}">5</option>
-                                <option value="10" th:selected="${pageSize == 10}">10</option>
-                                <option value="20" th:selected="${pageSize == 20}">20</option>
-                                <option value="50" th:selected="${pageSize == 50}">50</option>
+                            <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)">
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
                             </select>
                             <span>bản ghi</span>
                         </div>
 
                         <div class="pagination-container">
-                            <ul class="pagination-list">
-                                <!-- Nút Previous -->
-                                <li th:classappend="${currentPage == 0} ? 'disabled'" class="pagination-item">
-                                    <a th:href="@{/manage-user(page=${currentPage - 1}, size=${pageSize}, role=${selectedRole})}"
-                                       class="pagination-link pagination-arrow" aria-label="Previous page">
-                                        <span class="arrow-icon">&#8249;</span>
-                                    </a>
-                                </li>
-
-                                <!-- Hiển thị các số trang -->
-                                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-                                    th:if="${(i >= currentPage - 2 && i <= currentPage + 2) || i == 0 || i == totalPages - 1}"
-                                    th:classappend="${i == currentPage} ? 'active'"
-                                    class="pagination-item">
-
-                                    <!-- Hiển thị dấu ... nếu có khoảng cách -->
-                                    <span class="ellipsis" th:if="${i == 0 && currentPage > 2}">...</span>
-
-                                    <a th:href="@{/manage-user(page=${i}, size=${pageSize}, role=${selectedRole})}"
-                                       class="pagination-link" th:text="${i + 1}"></a>
-
-                                    <span class="ellipsis" th:if="${i == totalPages - 1 && i > currentPage + 2}">...</span>
-                                </li>
-
-                                <!-- Nút Next -->
-                                <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'" class="pagination-item">
-                                    <a th:href="@{/manage-user(page=${currentPage + 1}, size=${pageSize}, role=${selectedRole})}"
-                                       class="pagination-link pagination-arrow" aria-label="Next page">
-                                        <span class="arrow-icon">&#8250;</span>
-                                    </a>
-                                </li>
-                            </ul>
+                            <ul class="pagination-list"></ul>
                         </div>
                     </div>
                 </div>
@@ -484,6 +459,8 @@
         const toastBootstrap = new bootstrap.Toast(notificationToastEl, {delay: 3000});
 
         let selectedFile = null;
+
+        loadPage(0, 10);
 
         // Click to select file
         fileInput.addEventListener("change", function (event) {
@@ -798,7 +775,7 @@
     function filterTable() {
         let input = document.getElementById("searchInput");
         let filter = input.value.toLowerCase();
-        let table = document.getElementById("userTable");
+        let table = document.getElementById("table-body");
         let rows = table.getElementsByTagName("tr");
 
         for (let i = 1; i < rows.length; i++) {
@@ -816,7 +793,7 @@
     }
 
     function sortTable(columnIndex) {
-        let table = document.getElementById("userTable");
+        let table = document.getElementById("table-body");
         let rows = Array.from(table.rows).slice(1);
         let isAscending = table.getAttribute("data-sort") !== "asc";
 
@@ -835,13 +812,72 @@
         table.setAttribute("data-sort", isAscending ? "asc" : "desc");
     }
 
-    function changePageSize(selectElement) {
-        var newSize = selectElement.value;
-        var currentPage = new URLSearchParams(window.location.search).get("page") || 0;
-        var role = new URLSearchParams(window.location.search).get("role") || "employee";
-
-        window.location.href = `/manage-user?page=0&size=${newSize}&role=${role}`;
+    function changePageSize(select) {
+        pageSize = parseInt(select.value);
+        loadPage(0, pageSize);
     }
+
+    function loadPage(page, size) {
+        fetch(`/api/user/role/INTERN?page=${page}&&size=${size}`)
+            .then(response => response.json())
+            .then(data => {
+                totalPages = data.totalPages;
+                currentPage = data.number;
+                pageSize = data.size;
+                renderTable(data.content);
+                renderPagination();
+            })
+    }
+
+    function renderTable(interns) {
+        let tableContent = document.getElementById("table-body");
+        tableContent.innerHTML = '';
+
+        tableContent.innerHTML = interns.map(user => `
+        <tr>
+            <td>${user.first_name} ${user.last_name}</td>
+            <td>${user.email}</td>
+            <td>${user.phone_number}</td>
+            <td>${user.gender}</td>
+            <td>${user.role}</td>
+            <td class="${user.active ? 'active' : 'inactive'}">
+                <a href="#" data-id="${user.id}" class="toggle-class-status open-modal">
+                    <i data-id="${user.id}" data-user-email="${user.email}"
+                       class="flaticon-padlock ${user.active ? 'active' : 'inactive'}"
+                       onclick="showModal()">
+                    </i>
+                </a>
+                <a href="#" class="edit-user-modal" data-id="${user.id}"
+                   onclick="openEditUserModal(this, event)">
+                    <i class="flaticon-edit edit-user-modal" style="cursor: pointer"></i>
+                </a>
+            </td>
+        </tr>
+    `).join('');
+    }
+
+    function renderPagination() {
+        let pagination = document.getElementById("pagination-list");
+        pagination.innerHTML = '';
+
+        if (currentPage > 0) {
+            pagination.innerHTML += `<li class="pagination-item"><a href="#" onclick="loadPage(${currentPage - 1}, ${pageSize})" class="pagination-link pagination-arrow">&#8249;</a></li>`;
+        }
+
+        for (let i = 0; i < totalPages; i++) {
+            if (i === 0 || i === totalPages - 1 || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                pagination.innerHTML += `
+            <li class="pagination-item ${i === currentPage ? 'active' : ''}">
+                <a href="#" onclick="loadPage(${i}, ${pageSize})" class="pagination-link">${i + 1}</a>
+            </li>`;
+            }
+        }
+
+        if (currentPage < totalPages - 1) {
+            pagination.innerHTML += `<li class="pagination-item"><a href="#" onclick="loadPage(${currentPage + 1}, ${pageSize})" class="pagination-link pagination-arrow">&#8250;</a></li>`;
+        }
+    }
+
 </script>
 </body>
 </html>
