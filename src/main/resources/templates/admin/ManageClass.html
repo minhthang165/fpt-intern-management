@@ -539,7 +539,7 @@
   
     function openUserModal(row) {
         // Lấy dữ liệu từ hàng được nhấp
-        const classId = row.getAttribute('data-id');
+        const classId = row.getAttribute('data-class-id');
         const className = row.cells[0].textContent;
         const managerName = row.cells[2].textContent;
 
@@ -623,8 +623,6 @@
             tableBody.appendChild(row);
         });
     }
-  
-    })
 
     document.addEventListener("click", function (event) {
 
@@ -894,7 +892,7 @@
     }
 
     function loadPage(page, size) {
-        fetch(`/api/class?page=${page}&size=${size}`)
+        fetch(`/api/class?page=${page}&&size=${size}`)
             .then(response => response.json())
             .then(data => {
                 totalPages = data.totalPages;
@@ -990,4 +988,4 @@
 
 </script>
 </body>
-</html
+</html>
