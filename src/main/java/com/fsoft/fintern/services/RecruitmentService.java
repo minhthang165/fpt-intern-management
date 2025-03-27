@@ -38,20 +38,6 @@ public class RecruitmentService {
         }
     }
 
-    public ResponseEntity<List<Recruitment>> findAll2() throws BadRequestException {
-        List<Recruitment> recruitments = this.recruitmentRepository.findAll();
-        if (recruitments.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else {
-            // Set application count for each recruitment
-            for (Recruitment recruitment : recruitments) {
-                Integer applicationCount = recruitmentRepository.countByRecruitmentIdAndIsActiveTrue(recruitment.getId());
-                recruitment.setApplicationCount(applicationCount);
-            }
-            return new ResponseEntity<>(recruitments, HttpStatus.OK);
-        }
-    }
-
     public ResponseEntity<Page<Recruitment>> findAll(Pageable pageable) throws BadRequestException {
         Page<Recruitment> recruitments = this.recruitmentRepository.findAll(pageable);
         if (recruitments.isEmpty()) {
