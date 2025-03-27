@@ -31,48 +31,17 @@ public class UserController {
 
     @GetMapping()
     public String redirectManageUserPage(@SessionAttribute("user") LoginUserDTO user,
-                                         @RequestParam(defaultValue = "0") int page,
-                                         @RequestParam(defaultValue = "10") int size,
-                                         String role,
+                                         @RequestParam(name="role", required=false) String role,
                                          Model model){
         if (user.getRole() == Role.ADMIN) {
-            try {
-                Pageable pageable = PageRequest.of(page, size);
-                ResponseEntity<Page<User>> users;
-
-                if ("intern".equalsIgnoreCase(role)) {
-                    users = userService.findUserByRole(Role.INTERN, pageable);
-
-                    for (User u : Objects.requireNonNull(users.getBody()).getContent()) {
-                        if (redisTemplate.opsForValue().get("banned_user:" + u.getId()) != null) {
-                            u.setActive(false);
-                        }
-                    }
-                    model.addAttribute("userList", users.getBody());
-                    model.addAttribute("selectedRole", role);
-                    model.addAttribute("currentPage", page);
-                    model.addAttribute("pageSize", size);
-                    model.addAttribute("totalPages", users.getBody().getTotalPages());
-                    return "Admin/ManageIntern";
-                } else if ("employee".equalsIgnoreCase(role)) {
-                    users = userService.findUserByRole(Role.EMPLOYEE, pageable);
-
-                    for (User u : Objects.requireNonNull(users.getBody()).getContent()) {
-                        if (redisTemplate.opsForValue().get("banned_user:" + u.getId()) != null) {
-                            u.setActive(false);
-                        }
-                    }
-                    model.addAttribute("userList", users.getBody());
-                    model.addAttribute("selectedRole", role);
-                    model.addAttribute("currentPage", page);
-                    model.addAttribute("pageSize", size);
-                    model.addAttribute("totalPages", users.getBody().getTotalPages());
-                    return "Admin/ManageEmployee";
-                }
-                return "Admin/AdminDashboard";
-            } catch (BadRequestException e) {
-                model.addAttribute("errorMessage", ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage());
+            if ("intern".equals(role)) {
+                model.addAttribute("selectedRole", role);
+                return "Admin/ManageIntern";
+            } else if ("employee".equals(role)) {
+                model.addAttribute("selectedRole", role);
+                return "Admin/ManageEmployee";
             }
+            return "Admin/AdminDashboard";
         }
 
         if (user.getRole() == Role.EMPLOYEE) {

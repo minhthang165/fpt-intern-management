@@ -9,7 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="shortcut icon" type="image/x-icon" href="/assets/img/logo/logo-fpt-small.svg">
     <style>
-        /* Reset and base styles */
+
+
         * {
             margin: 0;
             padding: 0;
@@ -40,7 +41,7 @@
             padding: 0 20px;
         }
 
-        /* Header styles */
+        /* Header styles (Đồng bộ với Trang CSS 1) */
         header {
             background-color: #fff;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -59,6 +60,7 @@
         .logo {
             width: 150px;
             height: auto;
+            margin-right: 15px;
         }
 
         nav {
@@ -126,10 +128,14 @@
 
         .user-dropdown ul {
             list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
         .user-dropdown li {
             padding: 10px 15px;
+            display: flex;
+            align-items: center;
         }
 
         .user-dropdown li a {
@@ -140,17 +146,26 @@
             font-weight: 500;
             padding: 5px;
             border-radius: 5px;
+            text-decoration: none;
+            width: 100%;
         }
 
         .user-dropdown li a:hover {
             background: #f0f0f0;
         }
 
+        .user-dropdown svg {
+            margin-right: 10px;
+            fill: #666;
+        }
+
+        /* Các style riêng cho Trang CSS 2 */
         /* Hero banner styles */
         .hero-banner {
             position: relative;
             height: 400px;
             overflow: hidden;
+            margin-left: auto;
         }
 
         .hero-banner img {
@@ -216,7 +231,6 @@
             border-radius: 9999px;
         }
 
-        /* About section styles */
         .section {
             padding: 80px 0;
         }
@@ -560,7 +574,7 @@
             color: #6b7280;
         }
 
-        /* Video modal */
+
         .video-modal {
             display: none;
             position: fixed;
@@ -611,47 +625,7 @@
     </style>
 </head>
 <body>
-<!-- Header -->
-<header>
-    <div class="container header-container">
-        <div class="logo">
-            <a href="/home">
-                <img src="assets/img/logo/logo-fpt.png" alt="logo not found">
-            </a>
-        </div>
-        <div class="user-account">
-            <button id="userportfolio" class="user-account-btn">
-                Account
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 9l6 6 6-6"/>
-                </svg>
-            </button>
-            <div class="user-dropdown">
-                <ul>
-                    <li>
-                        <a href="#">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                            Profile
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/logout">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                <polyline points="16 17 21 12 16 7"></polyline>
-                                <line x1="21" y1="12" x2="9" y2="12"></line>
-                            </svg>
-                            Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</header>
+<header th:replace="include/user-header :: header"></header>
 
 <!-- Hero Banner -->
 <div class="hero-banner">

@@ -11,7 +11,7 @@ import com.fsoft.fintern.repositories.CVInfoRepository;
 import com.fsoft.fintern.repositories.FileRepository;
 import com.fsoft.fintern.repositories.UserRepository;
 import com.fsoft.fintern.repositories.RecruitmentRepository;
-import com.fsoft.fintern.repositories.RecruitmentRequestRepository;
+//import com.fsoft.fintern.repositories.RecruitmentRequestRepository;
 import com.fsoft.fintern.repositories.ClassroomRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,19 +29,17 @@ public class CVInfoService {
     private final FileRepository fileRepository;
     private final UserRepository userRepository;
     private final RecruitmentRepository recruitmentRepository;
-    private final RecruitmentRequestRepository recruitmentRequestRepository;
     private final ClassroomRepository classroomRepository;
 
     @Autowired
     public CVInfoService(CVInfoRepository cvInfoRepository, FileRepository fileRepository, 
                         UserRepository userRepository, RecruitmentRepository recruitmentRepository, 
-                        RecruitmentRequestRepository recruitmentRequestRepository,
+
                         ClassroomRepository classroomRepository) {
         this.cvInfoRepository = cvInfoRepository;
         this.fileRepository = fileRepository;
         this.userRepository = userRepository;
         this.recruitmentRepository = recruitmentRepository;
-        this.recruitmentRequestRepository = recruitmentRequestRepository;
         this.classroomRepository = classroomRepository;
     }
 
@@ -63,7 +61,7 @@ public class CVInfoService {
      * Chỉ lấy những CV có isActive = true
      */
     public List<Map<String, Object>> getCVInfosByRecruitmentId(Integer recruitmentId) {
-        List<CVInfo> cvInfos = cvInfoRepository.findAllByRecruitmentId(recruitmentId);
+        List<CVInfo> cvInfos = cvInfoRepository.findAllByRecruitmentIdAndUserRoleGuest(recruitmentId);
         List<Map<String, Object>> result = new ArrayList<>();
         
         for (CVInfo cvInfo : cvInfos) {
@@ -164,6 +162,22 @@ public class CVInfoService {
         }
         
         return result;
+    }
+
+    @Transactional
+    public boolean deleteCVInfo(Integer fileId, Integer recruitmentId) {
+        try {
+            CVInfoId cvInfoId = new CVInfoId(recruitmentId, fileId);
+            Optional<CVInfo> cvInfoOptional = cvInfoRepository.findById(cvInfoId);
+            if (cvInfoOptional.isPresent()) {
+                cvInfoRepository.delete(cvInfoOptional.get());
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi xóa CVInfo: " + e.getMessage());
+        }
     }
 }
 
