@@ -29,18 +29,121 @@
             --radius: 8px;
         }
 
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f7fb;
-            background-image: linear-gradient(135deg, #f5f7fb 0%, #e4e9f2 100%);
-            color: var(--gray-800);
-            line-height: 1.6;
-            min-height: 100vh;
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        /* Add spacing for the header */
-        .header-spacing {
-            padding-top: 120px; /* Adjust this value based on your header height */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            margin-right: 15px;
+        }
+
+        nav {
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            nav {
+                display: flex;
+                gap: 24px;
+            }
+        }
+
+        nav a {
+            color: #4b5563;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #ea580c;
+        }
+
+        .user-account {
+            position: relative;
+        }
+
+        .user-account-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #4b5563;
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        .user-account-btn:hover {
+            color: #ea580c;
+        }
+
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 110%;
+            right: 0;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            width: 220px;
+            padding: 10px 0;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .user-dropdown.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .user-dropdown ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .user-dropdown li {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-dropdown li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #333;
+            font-weight: 500;
+            padding: 5px;
+            border-radius: 5px;
+            text-decoration: none;
+            width: 100%;
+        }
+
+        .user-dropdown li a:hover {
+            background: #f0f0f0;
+        }
+
+        .user-dropdown svg {
+            margin-right: 10px;
+            fill: #666;
         }
 
         .profile-card {
@@ -441,6 +544,119 @@
             margin-right: 15px;
         }
 
+        /* Reset and base styles (cần thiết cho header) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header styles */
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+        }
+
+        .user-account {
+            position: relative;
+        }
+
+        .user-account-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #4b5563;
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        .user-account-btn:hover {
+            color: #ea580c;
+        }
+
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 110%;
+            right: 0;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            width: 220px;
+            padding: 10px 0;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .user-dropdown.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .user-dropdown ul {
+            list-style: none;
+        }
+
+        .user-dropdown li {
+            padding: 10px 15px;
+        }
+
+        .user-dropdown li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #333;
+            font-weight: 500;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .user-dropdown li a:hover {
+            background: #f0f0f0;
+        }
+
+        .px-4{
+            padding-top: 40px;
+        }
+
         /* Responsive adjustments for header spacing */
         @media (max-width: 768px) {
             .header-spacing {
@@ -450,7 +666,7 @@
     </style>
 </head>
 <body>
-<header th:replace="include/guest-header :: header"></header>
+<header th:replace="include/user-header :: header"></header>
 
 <!-- Added header-spacing class to create space between header and content -->
 <section class="header-spacing px-4 pb-16">
@@ -763,7 +979,7 @@
         if (userId && !isNaN(userId)) {
             formData.append("userId", userId);
         } else {
-            messageEl.textContent = "❌ User ID not found!";
+            messageEl.textContent = "User ID not found!";
             messageEl.className = "message-error";
             messageEl.style.display = "block";
             loadingEl.style.display = "none";
@@ -786,7 +1002,7 @@
             clearInterval(progressInterval);
 
             const data = await response.json();
-            let message = data.success ? "✅ " + data.message : "❌ " + data.message;
+            let message = data.success ? " " + data.message : " " + data.message;
             messageEl.textContent = message;
             messageEl.className = data.success ? "message-success" : "message-error";
             messageEl.style.display = "block";
@@ -852,7 +1068,7 @@
                 await refreshCVList(userId);
             }
         } catch (error) {
-            messageEl.textContent = "❌ Upload error: " + error.message;
+            messageEl.textContent = "Upload error: " + error.message;
             messageEl.className = "message-error";
             messageEl.style.display = "block";
             clearInterval(progressInterval);
@@ -1105,6 +1321,23 @@
             }
         };
     }
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const userAccountBtn = document.getElementById('userportfolio');
+        const userDropdown = document.querySelector('.user-dropdown');
+
+        userAccountBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            userDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!userAccountBtn.contains(event.target) && !userDropdown.contains(event.target)) {
+                userDropdown.classList.remove('show');
+            }
+        });
+    });
 </script>
 </body>
 </html>

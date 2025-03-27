@@ -5,87 +5,111 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-  .carousel-inner {
-    padding: 20px;
-    background: white;
+  /* Reset and base styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
 
-
-  .carousel-inner img {
-    width: 100%;
-    height: 100%;
-
-  }
-  .carousel-indicators .active {
-    opacity: 1;
-    background-color: #cc5500;
-    bottom: -50px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .event-content h5 {
-    font-size: 1.5rem;
-    color: #ff6600;
-  }
-
-  .event-content p {
-    font-size: 1rem;
+  body {
+    font-family: 'Inter', sans-serif;
     color: #333;
+    line-height: 1.6;
+    background-color: #fff;
   }
-
-
-  .img-fluid {
-    border-radius: 10px;
-  }
-
-  .custom-control span {
-    filter: invert(1);
-  }
-
-
-  .event-image img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 0 auto;
-  }
-
-  .carousel-item img {
-    max-height: 700px;
-    width: 200%;
-    object-fit: contain;
-  }
-
-  .image-banner img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .event-image img {
-    max-width: 100%;
-    border-radius: 8px;
-  }
-
-  .event-info h2 {
-    font-size: 28px;
-    font-weight: bold;
-  }
-  .event-info p {
-    font-size: 18px;
-    margin-top: 10px;
-  }
-
 
   a {
     text-decoration: none;
     color: inherit;
   }
 
+  img {
+    max-width: 100%;
+    height: auto;
+  }
 
-  .user__dropdown {
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Header styles */
+  header {
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Logo styles */
+  .logo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .logo img {
+    width: 150px;
+    height: auto;
+  }
+
+  .logo-text {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f97316; /* Màu cam giống trong hình */
+    margin-top: 8px;
+  }
+
+  /* Navigation styles */
+  nav {
+    display: flex; /* Bỏ display: none để luôn hiển thị */
+    gap: 24px;
+  }
+
+  nav a {
+    color: #4b5563;
+    font-weight: 500;
+    transition: color 0.3s;
+  }
+
+  nav a:hover {
+    color: #ea580c;
+  }
+
+  /* User account styles */
+  .user-account {
+    position: relative;
+  }
+
+  .user-account-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #4b5563;
+    font-family: inherit;
+    font-weight: 500;
+  }
+
+  .user-account-btn:hover {
+    color: #ea580c;
+  }
+
+  /* User dropdown styles (hợp nhất user-dropdown và user__dropdown) */
+  .user-dropdown, .user__dropdown {
     display: none;
     position: absolute;
     top: 110%;
@@ -101,42 +125,118 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
-  .user__dropdown.show {
+  .user-dropdown.show, .user__dropdown.show {
     display: block;
     opacity: 1;
     transform: translateY(0);
   }
 
-  .user__dropdown ul {
+  .user-dropdown ul, .user__dropdown ul {
     list-style: none;
     padding: 0;
     margin: 0;
   }
 
-  .user__dropdown li {
+  .user-dropdown li, .user__dropdown li {
     padding: 10px 15px;
     display: flex;
     align-items: center;
   }
 
-  .user__dropdown li a {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
+  .user-dropdown li a, .user__dropdown li a {
     display: flex;
     align-items: center;
+    gap: 10px;
+    color: #333;
+    font-weight: 500;
+    padding: 5px;
+    border-radius: 5px;
+    text-decoration: none;
     width: 100%;
   }
 
-  .user__dropdown li a:hover {
+  .user-dropdown li a:hover, .user__dropdown li a:hover {
     background: #f0f0f0;
-    border-radius: 5px;
   }
 
-  .user__dropdown svg {
+  .user-dropdown svg, .user__dropdown svg {
     margin-right: 10px;
     fill: #666;
   }
+
+  /* Carousel styles */
+  .carousel-inner {
+    padding: 20px;
+    background: white;
+  }
+
+  .carousel-inner img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    bottom: -50px;
+  }
+
+  .carousel-indicators .active {
+    opacity: 1;
+    background-color: #cc5500;
+  }
+
+  .carousel-item img {
+    max-height: 700px;
+    width: 100%;
+    object-fit: contain;
+  }
+
+  .image-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Event styles */
+  .event-content h5 {
+    font-size: 1.5rem;
+    color: #ff6600;
+  }
+
+  .event-content p {
+    font-size: 1rem;
+    color: #333;
+  }
+
+  .event-image img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 8px;
+  }
+
+  .event-info h2 {
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .event-info p {
+    font-size: 18px;
+    margin-top: 10px;
+  }
+
+  .img-fluid {
+    border-radius: 10px;
+  }
+
+  .custom-control span {
+    filter: invert(1);
+  }
+
+  /* Recruitment card styles */
   .recruitment-card {
     background: #fff;
     border-radius: 12px;
@@ -145,12 +245,10 @@
     overflow: hidden;
   }
 
-
   .recruitment-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(255, 104, 104, 0.2);
   }
-
 
   .recruitment-image {
     position: relative;
@@ -176,7 +274,6 @@
     border-radius: 8px;
   }
 
-
   .badge.bg-dark {
     top: 10px;
     left: 10px;
@@ -186,7 +283,6 @@
     top: 50px;
     left: 10px;
   }
-
 
   .card-title a {
     font-size: 1.2rem;
@@ -198,7 +294,6 @@
   .card-title a:hover {
     color: #ff6b6b;
   }
-
 
   .btn-gradient {
     background: linear-gradient(45deg, #ff6b6b, #f06595);
@@ -213,13 +308,13 @@
     text-transform: uppercase;
   }
 
-  .btn-hover:hover {
+  .btn-gradient:hover {
     background: linear-gradient(45deg, #f06595, #ff6b6b);
     transform: translateY(-2px);
     box-shadow: 0px 4px 10px rgba(255, 107, 107, 0.5);
   }
 
-  /*footer-style*/
+  /* Footer styles */
   .footer {
     background-color: #111827;
     color: white;
@@ -291,7 +386,7 @@
 </style>
 
 <body>
-<header th:include="include/guest-header :: header"></header>
+<header th:replace="include/user-header :: header"></header>
 
 <section class="recruitment-list">
   <section id="" class="about__area p-relative pt-150 pb-90">
@@ -442,11 +537,12 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const userPortfolio = document.getElementById("userportfolio");
-    const userDropdown = document.querySelector(".user__dropdown");
+    const userDropdown = document.querySelector(".user-dropdown");
 
     if (userPortfolio && userDropdown) {
       userPortfolio.addEventListener("click", function (event) {
         userDropdown.classList.toggle("show");
+        event.stopPropagation();
       });
 
       document.addEventListener("click", function (event) {
@@ -455,7 +551,7 @@
         }
       });
     }
-
+  })
     loadPage(0, 20);
   });
 
