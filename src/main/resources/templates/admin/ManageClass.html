@@ -183,16 +183,17 @@
         position: fixed;
         top: 0;
         left: 0;
-        z-index: 1050;
+        z-index: 30000;
         width: 100%;
         height: 100%;
         outline: 0;
+        background: rgba(0, 0, 0, 0.6);
     }
 
     /* Đảm bảo nội dung modal hiển thị trên cùng */
     .modal-content {
         position: relative;
-        z-index: 1070;
+        z-index: 200 !important;
         background-color: #fff;
         border-radius: 6px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
@@ -207,15 +208,15 @@
         width: 100%;
         height: 100%;
         background-color: #000;
-        opacity: 0.5;
+        opacity: 0.3;
         pointer-events: none;
-        z-index: 1000 !important;
-
+        z-index: 90;
+        display: none;
     }
 
     /* Ẩn backdrop khi không cần thiết */
     body:not(.modal-open) .modal-backdrop {
-        display: none !important;
+        display: none;
     }
 
     /* Căn giữa modal */
@@ -290,7 +291,9 @@
         border-color: #e67812;
     }
 
-    </style>
+
+
+</style>
 
 <body class="body-area">
 <th:block  th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
@@ -325,12 +328,10 @@
             </div>
         </div>
     </div>
-
     <!--List Classroom-->
     <section th:fragment="content">
         <div class="flex-grow-1 p-4">
             <h5 class="classroom-title">Classroom List</h5>
-
             <!-- Table -->
             <div class="card mt-4">
                 <div class="card-body">
@@ -378,7 +379,7 @@
 
 
 
-        <div id="userModal" class="modal fade" tabindex="-1" aria-labelledby="userModalTitle" aria-hidden="true">
+        <div id="userModal" class="modal fade" aria-labelledby="userModalTitle" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -558,9 +559,9 @@
 
         // Khởi tạo và hiển thị modal với các tùy chọn
         const userModal = new bootstrap.Modal(modalElement, {
-            backdrop: true,  // Bật backdrop
-            keyboard: true,  // Cho phép đóng bằng phím Esc
-            focus: true      // Tự động focus vào modal
+            backdrop: true,
+            keyboard: true,
+            focus: true
         });
 
         // Hiển thị modal
