@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,6 +17,6 @@ public interface RecruitmentRepository extends JpaRepository<Recruitment, Intege
 
     @Query(value = "SELECT COUNT(c.file_id) FROM CV_Info c WHERE c.recruitment_id = :recruitmentId AND c.is_active = 1", nativeQuery = true)
     Integer countByRecruitmentIdAndIsActiveTrue(@Param("recruitmentId") Integer recruitmentId);
-
+    List<Recruitment> findAllByIsActiveTrue();
     Recruitment findByClassId(Integer classId);
 }

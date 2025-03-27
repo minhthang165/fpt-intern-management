@@ -1207,6 +1207,9 @@
             setTimeout(() => {
                 messageEl.style.display = 'none';
             }, 3000);
+            setTimeout(() => {
+                window.location.reload(); // Load lại trang
+            }, 1500);
         } catch (error) {
             console.error('Error deleting file:', error);
 

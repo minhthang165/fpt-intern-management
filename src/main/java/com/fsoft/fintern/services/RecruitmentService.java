@@ -72,6 +72,7 @@ public class RecruitmentService {
         newRecruitment.setName(recruitmentDTO.getName());
         newRecruitment.setPosition(recruitmentDTO.getPosition());
         newRecruitment.setExperienceRequirement(recruitmentDTO.getExperience());
+        newRecruitment.setMinGPA(recruitmentDTO.getMinGPA());
         newRecruitment.setLanguage(recruitmentDTO.getLanguage());
         newRecruitment.setTotalSlot(recruitmentDTO.getTotalSlot());
         newRecruitment.setDescription(recruitmentDTO.getDescription());
@@ -98,6 +99,9 @@ public class RecruitmentService {
         } else {
             throw new BadRequestException();
         }
+    }
+    public Recruitment getRecruitmentById(Integer recruitmentId) {
+        return recruitmentRepository.findByIdAndIsActiveTrue(recruitmentId);
     }
 
 }
