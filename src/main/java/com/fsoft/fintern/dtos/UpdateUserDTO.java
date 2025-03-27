@@ -7,7 +7,7 @@ public class UpdateUserDTO {
     private String last_name;
     private String phone_number;
     private Integer class_id;
-    private String picture;
+    private String avatar_path;
     private Gender gender;
     private Role role;
 
@@ -59,12 +59,12 @@ public class UpdateUserDTO {
         this.role = role;
     }
 
-    public String getPicture() {
-        return picture;
+    public String getAvatar_path() {
+        return avatar_path;
     }
 
-    public void setPicture(String picture) {
-        this.picture = picture;
+    public void setAvatar_path(String avatar_path) {
+        this.avatar_path = avatar_path;
     }
 
 }

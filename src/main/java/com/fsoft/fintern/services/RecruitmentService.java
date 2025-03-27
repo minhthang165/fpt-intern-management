@@ -9,6 +9,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -22,17 +25,35 @@ public class RecruitmentService {
     public RecruitmentService(RecruitmentRepository recruitRepository) {
         this.recruitmentRepository = recruitRepository;
     }
+
     public ResponseEntity<Recruitment> findById(int id) throws BadRequestException {
         Optional<Recruitment> recruitment = this.recruitmentRepository.findById(id);
         if (recruitment.isPresent()) {
-            return new ResponseEntity<>(recruitment.get(), HttpStatus.OK);
+            Recruitment recruitmentObj = recruitment.get();
+            Integer applicationCount = recruitmentRepository.countByRecruitmentIdAndIsActiveTrue(recruitmentObj.getId());
+            recruitmentObj.setApplicationCount(applicationCount);
+            return new ResponseEntity<>(recruitmentObj, HttpStatus.OK);
         } else {
             throw new BadRequestException();
         }
     }
 
-    public ResponseEntity<List<Recruitment>> findAll() {
+    public ResponseEntity<List<Recruitment>> findAll2() throws BadRequestException {
         List<Recruitment> recruitments = this.recruitmentRepository.findAll();
+        if (recruitments.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            // Set application count for each recruitment
+            for (Recruitment recruitment : recruitments) {
+                Integer applicationCount = recruitmentRepository.countByRecruitmentIdAndIsActiveTrue(recruitment.getId());
+                recruitment.setApplicationCount(applicationCount);
+            }
+            return new ResponseEntity<>(recruitments, HttpStatus.OK);
+        }
+    }
+
+    public ResponseEntity<Page<Recruitment>> findAll(Pageable pageable) throws BadRequestException {
+        Page<Recruitment> recruitments = this.recruitmentRepository.findAll(pageable);
         if (recruitments.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -55,9 +76,7 @@ public class RecruitmentService {
         if (recruitment == null) {
             throw new BadRequestException();
         }
-        recruitment.setActive(false);
-        recruitment.setDeletedAt(Timestamp.from(Instant.now().plus((Duration.ofHours(6)))));
-        this.recruitmentRepository.save(recruitment);
+        this.recruitmentRepository.delete(recruitment);
         return new ResponseEntity<>(recruitment, HttpStatus.OK);
     }
 
@@ -86,6 +105,13 @@ public class RecruitmentService {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRecruitment);
     }
 
-
+    public ResponseEntity<Recruitment> findByClassId(int classId) throws BadRequestException {
+        Recruitment recruitment = this.recruitmentRepository.findByClassId(classId);
+        if (recruitment != null) {
+            return new ResponseEntity<>(recruitment, HttpStatus.OK);
+        } else {
+            throw new BadRequestException();
+        }
+    }
 
 }

@@ -6,7 +6,6 @@ import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.UserService;
 //import com.fsoft.fintern.utils.JwtUtil;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +52,10 @@ public class AuthController {
         LoginUserDTO loginUserDTO = convertToLoginUserDTO(user);
         model.addAttribute("user", loginUserDTO);
 
-        return user.getRole() == Role.ADMIN ? "redirect:/manage-user" : "redirect:/home";
+        if (user.getRole() == Role.ADMIN || user.getRole() == Role.EMPLOYEE || user.getRole() == Role.INTERN) {
+            return "redirect:/manage-user";
+        }
+        return "redirect:/home";
     }
 
     private User createNewUser(OAuth2User oauth2User) {
@@ -78,7 +80,7 @@ public class AuthController {
         dto.setId(user.getId());
         dto.setFirst_name(user.getFirst_name());
         dto.setLast_name(user.getLast_name());
-        dto.setPicture(user.getAvatar_path());
+        dto.setAvatar_path(user.getAvatar_path());
         dto.setRole(user.getRole());
         return dto;
     }

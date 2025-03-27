@@ -23,21 +23,12 @@ public class ConversationUserId implements Serializable {
     @Column(name = "conversation_id", nullable = false)
     private Integer conversationId;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        ConversationUserId entity = (ConversationUserId) o;
-        return Objects.equals(this.conversationId, entity.conversationId) &&
-                Objects.equals(this.userId, entity.userId);
-    }
-
-    public ConversationUserId() {
-    }
-
     public ConversationUserId(Integer userId, Integer conversationId) {
         this.userId = userId;
         this.conversationId = conversationId;
+    }
+
+    public ConversationUserId() {
     }
 
     public Integer getUserId() {
@@ -54,6 +45,15 @@ public class ConversationUserId implements Serializable {
 
     public void setConversationId(Integer conversationId) {
         this.conversationId = conversationId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        ConversationUserId entity = (ConversationUserId) o;
+        return Objects.equals(this.conversationId, entity.conversationId) &&
+                Objects.equals(this.userId, entity.userId);
     }
 
     @Override

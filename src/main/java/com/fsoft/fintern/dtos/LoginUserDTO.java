@@ -7,7 +7,7 @@ public class LoginUserDTO {
     private String first_name;
     private String last_name;
     private Integer class_id;
-    private String picture;
+    private String avatar_path;
     private Role role;
 
     public String getFirst_name() {
@@ -26,12 +26,12 @@ public class LoginUserDTO {
         this.last_name = last_name;
     }
 
-    public String getPicture() {
-        return picture;
+    public String getAvatar_path() {
+        return avatar_path;
     }
 
-    public void setPicture(String picture) {
-        this.picture = picture;
+    public void setAvatar_path(String avatar_path) {
+        this.avatar_path = avatar_path;
     }
 
     public int getId() {

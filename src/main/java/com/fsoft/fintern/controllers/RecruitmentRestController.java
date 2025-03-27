@@ -5,14 +5,16 @@ import com.fsoft.fintern.models.Recruitment;
 import com.fsoft.fintern.services.RecruitmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @Controller
-@RequestMapping("/api")
+@RequestMapping("/api/")
 public class RecruitmentRestController {
 
     private final RecruitmentService recruitmentService;
@@ -21,10 +23,14 @@ public class RecruitmentRestController {
         this.recruitmentService = recruitmentService;
     }
 
-    @GetMapping("")
+    @GetMapping("/recruitment")
     @Operation(description = "view all Recruitment")
-    public ResponseEntity<List<Recruitment>> viewAllRecruitment() {
-        return this.recruitmentService.findAll();
+    public ResponseEntity<Page<Recruitment>> viewAllRecruitment(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) throws BadRequestException {
+        Pageable pageable = PageRequest.of(page, size);
+        return this.recruitmentService.findAll(pageable);
     }
 
     @PostMapping("/recruitment/create")
@@ -47,4 +53,15 @@ public class RecruitmentRestController {
         return this.recruitmentService.update(id, recruitmentDTO);
     }
 
+    @GetMapping("/recruitment/{id}")
+    @Operation(description = "Find recruitment by Id")
+    public ResponseEntity<Recruitment> findById(@PathVariable int id) throws BadRequestException {
+        return this.recruitmentService.findById(id);
+    }
+
+    @GetMapping("/recruitment/class/{classId}")
+    @Operation(description = "Find recruiment by class ID")
+    public ResponseEntity<Recruitment> findByClassId(@PathVariable int classId) throws BadRequestException {
+        return this.recruitmentService.findByClassId(classId);
+    }
 }

@@ -1,5 +1,29 @@
     <!-- JS here -->
 <footer th:fragment="footer">
+        <script>
+                const userPortfolio = document.getElementById("userportfolio")
+                const userDropdown = document.getElementById("userDropdown")
+
+                // Toggle user dropdown
+                userPortfolio.addEventListener("click", (e) => {
+                        e.stopPropagation()
+                        userDropdown.classList.toggle("active")
+                })
+
+                // Close dropdown when clicking outside
+                document.addEventListener("click", (e) => {
+                        if (!userPortfolio.contains(e.target) && !userDropdown.contains(e.target)) {
+                                userDropdown.classList.remove("active")
+                        }
+                })
+
+                // Close dropdown when pressing Escape key
+                document.addEventListener("keydown", (e) => {
+                        if (e.key === "Escape") {
+                                userDropdown.classList.remove("active")
+                        }
+                })
+        </script>
         <script src="/assets/js/jquery-3.6.0.min.js"></script>
         <script src="/assets/js/waypoints.min.js"></script>
         <script src="/assets/js/bootstrap.bundle.min.js"></script>

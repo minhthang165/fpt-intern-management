@@ -26,25 +26,13 @@ public class RecruitmentController {
     @GetMapping("")
     @Operation(description = "view all Recruitment")
     public String viewAllRecruitment(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) {
-        ResponseEntity<List<Recruitment>> response = recruitmentService.findAll();
         model.addAttribute("user_id", user_id);
-        if (response.getBody() != null) {
-            model.addAttribute("recruitments", response.getBody());
-        } else {
-            model.addAttribute("recruitments", List.of());
-        }
         return "admin/ManageRequirement";
     }
 
     @GetMapping("/recruitments")
     public String listRecruitments(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) {
-        ResponseEntity<List<Recruitment>> response = recruitmentService.findAll();
         model.addAttribute("user_id", user_id);
-        if (response.getBody() != null) {
-            model.addAttribute("recruitments", response.getBody());
-        } else {
-            model.addAttribute("recruitments", List.of());
-        }
         return "recruitment-page";
     }
 
@@ -85,8 +73,5 @@ public class RecruitmentController {
     public ResponseEntity<Recruitment> update(@PathVariable int id, @RequestBody RecruitmentDTO recruitmentDTO) throws BadRequestException {
         return this.recruitmentService.update(id, recruitmentDTO);
     }
-    
-
-
 
 }

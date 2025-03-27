@@ -27,6 +27,7 @@ public class ConversationService {
         Conversation conversation = new Conversation();
         conversation.setConversationName(conversationDTO.getConversation_name());
         conversation.setConversationAvatar(conversationDTO.getConversation_avatar());
+        conversation.setType(conversationDTO.getType());
         return new ResponseEntity<>(this.conversationRepository.save(conversation), HttpStatus.CREATED);
     }
 
