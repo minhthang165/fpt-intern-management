@@ -172,6 +172,13 @@
       box-shadow: 0 4px 8px rgba(243, 112, 33, 0.3);
     }
 
+    .apply-btn:disabled {
+      background-color: #ccc;
+      transform: none;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
     #message {
       margin-top: 20px;
       font-weight: 600;
@@ -179,6 +186,33 @@
       padding: 10px;
       border-radius: var(--border-radius);
       transition: all 0.3s ease;
+    }
+
+    /* Progress bar container */
+    .progress-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background-color: transparent;
+      overflow: hidden;
+      display: none;
+      border-top-left-radius: var(--border-radius);
+      border-top-right-radius: var(--border-radius);
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: var(--primary-color);
+      transition: width 0.5s ease;
+    }
+
+    /* Show progress container when loading */
+    .container.loading .progress-container {
+      display: block;
     }
 
     @media (max-width: 768px) {
@@ -210,11 +244,16 @@
 <body>
 
 <input type="hidden" id="user_id" th:value="${user_id}">
-<div class="container">
+<div class="container" id="mainContainer">
+  <!-- Progress bar at the top of container -->
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
   <div class="header">
     <h1 class="job-title" th:text="${recruitment.position}"></h1>
     <a href="/recruitment/recruitments">
-        <img src="/assets/img/logo/logoFpt.svg.png" alt="FPT Logo">
+      <img src="/assets/img/logo/logoFpt.svg.png" alt="FPT Logo">
     </a>
   </div>
 
@@ -307,6 +346,9 @@
 
   async function applyJob() {
     let messageEl = document.getElementById("message");
+    let applyButton = document.getElementById("applyButton");
+    let mainContainer = document.getElementById("mainContainer");
+    let progressBar = document.getElementById("progressBar");
     let { recruitmentId } = getIdsFromPath();
     const userId = document.getElementById("user_id").value;
     const cvSelect = document.getElementById("cvSelect");
@@ -330,6 +372,25 @@
       return;
     }
 
+    // Show loading state
+    mainContainer.classList.add("loading");
+    applyButton.disabled = true;
+    messageEl.textContent = "";
+    messageEl.style.backgroundColor = "transparent";
+
+    // Start progress animation
+    progressBar.style.width = "0%";
+
+    // Simulate progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += 5;
+      if (progress > 90) {
+        clearInterval(progressInterval);
+      }
+      progressBar.style.width = progress + "%";
+    }, 150);
+
     try {
       const fileId = selectedCV.value;
       let driveLink = selectedCV.dataset.driveLink;
@@ -337,7 +398,9 @@
       // Nếu driveLink không có trong dataset, fetch từ /file/file/path/{fileId}
       if (!driveLink) {
         console.log("No driveLink in dataset, fetching from API for fileId:", fileId);
+        progressBar.style.width = "30%";
         let pathResponse = await fetch(`/file/file/path/${fileId}`);
+        progressBar.style.width = "50%";
         console.log("File path API response status:", pathResponse.status);
 
         if (!pathResponse.ok) {
@@ -359,21 +422,24 @@
       formData.append("recruitmentId", recruitmentId);
 
       console.log("Sending data:", { driveLink, fileId, recruitmentId });
+      progressBar.style.width = "70%";
 
       let applyResponse = await fetch("/cv/save", {
         method: "POST",
         body: formData
       });
 
+      progressBar.style.width = "90%";
       console.log("Apply API response status:", applyResponse.status);
 
       if (!applyResponse.ok) {
         const errorText = await applyResponse.text();
-        throw new Error(`Apply thất bại: ${errorText}`);
+        throw new Error(`Apply thất bại: Bạn đã Apply rồi`);
       }
 
       let applyData = await applyResponse.text();
       console.log("Apply response data:", applyData);
+      progressBar.style.width = "100%";
 
       messageEl.textContent = "Apply thành công!";
       messageEl.style.color = "green";
@@ -383,6 +449,19 @@
       messageEl.textContent = error.message;
       messageEl.style.color = "red";
       messageEl.style.backgroundColor = "#ffebee";
+      progressBar.style.width = "100%";
+    } finally {
+      // Clear the interval if it's still running
+      clearInterval(progressInterval);
+
+      // Complete the progress bar
+      progressBar.style.width = "100%";
+
+      // Hide loading state after a short delay to show the completed progress
+      setTimeout(() => {
+        mainContainer.classList.remove("loading");
+        applyButton.disabled = false;
+      }, 500);
     }
   }
 </script>

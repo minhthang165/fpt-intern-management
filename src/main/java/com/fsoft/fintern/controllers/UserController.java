@@ -43,6 +43,14 @@ public class UserController {
             }
             return "Admin/AdminDashboard";
         }
+
+        if (user.getRole() == Role.EMPLOYEE) {
+            return "employee/EmployeeDashboard";
+        }
+
+        if (user.getRole() == Role.INTERN) {
+            return "intern/InternDashboard";
+        }
         return "admin/AdminDashboard";
     }
   

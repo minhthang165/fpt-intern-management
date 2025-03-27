@@ -107,5 +107,14 @@ public class FileService {
         this.fileRepository.save(file);
         return new ResponseEntity<>(file, HttpStatus.OK);
     }
+    public ResponseEntity<String> fullyDelete(int id) throws BadRequestException {
+        Optional<File> fileOptional = fileRepository.findById(id);
+        if (fileOptional.isEmpty()) {
+            throw new BadRequestException("File not found with ID: " + id);
+        }
+
+        fileRepository.deleteById(id);
+        return new ResponseEntity<>("File with ID " + id + " has been permanently deleted", HttpStatus.OK);
+    }
 
 }
