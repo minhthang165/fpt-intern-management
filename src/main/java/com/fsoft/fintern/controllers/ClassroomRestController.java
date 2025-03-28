@@ -70,5 +70,9 @@ public class ClassroomRestController {
     public ResponseEntity<Classroom> setIsActiveTrue(@PathVariable int id) throws BadRequestException {
         return this.classroomService.setIsActiveTrue(id);
     }
+    @GetMapping("/all")
+    public ResponseEntity<List<Classroom>> getAllClassroomsNoPagination() throws BadRequestException {
+        return classroomService.findAlls();
+    }
 
 }

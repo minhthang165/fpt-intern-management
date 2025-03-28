@@ -632,6 +632,47 @@
     .modal-backdrop {
         display: none;
     }
+    /* Additional styles for the requirement form */
+    #requirementForm label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #requirementForm .form-control {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        width: 100%;
+    }
+
+    #requirementForm .form-control:focus {
+        border-color: #ff6600;
+        box-shadow: 0 0 0 0.2rem rgba(255, 102, 0, 0.25);
+    }
+
+    /* Make sure the modal is on top of everything */
+    #addRequirementModal {
+        z-index: 10000;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        #addRequirementModal .modal-content {
+            width: 90%;
+        }
+    }
+
+    /* Spinner for loading state */
+    .fa-spinner {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
 </style>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
 <body class="body-area">
@@ -834,7 +875,72 @@
                 </div>
             </div>
         </div>
+        <!-- Add Requirement Modal -->
+        <div id="addRequirementModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeAddRequirementModal()">×</span>
+                <div class="header">
+                    <h3>Create Requirement</h3>
+                </div>
 
+                <form id="requirementForm">
+                    <div class="form-group mb-3">
+                        <label for="requirementName">Requirement Name</label>
+                        <input type="text" class="form-control" id="requirementName" name="name" placeholder="Enter requirement name" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="position">Position</label>
+                        <input type="text" class="form-control" id="position" name="position" placeholder="Enter position" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter requirement description"></textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="experienceRequirement">Experience Requirement <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="experienceRequirement" name="experienceRequirement" rows="2" placeholder="Describe experience requirements" required></textarea>
+                        <small class="text-muted">This field is required and cannot be empty.</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="language">Language <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="language" name="language" placeholder="Required languages (e.g., English, Japanese)" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="minGPA">Minimum GPA <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="minGPA" name="minGPA" placeholder="Minimum GPA required" step="0.1" min="0" max="4.0" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="totalSlot">Total Slot <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="totalSlot" name="totalSlot" placeholder="Number of available positions" min="1" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="endTime">End Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="endTime" name="endTime" required>
+                    </div>
+
+                    <!-- Thêm khung lựa chọn classId -->
+                    <div class="form-group mb-3">
+                        <label for="classId">Classroom <span class="text-danger">*</span></label>
+                        <select class="form-control" id="classId" name="classId" required>
+                            <option value="">Select a Classroom</option>
+                            <!-- Options sẽ được điền bằng JavaScript -->
+                        </select>
+                    </div>
+
+                    <div class="text-end mt-4">
+                        <button type="button" class="btn btn-secondary me-2" onclick="closeAddRequirementModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="saveButton" style="background-color: #ff6600; border-color: #ff6600;">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         <!-- Toast Notification -->
         <div id="toastNotification" class="toast-notification">
             <div class="toast-content">
@@ -846,6 +952,171 @@
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
+    // Function to fetch Classrooms and populate the select
+    function populateClassroomSelect() {
+        fetch('/api/class/all') // Fetch từ endpoint /api/classrooms/all
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch classrooms');
+                }
+                return response.json();
+            })
+            .then(classrooms => {
+                const classSelect = document.getElementById('classId');
+                classSelect.innerHTML = '<option value="">Select a Classroom</option>'; // Reset options
+                classrooms.forEach(classroom => {
+                    const option = document.createElement('option');
+                    option.value = classroom.id;
+                    option.textContent = classroom.className || `Class ${classroom.id}`; // Hiển thị name hoặc id
+                    classSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching classrooms:', error);
+                const classSelect = document.getElementById('classId');
+                classSelect.innerHTML = '<option value="">Error loading classrooms</option>';
+            });
+    }
+
+    // Function to open the Add Requirement modal
+    function openAddRequirementModal() {
+        const modal = document.getElementById("addRequirementModal");
+        if (!modal) {
+            console.error("Modal with ID 'addRequirementModal' not found in HTML");
+            return;
+        }
+        modal.style.display = "block";
+        document.body.classList.add('modal-open');
+
+        // Set default values
+        const endDateInput = document.getElementById("endTime");
+        const thirtyDaysLater = new Date();
+        thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+        endDateInput.value = thirtyDaysLater.toISOString().split('T')[0];
+
+        document.getElementById("totalSlot").value = 1;
+        document.getElementById("minGPA").value = 2.5;
+        document.getElementById("experienceRequirement").value = "No experience required";
+        document.getElementById("language").value = "English";
+
+        // Fetch và điền danh sách classrooms khi mở modal
+        populateClassroomSelect();
+    }
+    // Function to close the Add Requirement modal
+    function closeAddRequirementModal() {
+        const modal = document.getElementById("addRequirementModal");
+        if (modal) {
+            modal.style.display = "none";
+            document.body.classList.remove('modal-open');
+            document.getElementById("requirementForm").reset();
+        }
+    }
+
+    // Function to validate form data
+    function validateFormData(formDataObj) {
+        const errors = [];
+
+        // Validate minGPA
+        const minGPA = parseFloat(formDataObj.minGPA);
+        if (isNaN(minGPA) || minGPA < 0 || minGPA > 4) {
+            errors.push("Min GPA must be a number between 0.0 and 4.0");
+        }
+
+        // Validate totalSlot
+        const totalSlot = parseInt(formDataObj.totalSlot);
+        if (isNaN(totalSlot) || totalSlot <= 0) {
+            errors.push("Total Slot must be a positive integer greater than 0");
+        }
+
+        // Validate endTime
+        const endTime = new Date(formDataObj.endTime);
+        const now = new Date();
+        if (isNaN(endTime.getTime()) || endTime <= now) {
+            errors.push("End Time must be a valid date in the future");
+        }
+
+        return errors;
+    }
+
+    // Handle form submission
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById("requirementForm");
+        if (!form) {
+            console.error("Form with ID 'requirementForm' not found in HTML");
+            return;
+        }
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const saveButton = document.getElementById("saveButton");
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            const formData = new FormData(form);
+            const formDataObj = {};
+            formData.forEach((value, key) => {
+                formDataObj[key] = value;
+            });
+
+            // Đảm bảo các field mặc định
+            formDataObj.experience = formDataObj.experience || "No experience required";
+            formDataObj.description = formDataObj.description || "No description provided";
+
+            // Validate dữ liệu
+            const validationErrors = validateFormData(formDataObj);
+            if (validationErrors.length > 0) {
+                showToast("Validation errors: " + validationErrors.join(", "), "error");
+                saveButton.disabled = false;
+                saveButton.innerHTML = 'Save';
+                return;
+            }
+
+            // Log dữ liệu gửi đi
+            console.log('Sending data:', formDataObj);
+
+            fetch('/api/recruitment/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formDataObj)
+            })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.text().then(text => {
+                        console.log('Response text:', text);
+                        if (!response.ok) {
+                            throw new Error(text || 'Failed to create requirement');
+                        }
+                        return text ? JSON.parse(text) : { success: true, message: "Requirement created successfully" };
+                    });
+                })
+                .then(data => {
+                    console.log('Success:', data);
+                    showToast("Requirement added successfully!", "success");
+                    closeAddRequirementModal();
+                    setTimeout(() => window.location.reload(), 1500);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast("Error: " + error.message, "error");
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = 'Save';
+                });
+        });
+    });
+
+    // Update the existing "Add Requirement +" button
+    document.addEventListener('DOMContentLoaded', function() {
+        const addButton = document.querySelector(".element__btn.yellow-bg");
+        if (addButton) {
+            addButton.removeAttribute("data-bs-toggle");
+            addButton.removeAttribute("data-bs-target");
+            addButton.onclick = openAddRequirementModal;
+        }
+    });
+
     // Make sure DOM is fully loaded before accessing elements
     document.addEventListener('DOMContentLoaded', function() {
         loadPage(0, 5);

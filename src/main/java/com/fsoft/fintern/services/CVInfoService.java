@@ -1,27 +1,23 @@
 package com.fsoft.fintern.services;
 
-import com.fsoft.fintern.models.CVInfo;
+import com.fsoft.fintern.models.*;
 import com.fsoft.fintern.models.EmbedableID.CVInfoId;
-import com.fsoft.fintern.models.File;
-import com.fsoft.fintern.models.User;
-import com.fsoft.fintern.models.Recruitment;
-import com.fsoft.fintern.models.Classroom;
 import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.repositories.CVInfoRepository;
 import com.fsoft.fintern.repositories.FileRepository;
 import com.fsoft.fintern.repositories.UserRepository;
 import com.fsoft.fintern.repositories.RecruitmentRepository;
-//import com.fsoft.fintern.repositories.RecruitmentRequestRepository;
 import com.fsoft.fintern.repositories.ClassroomRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.Timestamp;
+import java.util.*;
 
 @Service
 public class CVInfoService {
@@ -29,19 +25,26 @@ public class CVInfoService {
     private final FileRepository fileRepository;
     private final UserRepository userRepository;
     private final RecruitmentRepository recruitmentRepository;
+
     private final ClassroomRepository classroomRepository;
-
+    private final EmailService mailService;
+    private final FileService fileService;
+    private static final Logger logger = LoggerFactory.getLogger(CVInfoService.class);
     @Autowired
-    public CVInfoService(CVInfoRepository cvInfoRepository, FileRepository fileRepository, 
-                        UserRepository userRepository, RecruitmentRepository recruitmentRepository, 
+    public CVInfoService(CVInfoRepository cvInfoRepository, FileRepository fileRepository,
+                         UserRepository userRepository, RecruitmentRepository recruitmentRepository,
 
-                        ClassroomRepository classroomRepository) {
+                         ClassroomRepository classroomRepository, EmailService mailService, FileService fileService) {
         this.cvInfoRepository = cvInfoRepository;
         this.fileRepository = fileRepository;
         this.userRepository = userRepository;
         this.recruitmentRepository = recruitmentRepository;
+
         this.classroomRepository = classroomRepository;
+        this.mailService = mailService;
+        this.fileService = fileService;
     }
+
 
     @Transactional
     public CVInfo create(CVInfoId id, Double gpa, String skill, String education) {
@@ -179,5 +182,139 @@ public class CVInfoService {
             throw new RuntimeException("Lỗi khi xóa CVInfo: " + e.getMessage());
         }
     }
+    @Transactional
+    public Map<String, Object> deleteCVInfosAboveMinGpaWhenTimeEndsOrSlotsFull(Integer recruitmentId) {
+        Map<String, Object> result = new HashMap<>();
+        List<Integer> deletedFileIds = new ArrayList<>(); // Danh sách fileId của CV bị xóa
+        List<Integer> keptFileIds = new ArrayList<>();   // Danh sách fileId của CV không bị xóa
+
+        try {
+            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+            Recruitment recruitment = recruitmentRepository.findByIdAndIsActiveTrue(recruitmentId);
+            if (recruitment == null) {
+                result.put("success", false);
+                result.put("message", "Không tìm thấy yêu cầu tuyển dụng");
+                result.put("remainingSlot", 0);
+                result.put("totalSlot", 0);
+                result.put("cvCount", 0);
+                return result;
+            }
+
+            int totalSlot = recruitment.getTotalSlot();
+            int cvCount = cvInfoRepository.countByRecruitmentIdAndIsActiveTrue(recruitmentId);
+            int remainingSlot = totalSlot - cvCount;
+
+            result.put("totalSlot", totalSlot);
+            result.put("cvCount", cvCount);
+
+            boolean isTimeEnded = recruitment.getEndTime().before(currentTime);
+            if (!isTimeEnded && remainingSlot > 0) {
+                // Nếu chưa hết thời gian và còn slot, lấy tất cả CV để gửi email "không bị xóa"
+                List<CVInfo> allCVs = cvInfoRepository.findAllByRecruitmentIdAndUserRoleGuest(recruitmentId);
+                for (CVInfo cvInfo : allCVs) {
+                    keptFileIds.add(cvInfo.getId().getFileId());
+                }
+            } else {
+                // Nếu hết thời gian hoặc hết slot, phân loại CV
+                List<CVInfo> allCVs = cvInfoRepository.findAllByRecruitmentIdAndUserRoleGuest(recruitmentId);
+                for (CVInfo cvInfo : allCVs) {
+                    deletedFileIds.add(cvInfo.getId().getFileId());
+                }
+
+                int deletedCount = cvInfoRepository.deleteCVInfosAboveMinGpaWhenTimeEndsOrSlotsFull(recruitmentId, currentTime);
+
+                if (deletedCount > 0) {
+                    // Sau khi xóa, lấy lại danh sách CV còn lại (không bị xóa)
+                    List<CVInfo> remainingCVs = cvInfoRepository.findAllByRecruitmentIdAndUserRoleGuest(recruitmentId);
+                    keptFileIds.clear();
+                    for (CVInfo cvInfo : remainingCVs) {
+                        keptFileIds.add(cvInfo.getId().getFileId());
+                    }
+
+                    cvCount = remainingCVs.size();
+                    remainingSlot = totalSlot - cvCount;
+                    result.put("cvCount", cvCount);
+                    recruitment.setActive(false);
+                    recruitmentRepository.save(recruitment);
+                    logger.info("Set isActive to false for recruitment {}", recruitmentId);
+                } else {
+                    // Nếu không xóa được CV nào, tất cả đều là "không bị xóa"
+                    keptFileIds = new ArrayList<>(deletedFileIds);
+                    deletedFileIds.clear();
+                }
+            }
+
+            // Gửi email cho những người không bị xóa CV
+            for (Integer fileId : keptFileIds) {
+                User user = fileService.findUserByFileId(fileId).getBody();
+                if (user != null && user.getEmail() != null) {
+                    EmailDetails emailDetails = new EmailDetails();
+                    emailDetails.setRecipient(user.getEmail());
+                    emailDetails.setSubject("Thông báo: CV của bạn đã qua được vòng sàng lọc");
+                    emailDetails.setMsgBody("Kính gửi " + user.getFirst_name() + " " + user.getLast_name() + ",\n\n" +
+                            "CV của bạn cho yêu cầu tuyển dụng đã qua được vòng sàn lọc.\n" +
+                            "Chúng tôi sẽ tiếp tục xem xét hồ sơ của bạn,vui lòng kiểm tra email liên tục để biết thời gian phỏng vấn.\n\n" +
+                            "Trân trọng,\nĐội ngũ FPT Intern");
+                    String mailResult = mailService.sendMail(emailDetails);
+                    logger.info("Sent email to {} (CV kept): {}", user.getEmail(), mailResult);
+                } else {
+                    logger.warn("No user or email found for fileId {} (CV kept)", fileId);
+                }
+            }
+
+            result.put("success", deletedFileIds.size() > 0);
+            result.put("remainingSlot", remainingSlot);
+            return result;
+
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "Lỗi khi xóa CVInfo: " + e.getMessage());
+            result.put("remainingSlot", 0);
+            result.put("totalSlot", 0);
+            result.put("cvCount", 0);
+            return result;
+        }
+    }
+
+    private int currentIndex = 0;
+    private List<Recruitment> activeRecruitmentsCache = new ArrayList<>();
+
+    @Scheduled(fixedRate = 30000) // 300000ms = 5 phút
+    public void checkAndDeleteOneRecruitment() {
+        activeRecruitmentsCache = recruitmentRepository.findAllByIsActiveTrue();
+
+        if (activeRecruitmentsCache.isEmpty()) {
+            logger.info("No active recruitments to process.");
+            currentIndex = 0;
+            return;
+        }
+
+        if (currentIndex >= activeRecruitmentsCache.size()) {
+            currentIndex = 0;
+            logger.info("Reached end of active recruitments list. Looping back to start.");
+        }
+
+        Recruitment recruitment = activeRecruitmentsCache.get(currentIndex);
+        Integer recruitmentId = recruitment.getId();
+
+        try {
+            Map<String, Object> result = deleteCVInfosAboveMinGpaWhenTimeEndsOrSlotsFull(recruitmentId);
+
+            if ((boolean) result.get("success")) {
+                logger.info("Processed recruitment {}: Successfully deleted CVs. Total: {}, Remaining: {}, CV Count: {}",
+                        recruitmentId, result.get("totalSlot"), result.get("remainingSlot"), result.get("cvCount"));
+            } else {
+                logger.info("Processed recruitment {}: No CVs deleted. Total: {}, Remaining: {}, CV Count: {}, Message: {}",
+                        recruitmentId, result.get("totalSlot"), result.get("remainingSlot"), result.get("cvCount"), result.get("message"));
+            }
+        } catch (Exception e) {
+            logger.error("Error processing recruitment {}: {}", recruitmentId, e.getMessage());
+        }
+
+        currentIndex++;
+    }
+
 }
+
+
 

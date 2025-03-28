@@ -62,6 +62,14 @@ public class ClassroomService {
             return new ResponseEntity<>(classrooms, HttpStatus.OK);
         }
     }
+    public ResponseEntity<List<Classroom>> findAlls() throws BadRequestException {
+        List<Classroom> classrooms = class_repository.findAll();
+        if (classrooms.isEmpty()) {
+            throw new BadRequestException(ErrorDictionaryConstraints.CLASS_IS_EMPTY.getMessage());
+        } else {
+            return new ResponseEntity<>(classrooms, HttpStatus.OK);
+        }
+    }
 
     public ResponseEntity<Classroom> findById(int id) throws BadRequestException {
         Optional<Classroom> classroom = this.class_repository.findById(id);
