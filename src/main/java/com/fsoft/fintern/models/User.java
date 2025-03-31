@@ -15,6 +15,7 @@ public class User extends BaseModel {
 
     private String first_name;
     private String last_name;
+    private String userName;
     private String email;
     private String phone_number;
 
@@ -63,6 +64,14 @@ public class User extends BaseModel {
 
     public void setLast_name(String last_name) {
         this.last_name = last_name;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getEmail() {

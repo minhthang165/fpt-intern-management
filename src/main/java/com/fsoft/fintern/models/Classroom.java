@@ -30,6 +30,16 @@
                 referencedColumnName = "id")
         private User manager;
 
+        @Column(name = "class_description")
+        private String classDescription;
+
+        public String getClassDescription() {
+            return classDescription;
+        }
+
+        public void setClassDescription(String classDescription) {
+            this.classDescription = classDescription;
+        }
 
         public ClassStatus getStatus() {
             return status;

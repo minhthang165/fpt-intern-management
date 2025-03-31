@@ -79,16 +79,19 @@ body {
 }
 
 .chat-box {
-    border-left: 1px solid #eee;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     height: 100%;
     position: relative;
+    background-color: white;
 }
 
-.blue-dot {
+.green-dot {
     display: inline-block;
     width: 8px;
     height: 8px;
-    background-color: #3498db;
+    background-color: green;
     border-radius: 50%;
     margin-right: 5px;
 }
@@ -155,4 +158,22 @@ body {
     justify-content: center;
     color: #aaa;
     font-size: 18px;
+}
+
+.red-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: red;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.yellow-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: yellow;
+    border-radius: 50%;
+    margin-right: 5px;
 }
