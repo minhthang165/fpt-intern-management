@@ -35,5 +35,5 @@ public interface CVInfoRepository extends JpaRepository<CVInfo, CVInfoId> {
 
     @Query("SELECT COUNT(c) FROM CVInfo c WHERE c.id.recruitmentId = :recruitmentId AND c.isActive = true")
     int countByRecruitmentIdAndIsActiveTrue(@Param("recruitmentId") Integer recruitmentId);
-
+    boolean existsByIdFileIdAndIdRecruitmentId(Integer fileId, Integer recruitmentId);
 }

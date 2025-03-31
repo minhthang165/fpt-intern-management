@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class FileService {
+public class    FileService {
     private final FileRepository fileRepository;
     private final UserRepository userRepository;
     public FileService(FileRepository fileRepository, UserRepository userRepository) {
