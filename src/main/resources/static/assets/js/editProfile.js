@@ -79,6 +79,7 @@ async function updateUser() {
         console.log('User updated successfully:', result);
 
         // Redirect to user profile after update
+        window.location.href="/profile"
     } catch (error) {
         console.error('Error updating user:', error);
     }

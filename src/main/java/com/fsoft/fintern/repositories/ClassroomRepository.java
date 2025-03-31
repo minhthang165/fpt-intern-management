@@ -19,7 +19,7 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Integer> {
     Integer countUsersByClassIdAndIsActiveTrue(@Param("classId") Integer classId);
     @Query(value = "SELECT * FROM [user] WHERE class_id = :classId AND is_active = 1", nativeQuery = true)
     List<User> findByClassIdAndIsActiveTrue(@Param("classId") Integer classId);
-    @Query("SELECT c FROM Classroom c WHERE c.manager.id = :employeeId")
-    List<Classroom> findClassroomsByEmployeeId(Long employeeId);
+    @Query("SELECT c FROM Classroom c WHERE c.manager.id = :mentorId")
+    List<Classroom> findClassroomsByMentorId(@Param("mentorId") Integer mentorId);
 
 }
