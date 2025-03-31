@@ -408,7 +408,7 @@
         }
 
         .confirm-modal-header {
-            background: linear-gradient(90deg, var(--error), #c41017);
+            background: linear-gradient(90deg, #f97316, #3b82f6); /* orange-500 to blue-500 */
             color: white;
             padding: 15px 20px;
             display: flex;
@@ -421,6 +421,7 @@
             font-size: 18px;
             display: flex;
             align-items: center;
+            color: white;
         }
 
         .confirm-modal-header .warning-icon {
@@ -663,6 +664,24 @@
                 padding-top: 100px; /* Smaller spacing on mobile */
             }
         }
+
+        /* Button to delete CV */
+        #deleteButton {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        #deleteButton:hover {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 <body>
@@ -748,6 +767,7 @@
                             </div>
 
                             <button type="submit" id="uploadButton" disabled>Upload Document</button>
+                            <button type="button" id="deleteButton"> x </button>
                             <div id="loading">⏳ Uploading...</div>
                             <div id="message"></div>
                         </form>
@@ -927,7 +947,7 @@
     async function uploadFile(event) {
         event.preventDefault();
         const userId = document.getElementById("user_id").value;
-        const fileInput = document.getElementById("fileInput");
+        var fileInput = document.getElementById("fileInput");
         const messageEl = document.getElementById("message");
         const loadingEl = document.getElementById("loading");
         const fileNameEl = document.getElementById("fileName");
@@ -1150,13 +1170,10 @@
                 });
             } else {
                 cv_list.innerHTML = '<li class="cv-list-item text-gray-500 italic">No CV documents found</li>';
-                console.log("📭 No CVs found");
             }
         } catch (error) {
-            const cv_list = document.getElementById("cv_list");
-            if (cv_list) {
-                cv_list.innerHTML = '<li class="cv-list-item text-red-500">Error loading CV list</li>';
-            }
+            console.error(error);
+            // cv_list.innerHTML = '<li class="cv-list-item text-red-500">Error loading CV list</li>';
         }
     }
 
@@ -1323,6 +1340,25 @@
                 previewContainer.remove();
             }
         };
+    }
+
+    // Handle delete button click
+    deleteButton.addEventListener('click', () => {
+        resetForm();
+    });
+
+    // Reset form
+    function resetForm() {
+        fileInput.value = '';
+        fileName.textContent = '';
+        fileName.style.display = 'none';
+        progressContainer.style.display = 'none';
+        progressBar.style.width = '0%';
+        uploadButton.disabled = true;
+        loading.style.display = 'none';
+        message.textContent = '';
+        message.className = '';
+        deleteButton.style.display = 'none';
     }
 
 

@@ -25,61 +25,315 @@
             </div>
         </div>
 
-        <!-- Classroom List Section -->
-        <div class="classroom__list-area">
-            <div class="classroom__list-wrapper">
-                <div class="classroom__list-header">
-                    <h3>Managed Classrooms</h3>
-                </div>
+<!--        <div class="flex-grow-1 p-4">-->
+<!--            <h5 class="classroom-title">Classroom List</h5>-->
+<!--            <input type="hidden" id="mentorId" th:value="${mentorId}">-->
+<!--            &lt;!&ndash; Table &ndash;&gt;-->
+<!--            <div class="card mt-4">-->
+<!--                <div class="card-body">-->
+<!--                    <div class="d-flex align-items-center mb-3">-->
+<!--                        <input type="text" id="searchInput" class="form-control"-->
+<!--                               style="width: 250px; margin-right: 10px;"-->
+<!--                               placeholder="Search requirments..." onkeyup="filterTable()">-->
+<!--                        <button class="btn btn-outline-primary btn-sm" onclick="sortTable(0)">Sort by Name</button>-->
+<!--                        <button class="btn btn-outline-primary btn-sm mx-2" onclick="sortTable(1)">Sort by Number of Interns</button>-->
+<!--                        <button class="btn btn-outline-primary btn-sm" onclick="sortTable(3)">Sort By Status</button>-->
+<!--                    </div>-->
+<!--                    <table id="classroomTable">-->
+<!--                        <thead>-->
+<!--                        <tr>-->
+<!--                            <th>Class Name</th>-->
+<!--                            <th>Number of Interns</th>-->
+<!--                            <th>Status</th>-->
+<!--                            <th>View</th>-->
+<!--                        </tr>-->
 
-                <!-- Alert for no classrooms -->
-                <div class="alert alert-info" th:if="${#lists.isEmpty(classrooms)}">
-                    <p>You are not currently managing any classrooms.</p>
-                </div>
+<!--                        </thead>-->
+<!--                        <tbody id="table-content"></tbody>-->
 
-                <!-- Classroom cards -->
-                <div class="classroom__list-content" th:unless="${#lists.isEmpty(classrooms)}">
-                    <div class="row">
-                        <div class="col-xxl-4 col-xl-4 col-lg-6 col-md-6" th:each="classroom : ${classrooms}">
-                            <div class="classroom__card">
-                                <div class="classroom__card-header">
-                                    <h4 th:text="${classroom.name}">Classroom Name</h4>
-                                    <span class="badge" th:classappend="${classroom.status == 'Active'} ? 'badge-success' : 'badge-warning'"
-                                          th:text="${classroom.status}">Status</span>
-                                </div>
-                                <div class="classroom__card-body">
-                                    <p th:text="${classroom.description}">Description goes here</p>
-                                    <div class="classroom__details">
-                                        <div class="detail-item">
-                                            <span class="label">Location:</span>
-                                            <span class="value" th:text="${classroom.location}">Room 101</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="label">Capacity:</span>
-                                            <span class="value" th:text="${classroom.capacity}">30</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="label">Schedule:</span>
-                                            <span class="value" th:text="${classroom.schedule}">MWF 9:00-10:30</span>
-                                        </div>
+<!--                    </table>-->
+<!--                    &lt;!&ndash;                        pagination&ndash;&gt;-->
+<!--                    <div class="table-footer">-->
+<!--                        <div class="records-selector">-->
+<!--                            <span>Hiển thị</span>-->
+<!--                            <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)">-->
+<!--                                <option value="5" selected>5</option>-->
+<!--                                <option value="10">10</option>-->
+<!--                                <option value="20">20</option>-->
+<!--                                <option value="50">50</option>-->
+<!--                            </select>-->
+<!--                            <span>bản ghi</span>-->
+<!--                        </div>-->
+<!--                        <div class="pagination-container">-->
+<!--                            <ul id="pagination-list" class="pagination-list"></ul>-->
+<!--                        </div>-->
+
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+        <div class="container-fluid py-3">
+            <div class="row mb-3">
+                <div class="col-4">
+                    <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+                        <input type="text" class="form-control border-start-0 search-bar" placeholder="Tìm kiếm">
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex align-items-center">
+                        <span class="me-2">Lọc ngày</span>
+                        <div class="date-picker">
+                            31 / 03 / 2025
+                            <i class="bi bi-calendar ms-2"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 text-end">
+                    <i class="bi bi-list-ul fs-5 me-3"></i>
+                    <button class="btn btn-warning rounded-2">
+                        <i class="bi bi-grid-3x3-gap-fill text-white"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="filters-container">
+                        <button class="filter-btn">Quên mật khẩu</button>
+                        <button class="filter-btn">Xác nhận trạng thái nộp bài</button>
+                        <button class="filter-btn">Lỗi phần mềm</button>
+                        <button class="filter-btn">Re-Assign</button>
+                        <button class="filter-btn">Lỗi mạng</button>
+                        <button class="filter-btn">CCCD không hợp lệ</button>
+                        <button class="filter-btn">Gian lận</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="main-content pe-2" id="classroomList">
+                        <!-- First card -->
+                        <div class="card sidebar-card" data-id="1" data-class="GAMMA 304" data-user="anhvq16" data-time="23:10:47" data-date="30/03/2025">
+                            <div class="card-body p-0">
+                                <div class="mb-2">23:10:47</div>
+                                <div class="fw-bold mb-2">GAMMA 304</div>
+                                <div class="error-tag mb-2">Lỗi phần mềm</div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">anhvq16</span>
+                                    <div>
+                                        <span>Mới</span>
+                                        <span class="blue-dot"></span>
                                     </div>
                                 </div>
-                                <div class="classroom__card-footer">
-                                    <a th:href="@{/employee/classrooms/{id}(id=${classroom.id})}" class="btn btn-primary">View Details</a>
-                                    <a th:href="@{/employee/classrooms/{id}/edit(id=${classroom.id})}" class="btn btn-secondary">Edit</a>
+                            </div>
+                        </div>
+
+                        <!-- Second card -->
+                        <div class="card sidebar-card" data-id="2" data-class="GAMMA 304" data-user="duongnlq" data-time="23:03:06" data-date="30/03/2025">
+                            <div class="card-body p-0">
+                                <div class="mb-2">23:03:06</div>
+                                <div class="fw-bold mb-2">GAMMA 304</div>
+                                <div class="error-tag mb-2">Lỗi ph��n mềm</div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">duongnlq</span>
+                                    <div>
+                                        <span>Mới</span>
+                                        <span class="blue-dot"></span>
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Third card -->
+                        <div class="card sidebar-card" data-id="3" data-class="GAMMA 314" data-user="system" data-time="22:51:02" data-date="30/03/2025">
+                            <div class="card-body p-0">
+                                <div class="mb-2">22:51:02</div>
+                                <div class="fw-bold mb-2">GAMMA 314</div>
+                                <div class="error-tag mb-2">Lỗi phần mềm</div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted"></span>
+                                    <div>
+                                        <span>Mới</span>
+                                        <span class="blue-dot"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fourth card -->
+                        <div class="card sidebar-card" data-id="4" data-class="" data-user="" data-time="22:50:24" data-date="30/03/2025">
+                            <div class="card-body p-0">
+                                <div class="mb-2">22:50:24</div>
+                                <div class="fw-bold"></div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <div class="col-md-6" id="detailsContainer">
+                    <div class="detail-placeholder">
+                        <p>Chọn một lớp học để xem chi tiết</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3" id="chatContainer">
+                    <!-- Chat will be loaded here when a classroom is selected -->
+                </div>
             </div>
         </div>
+
+        <!-- Templates for dynamic content -->
+        <template id="detailsTemplate">
+            <div class="content-card">
+                <div class="gamma-header mb-3">{className}</div>
+                <div class="text-muted mb-4">{date} - {time}</div>
+
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="mb-2">
+                            <strong>Môn thi:</strong> DPL302m
+                        </div>
+                        <div>
+                            <strong>Giờ thi:</strong> 09:10 - 10:10
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="mb-2">
+                            <strong>Giám thị coi thi:</strong> thanglvb.dev
+                        </div>
+                        <div>
+                            <strong>Giám thị hành lang:</strong> minhthangghqn
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <strong>Sinh viên:</strong>
+                    <ul class="student-list mt-2">
+                        <li>• DE180379 - Nguyễn Bảo Khang</li>
+                        <li>• DE180620 - Hồ Ấn Lộc</li>
+                        <li>• DE180891 - Nguyễn Đăng Khoa</li>
+                        <li>• DE180498 - Lê Minh Dũng</li>
+                        <li>• DE180558 - Trần Đình Nguyên</li>
+                        <li>• DE180108 - Chu Văn Nhân</li>
+                        <li>• DE170256 - Hoàng Minh Đức</li>
+                    </ul>
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input" type="checkbox" id="requestSwitch">
+                    <label class="form-check-label" for="requestSwitch">Yêu cầu chuyển phòng</label>
+                </div>
+
+                <div class="mb-4">
+                    <div class="fw-bold mb-2">Mô tả sự cố:</div>
+                    <div>Bị lỗi mạng</div>
+                </div>
+
+                <div>
+                    <div class="fw-bold mb-2">Ảnh sự cố:</div>
+                </div>
+            </div>
+        </template>
+
+        <template id="chatTemplate">
+            <div class="chat-box h-100">
+                <div class="chat-container">
+                    <div class="mb-3 fw-bold">Trao đổi với giám thị</div>
+
+                    <div class="chat-message">
+                        <div>??</div>
+                        <div class="text-muted small">23:18, 30/03/2025</div>
+                    </div>
+
+                    <div class="chat-message ms-auto" style="background-color: #fff8e1; max-width: 80%;">
+                        <div>??</div>
+                        <div class="text-muted small">23:18, 30/03/2025</div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-bold">{username}</div>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="text-warning">Bàn giao cho tôi</div>
+                    </div>
+                </div>
+
+                <div class="chat-input">
+                    <div class="input-group">
+                        <button class="btn btn-outline-secondary">
+                            <i class="bi bi-image"></i>
+                        </button>
+                        <input type="text" class="form-control" placeholder="Tin nhắn">
+                        <button class="btn btn-warning">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
-
 <!-- Add CSS for classroom cards -->
 <style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background-color: #f4f4f4;
+    }
+    .classroom-title {
+        font-size: 32px;
+        font-weight: bold;
+    }
+    .search__bar input {
+        margin-right: auto;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 500px;
+    }
+    .breadcrum__button{
+        display: flex;
+        padding-left: 120px;
+    }
+    .search__bar input {
+        border: 1px solid #ccc;
+        border-radius: 15px;
+        width: 400px;
+        height: fit-content;
+    }
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .pagination button {
+        padding: 6px 8px;
+        margin: 0 3px;
+        border: none;
+        cursor: pointer;
+        background-color: #ccc;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+    .pagination .active {
+        background-color: orange;
+        color: white;
+    }
     .classroom__list-area {
         padding: 20px;
     }
@@ -153,3 +407,38 @@
 </style>
 </body>
 </html>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const mentorId = document.getElementById("mentorId")?.value || null;
+        mentorId ? fetchClassrooms(mentorId) : console.error("Mentor ID is missing!");
+    });
+
+    async function fetchClassrooms(mentorId) {
+        try {
+            const response = await fetch(`/api/class/${mentorId}/`);
+            if (!response.ok) throw new Error(`Failed to fetch classrooms: ${response.statusText}`);
+
+            const classrooms = await response.json();
+            renderTable(classrooms);
+        } catch (error) {
+            console.error("Error fetching classrooms:", error);
+            document.getElementById("table-content").innerHTML =
+                `<tr><td colspan="4" style="text-align: center; color: red;">Failed to load data.</td></tr>`;
+        }
+    }
+
+    function renderTable(classrooms) {
+        let tableContent = document.getElementById("table-content");
+        tableContent.innerHTML = classrooms.length
+            ? classrooms.map(c => `
+            <tr data-class-id="${c.id}">
+                <td>${c.className}</td>
+                <td>${c.numberOfIntern}</td>
+                <td>${c.status}</td>
+                <td></td>
+            </tr>
+        `).join('')
+            : `<tr><td colspan="4" style="text-align: center;">No classrooms found.</td></tr>`;
+    }
+</script>
+

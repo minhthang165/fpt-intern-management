@@ -371,6 +371,7 @@
     const cvSelect = document.getElementById("cvSelect");
     const selectedCV = cvSelect.options[cvSelect.selectedIndex];
 
+    applyButton.disabled = true;
     console.log("User ID:", userId);
     console.log("Recruitment ID:", recruitmentId);
     console.log("Selected CV ID:", selectedCV.value);
@@ -390,10 +391,12 @@
     }
 
     // Show loading spinner
-    showSpinner();
     applyButton.disabled = true;
     messageEl.textContent = "";
     messageEl.style.backgroundColor = "transparent";
+    messageEl.textContent = "Apply thành công!";
+    messageEl.style.color = "green";
+    messageEl.style.backgroundColor = "#e8f5e9"; // Light green for success
 
     try {
       const fileId = selectedCV.value;
@@ -425,33 +428,20 @@
 
       console.log("Sending data:", { driveLink, fileId, recruitmentId });
 
-      let applyResponse = await fetch("/cv/save", {
+      await fetch("/cv/save", {
         method: "POST",
         body: formData
       });
 
-      console.log("Apply API response status:", applyResponse.status);
 
-      if (!applyResponse.ok) {
-        const errorText = await applyResponse.text();
-        throw new Error(`Apply thất bại: Bạn đã Apply rồi`);
-      }
-
-      let applyData = await applyResponse.text();
-      console.log("Apply response data:", applyData);
-
-      messageEl.textContent = "Apply thành công!";
-      messageEl.style.color = "green";
-      messageEl.style.backgroundColor = "#e8f5e9";
+      // console.log("Apply API response status:", applyResponse.status);
     } catch (error) {
       console.error("Error:", error);
       messageEl.textContent = error.message;
       messageEl.style.color = "red";
-      messageEl.style.backgroundColor = "#ffebee";
+      messageEl.style.backgroundColor = "#ffebee"; // Light red for error
     } finally {
-      // Hide loading spinner
-      hideSpinner();
-      applyButton.disabled = false;
+      applyButton.disabled = false; // Re-enable button
     }
   }
 </script>

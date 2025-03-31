@@ -65,6 +65,12 @@ public class ClassroomRestController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/{mentorId}/")
+    public ResponseEntity<List<Classroom>> getClassByMentor(@PathVariable Integer mentorId) {
+        List<Classroom> classrooms = classroomService.getClassroomsByMentorId(mentorId);
+        return ResponseEntity.ok(classrooms);
+    }
+
     @PatchMapping("/setIsActiveTrue/{id}")
     @Operation(description = "Update IsActive True")
     public ResponseEntity<Classroom> setIsActiveTrue(@PathVariable int id) throws BadRequestException {

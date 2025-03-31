@@ -26,7 +26,7 @@
         private ClassStatus status;
 
         @OneToOne
-        @JoinColumn(name = "manager_id",
+        @JoinColumn(name = "mentor_id",
                 referencedColumnName = "id")
         private User manager;
 

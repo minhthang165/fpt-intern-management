@@ -133,6 +133,10 @@ public class ClassroomService {
         return class_repository.findByClassIdAndIsActiveTrue(classId);
     }
 
+    public List<Classroom> getClassroomsByMentorId(Integer mentorId) {
+        return class_repository.findClassroomsByMentorId(mentorId);
+    }
+
     public ResponseEntity<Classroom> setIsActiveTrue(int id) throws BadRequestException {
         Classroom existedClassroom = this.class_repository.findById(id).orElse(null);
         if (existedClassroom == null) {
