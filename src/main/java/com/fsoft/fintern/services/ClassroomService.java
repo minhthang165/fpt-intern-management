@@ -48,6 +48,7 @@ public class ClassroomService {
         newClass.setClassName(classDTO.getClassName());
         newClass.setNumberOfIntern(classDTO.getNumberOfIntern());
         newClass.setStatus(classDTO.getStatus());
+        newClass.setClassDescription(classDTO.getClassDescription());
         newClass.setManager(manager);
 
         Classroom savedClass = class_repository.save(newClass);

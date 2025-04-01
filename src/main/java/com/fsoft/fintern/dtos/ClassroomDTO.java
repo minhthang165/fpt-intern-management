@@ -7,7 +7,11 @@ public class ClassroomDTO {
     private String className;
     private Integer numberOfIntern;
     private Integer managerId;
+    private String classDescription;
     private ClassStatus status;
+
+    public String getClassDescription() {return classDescription;}
+    public void setClassDescription(String classDescription) {this.classDescription = classDescription;}
 
     public ClassStatus getStatus() {
         return status;
