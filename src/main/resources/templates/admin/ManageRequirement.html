@@ -1597,6 +1597,11 @@
                     .then(response => {
                         if (!response.ok) {
                             return response.json().then(data => {
+                                if(data.success === false && data.message === "User has been approved")
+                                {
+                                    showToast(data.message, 'warning');
+                                    throw new Error(data.message);
+                                }
                                 throw new Error(data.error || 'Failed to approve candidate');
                             });
                         }
@@ -1632,7 +1637,8 @@
             })
             .catch(error => {
                 console.error('Error in approval process:', error);
-                showToast('Error: ' + error.message, 'error');
+                if(error.message !== "User has been approved")
+                    showToast('Error: ' + error.message, 'error');
             });
     }
 
@@ -1658,6 +1664,10 @@
             toastIcon.className = 'fas fa-exclamation-circle toast-icon';
             toast.style.borderLeftColor = '#dc3545';
             toastIcon.style.color = '#dc3545';
+        } else if(type === 'warning'){
+            toastIcon.className = 'fas fa-exclamation-triangle toast-icon';
+            toast.style.borderLeftColor = '#fd7e14';
+            toastIcon.style.color = '#fd7e14';
         }
 
         // Show the toast
