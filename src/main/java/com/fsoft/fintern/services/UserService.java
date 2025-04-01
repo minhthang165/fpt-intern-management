@@ -63,7 +63,8 @@ public class UserService {
         }
 
         User user = new User();
-        user.setEmail(createUserDTO.getEmail());;
+        user.setEmail(createUserDTO.getEmail());
+        user.setClassroom(existedClass);
         user.setFirst_name(createUserDTO.getFirst_name());
         user.setLast_name(createUserDTO.getLast_name());
         user.setPhone_number(createUserDTO.getPhone_number());

@@ -177,7 +177,7 @@
     <div class="app__slide-wrapper" th:fragment="content">
         <div class="breadcrumb__area">
             <div class="breadcrumb__wrapper mb-35" style="padding: 0px;">
-                <div class="breadcrumb__main">
+                <div class="breadcrumb__main" style="padding: 15px 0">
                     <div class="breadcrumb__inner">
                         <div class="breadcrumb__icon">
                             <i class="flaticon-home"></i>
@@ -189,24 +189,6 @@
                                     <li class="active"><span>Manage Intern</span></li>
                                 </ul>
                             </nav>
-                        </div>
-                    </div>
-                    <div class="search_add d-flex justify-content-between align-items-center">
-                        <div class="new_class">
-                            <div class="breadcrum__button">
-                                <button class="element__btn  border-red" data-bs-toggle="modal"
-                                        data-bs-target="#importModal">
-                                    Import Excel
-                                </button>
-                            </div>
-                        </div>
-                        <div class="new_class">
-                            <div class="breadcrum__button">
-                                <button class="element__btn  yellow-bg" data-bs-toggle="modal"
-                                        data-bs-target="#addUserModal">
-                                    Add Intern +
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -234,6 +216,7 @@
                         <tr>
                             <th>Full Name</th>
                             <th>Email</th>
+                            <th>Class Name</th>
                             <th>Phone number</th>
                             <th>Gender</th>
                             <th>Role</th>
@@ -241,25 +224,6 @@
                         </tr>
                         </thead>
                         <tbody id="table-body">
-<!--                        <tr th:each="user : ${userList}" th:if="${user.role.name()== 'INTERN'}">-->
-<!--                            <td th:text="${user.first_name + ' ' + user.last_name}"></td>-->
-<!--                            <td th:text="${user.email}"></td>-->
-<!--                            <td th:text="${user.phone_number}"></td>-->
-<!--                            <td th:text="${user.gender}"></td>-->
-<!--                            <td th:text="${user.role}"></td>-->
-<!--                            <td th:classappend="${user.isActive()} ? 'active' : 'inactive'">-->
-<!--                                <a href="#" th:data-id="${user.id}" class="toggle-class-status open-modal">-->
-<!--                                    <i th:data-id="${user.id}" th:data-user-email="${user.email}"-->
-<!--                                       th:class="${user.isActive()} ? 'flaticon-padlock active' : 'flaticon-padlock inactive'"-->
-<!--                                       onclick="showModal()">-->
-<!--                                    </i>-->
-<!--                                </a>-->
-<!--                                <a href="#" class="edit-user-modal" th:data-id="${user.id}"-->
-<!--                                   onclick="openEditUserModal(this, event)">-->
-<!--                                    <i class="flaticon-edit edit-user-modal" style="cursor: pointer"></i>-->
-<!--                                </a>-->
-<!--                            </td>-->
-<!--                        </tr>-->
                         </tbody>
                     </table>
                     <!--                        pagination-->
@@ -318,7 +282,7 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Edit Employee</h5>
+                        <h5 class="modal-title">Edit Intern information</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -355,81 +319,8 @@
             </div>
         </div>
 
-        <!-- Modal Add User -->
-        <div id="addUserModal" class="modal fade" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addUserModalLabel">Add Intern</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="addUserForm">
-                            <div class="mb-3">
-                                <label for="addUserName" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="addUserName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="addUserEmail" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="addUserEmail" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="addUserEmail" class="form-label">PhoneNumber</label>
-                                <input type="email" class="form-control" id="addUserPhoneNumber" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="addUserGender" class="form-label">Gender</label>
-                                <select class="form-control" id="addUserGender">
-                                    <option value="MALE">MALE</option>
-                                    <option value="FEMALE">FEMALE</option>
-                                </select>
-                            </div>
-<!--                            <div class="mb-3">-->
-<!--                                <label for="addUserRole" class="form-label">Role</label>-->
-<!--                                <select class="form-control" id="addUserRole">-->
-<!--                                    <option value="ADMIN">Admin</option>-->
-<!--                                    <option value="EMPLOYEE">Employee</option>-->
-<!--                                    <option value="INTERN">Intern</option>-->
-<!--                                    <option value="GUEST">Guest</option>-->
-<!--                                </select>-->
-<!--                            </div>-->
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-warning" onclick="addUser()">Add User</button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!--  Modal Import Data -->
-        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="importModalLabel">Import Data From Excel</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Make sure the data matches the format of the sample template</p>
-                        <div class="upload-box text-center border border-dashed p-4" id="dropZone"
-                             style="border-radius: 10px;">
-                            <input type="file" id="fileInput" hidden>
-                            <label for="fileInput" class="d-block cursor-pointer">
-                                <img src="assets/img/icon/upload-icon.png" alt="Upload" width="50">
-                                <p class="mt-2">Drag and drop or select<br>to upload data files</p>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-link" id="downloadTemplate">Download Template</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-warning" id="uploadFile">Confirm</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Toast Notification -->
         <div class="toast-container position-fixed top-0 end-0 p-3">
@@ -639,6 +530,7 @@
                 document.getElementById("editUserId").value = user.id;
                 document.getElementById("editFullName").value = user.first_name + " " + user.last_name;
                 document.getElementById("editEmail").value = user.email;
+                document.getElementById("editPhoneNumber").value = user.phone_number;
                 document.getElementById("editGender").value = user.gender;
 
                 // Hiển thị modal
@@ -652,8 +544,8 @@
         let emailInput = document.getElementById("editEmail");
         let phoneNumberInput = document.getElementById("editPhoneNumber");
         let genderInput = document.getElementById("editGender");
-        let userId = document.getElementById("editUserId").value;
 
+        let userId = document.getElementById("editUserId").value;
         let fullName = fullNameInput.value.trim();
         let email = emailInput.value.trim();
         let phoneNumber = phoneNumberInput.value.trim();
@@ -698,64 +590,14 @@
             .then(response => response.json())
             .then(user => {
                 $('#editUserModal').modal('hide');
-                location.reload();
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
             })
             .catch(error => console.error("Error updating user:", error));
     }
 
-    function addUser() {
-        let fullNameInput = document.getElementById("addUserName");
-        let emailInput = document.getElementById("addUserEmail");
-        let phoneNumberInput = document.getElementById("addUserPhoneNumber");
-        let genderInput = document.getElementById("addUserGender");
 
-        let fullName = fullNameInput.value.trim();
-        let email = emailInput.value.trim();
-        let phoneNumber = phoneNumberInput.value.trim();
-
-        let isValid = true;
-
-        document.querySelectorAll(".error-message").forEach(e => e.remove());
-        [fullNameInput, emailInput, phoneNumberInput].forEach(input => input.classList.remove("is-invalid"));
-
-        if (fullName === "") {
-            showError(fullNameInput, "This field is required");
-            isValid = false;
-        }
-        if (email === "") {
-            showError(emailInput, "This field is required");
-            isValid = false;
-        }
-        if (phoneNumber === "") {
-            showError(phoneNumberInput, "This field is required");
-            isValid = false;
-        }
-
-        if (!isValid) return;
-
-        let newUser = {
-            first_name: fullName.split(" ")[0],
-            last_name: fullName.split(" ").slice(1).join(" "),
-            email: email,
-            phone_number: phoneNumber,
-            gender: genderInput.value,
-            role: "INTERN"
-        };
-
-        fetch('api/user/create', {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(newUser)
-        })
-            .then(response => response.json())
-            .then(user => {
-                $('#addUserModal').modal('hide');
-                location.reload();
-            })
-            .catch(error => console.error("Error adding user:", error));
-    }
 
     function showError(input, message) {
         let error = document.createElement("div");
