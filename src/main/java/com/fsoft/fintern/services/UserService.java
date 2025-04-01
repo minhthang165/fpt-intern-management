@@ -1,5 +1,7 @@
 package com.fsoft.fintern.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.dtos.CreateUserDTO;
 import com.fsoft.fintern.dtos.UpdateUserDTO;
@@ -14,23 +16,31 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserService {
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private final UserRepository userRepository;
     private final ClassroomRepository classRepository;
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
+    private final String BAN_PREFIX = "banned_user:";
 
     public UserService(final UserRepository userRepository, final ClassroomRepository classRepository) {
         this.userRepository = userRepository;
@@ -158,12 +168,43 @@ public class UserService {
         return new ResponseEntity<>(existedUser, HttpStatus.OK);
     }
 
-    private User findUserByEmail(String email) {
-        Optional<User> user = this.userRepository.findByEmail(email);
-        if (user.isPresent()) {
-            return user.get();
-        } else {
-            return null;
+    //Search for users that their email contain input string
+    public ResponseEntity<List<User>> searchUsersByEmail(String email) {
+        List<User> users = null;
+        users = this.userRepository.findByEmailContainingIgnoreCase(email).orElse(null);
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+
+    public String banUser(int userId, Long durationInSeconds, String reason) throws JsonProcessingException {
+        Map<String, Object> banInfo = new HashMap<>();
+        banInfo.put("duration", durationInSeconds);
+        banInfo.put("reason", reason);
+
+        String key = BAN_PREFIX + userId;
+        redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(banInfo), durationInSeconds, TimeUnit.SECONDS);
+
+        return "User " + userId + " has been banned for " + durationInSeconds + " days.";
+    }
+
+    public Map<String, Object> getBanStatus(int userId) throws JsonProcessingException {
+        String key = BAN_PREFIX + userId;
+        String banInfoJson = redisTemplate.opsForValue().get(key);
+
+        if (banInfoJson == null) {
+            return Map.of("userId", userId, "banned", false);
         }
+
+        Map<String, Object> banInfo = objectMapper.readValue(banInfoJson, Map.class);
+        Long remainingTime = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+
+        banInfo.put("userId", userId);
+        banInfo.put("remainingDuration", remainingTime);
+        return banInfo;
+    }
+
+    public String unbanUser(int userId) {
+        String key = BAN_PREFIX + userId;
+        redisTemplate.delete(key);
+        return "User " + userId + " has been unbanned.";
     }
 }
