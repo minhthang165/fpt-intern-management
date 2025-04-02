@@ -22,6 +22,8 @@ var listUserDelete = [];
 var numberMember = 0;
 var selectedRecipientId = null;
 var conversation_list = [];
+let originalConversationList = []; // Lưu trữ danh sách conversation gốc
+var isCurrentUserAdmin = false; // Thêm biến global mới
 
 document.addEventListener("DOMContentLoaded", async function () {
     await loadConversation(user_id);
@@ -39,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             groupModal.classList.add('hidden');
         }
     });
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         const isClickInside = chatDropdown.contains(event.target) || event.target.closest('.bg-blue-500');
         if (!isClickInside) {
             chatDropdown.classList.add('hidden');
@@ -66,6 +68,9 @@ async function loadMember(conversationId) {
             throw new Error("No user found for conversation " + conversationId);
         }
         conversationMember = await response.json();
+        // Kiểm tra xem user hiện tại có phải admin không
+        const currentUserInGroup = conversationMember.find(member => member.id == user_id);
+        isCurrentUserAdmin = currentUserInGroup ? currentUserInGroup.admin : false;
     } catch (error) {
         console.error("Error fetching conversation's member " + error);
     }
@@ -78,6 +83,7 @@ async function loadConversation(user_id) {
             throw new Error("Failed to fetch conversations");
         }
         conversation_list = await response.json();
+        originalConversationList = [...conversation_list]; // Lưu bản sao
         renderHtmlConversation(conversation_list);
     } catch (error) {
         console.log("Error fetching conversation", error);
@@ -86,13 +92,23 @@ async function loadConversation(user_id) {
 
 function renderHtmlConversation(conversation_list) {
     let chatListContainer = document.querySelector(".space-y-4");
-    chatListContainer.innerHTML = ""; // Clear existing content
+    chatListContainer.innerHTML = "";
 
     if (conversation_list.length > 0) {
         conversation_list.forEach(conversation => {
             let conversationHTML = `    
-                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" data-id="${conversation.id}" data-conversationName="${conversation.conversationName}" data-conversation-type="${conversation.type}" data-conversationAvatar="${conversation.conversationAvatar}" onclick="setConversation(this)">
-                    <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversation.conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" width="40"/>
+                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" 
+                     data-id="${conversation.id}" 
+                     data-conversationName="${conversation.conversationName.replace(/<[^>]*>/g, '')}" 
+                     data-conversation-type="${conversation.type}" 
+                     data-conversationAvatar="${conversation.conversationAvatar}" 
+                     onclick="setConversation(this)">
+                    <img alt="User avatar" 
+                         id="conversation-avatar" 
+                         class="rounded-full" 
+                         height="40" 
+                         src="${conversation.conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" 
+                         width="40"/>
                     <div>
                         <div class="font-bold">${conversation.conversationName}</div>
                         <div class="text-gray-500 text-sm">${conversation.last_message || "No messages yet"}</div>
@@ -108,6 +124,8 @@ function renderHtmlConversation(conversation_list) {
 
 function setConversation(element) {
     document.getElementById("chat-container").innerHTML = ''; // Clear UI
+    document.getElementById('conversation-info-box').classList.add('hidden');
+    document.getElementById('chat-container').classList.remove('w-[70%]'); // Reset to full width
     conversationId = null;
     conversationName = '';
     conversationAvatar = '';
@@ -122,10 +140,8 @@ function setConversation(element) {
     if (existingConversation) {
         conversationId = existingConversation.id;
     }
-    console.log("Thanh cong");
     // New chat section
     var rightSide = `
-
                         <!-- Conversation Header -->
                         <div class="flex items-center justify-between p-2 border-b">
                             <div class="flex items-center space-x-2">
@@ -139,7 +155,7 @@ function setConversation(element) {
                                     </div>
                                 </div>
                             </div>
-                            <div class="p-2 rounded-full hover:bg-gray-100 cursor-pointer btn_conversation_information" onclick="toggleConversationInfo()">
+                            <div class="p-2 rounded-full hover:bg-gray-100 cursor-pointer btn_conversation_information" onclick="toggleConversationInfo(converstionType)">
                                 <i class="fas fa-ellipsis-v text-gray-600"></i>
                             </div>
                         </div>
@@ -198,7 +214,7 @@ function displayFiles() {
             fileList.push(file);
         }
 
-        renderFile("image");
+        renderFile(typeFile);
 
         this.value = null;
     });
@@ -409,6 +425,7 @@ async function sendText() {
         console.log("Empty message. Not sending.");
         return; // Do not send empty messages
     }
+
     try {
         var message = buildMessageToDTO(messageContent, messageType);
         let response = await fetch("api/message/post", {
@@ -420,11 +437,15 @@ async function sendText() {
         });
 
         let responseData = await response.json();
+        console.log("Response Data:", responseData);  // Log full response data
+
+        // Send the entire response data object to the WebSocket
         stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(responseData));
     } catch (error) {
         console.log(error);
     }
 }
+
 
 //--------------------------------- CONVERSATION MENU (ADD, DELETE, VIEW, MEMBER) --------------------------------------------
 
@@ -518,20 +539,72 @@ function toggleModal(option) {
             }
             break;
         case 'showMembers':
-            let membersContainer = document.getElementById("chat-members");
-            membersContainer.innerHTML = "";
+            let memberModal = document.getElementById("member-modal");
+            if (!memberModal) {
+                memberModal = document.createElement("div");
+                memberModal.id = "member-modal";
+                memberModal.className = "fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50";
+                memberModal.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-lg w-96 max-h-[80vh] overflow-hidden">
+                        <div class="flex justify-between items-center border-b p-4">
+                            <h3 class="text-lg font-semibold">Group Members (${conversationMember.length})</h3>
+                            <button class="text-gray-500 hover:text-gray-700" onclick="document.getElementById('member-modal').remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Add member button - chỉ hiện khi là admin -->
+                        ${isCurrentUserAdmin ? `
+                        <div class="p-4 border-b">
+                            <button class="w-full flex items-center justify-center space-x-2 p-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600" 
+                                    onclick="toggleModal('addMembers')">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Add Members</span>
+                            </button>
+                        </div>
+                        ` : ''}
+                        <div id="members-list" class="p-4 overflow-y-auto max-h-[60vh]">
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(memberModal);
+            }
+
+            let membersList = document.getElementById("members-list");
+            membersList.innerHTML = "";
             conversationMember.forEach(member => {
                 let memberItem = `
-                        <div class="flex align-middle w-auto items-center p-2" data-track-user-id="${member.id}" data-conversationName="${member.first_name} ${member.last_name}" data-conversationAvatar="${member.avatar_path}" data-conversation-type="OneToOne" onclick="if (${member.id} != user_id) setConversation(this);">
-                            <img class="w-14 rounded-full" src=${member.avatar_path} alt="">
-                            <span class="ml-2"> if (${member.id} != user_id) ${member.first_name} ${member.last_name}</span>
+                    <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg group">
+                        <div class="flex items-center flex-grow cursor-pointer"
+                             data-track-user-id="${member.id}" 
+                             data-conversationName="${member.first_name} ${member.last_name}" 
+                             data-conversationAvatar="${member.avatar_path}" 
+                             data-conversation-type="OneToOne" 
+                             ${member.id != user_id ? 'onclick="setConversation(this); document.getElementById(\'member-modal\').remove();"' : ''}>
+                            <img class="w-10 h-10 rounded-full" src="${member.avatar_path}" alt="">
+                            <div class="ml-3 flex-grow">
+                                <div class="font-medium">${member.first_name} ${member.last_name}</div>
+                                ${member.id == user_id ? '<div class="text-xs text-gray-500">You</div>' : ''}
+                                ${member.admin ? '<div class="text-xs text-blue-500">Admin</div>' : ''}
+                            </div>
                         </div>
-                        `
-                ;
-                membersContainer.innerHTML += memberItem;
+                        ${isCurrentUserAdmin && member.id != user_id ? `
+                            <button class="hidden group-hover:block text-red-500 hover:text-red-700 p-2" 
+                                    onclick="removeMember(${member.id}, '${member.first_name} ${member.last_name}')">
+                                <i class="fas fa-user-minus"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                membersList.innerHTML += memberItem;
             });
 
-            membersContainer.classList.toggle("hidden");
+            // Add click event to close modal when clicking outside
+            memberModal.addEventListener('click', (event) => {
+                if (event.target === memberModal) {
+                    memberModal.remove();
+                }
+            });
             break;
         case 'showMediaFiles':
             let mediaContainer = document.getElementById("media-files");
@@ -555,22 +628,78 @@ function toggleModal(option) {
         case 'startOneToOneChat':
             if (chatDropdown.classList.contains('hidden')) {
                 chatDropdown.classList.remove('hidden');
-                let userSearchInput = document.getElementById('userSearchInput');
-                userSearchInput.focus();
             } else {
                 chatDropdown.classList.add('hidden');
             }
             break;
         case 'startGroupChat' :
             groupModal.classList.remove('hidden');
-            groupNameInput.focus();
             listUserAdd = [];
             //updateSelectedUsers();
+            break;
+        case 'addMembers':
+            let addMembersModal = document.getElementById("add-members-modal");
+            if (!addMembersModal) {
+                addMembersModal = document.createElement("div");
+                addMembersModal.id = "add-members-modal";
+                addMembersModal.className = "fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50";
+                addMembersModal.innerHTML = `
+                    <div class="bg-white rounded-lg shadow-lg w-96 max-h-[80vh] overflow-hidden">
+                        <div class="flex justify-between items-center border-b p-4">
+                            <h3 class="text-lg font-semibold">Add Members</h3>
+                            <button class="text-gray-500 hover:text-gray-700" onclick="document.getElementById('add-members-modal').remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Search input -->
+                        <div class="p-4 border-b">
+                            <div class="relative">
+                                <input type="text" 
+                                       id="addGroupMembersInput" 
+                                       class="w-full p-2 border border-gray-300 rounded-lg" 
+                                       placeholder="Search by email..."
+                                       oninput="searchUsersForGroup(event)">
+                                <div class="searchResults absolute w-full bg-white mt-1 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden">
+                                    <!-- Search results will be added here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selected users -->
+                        <div class="p-4 border-b">
+                            <div class="text-sm text-gray-600 mb-2">Selected users:</div>
+                            <div id="selectedGroupMembers" class="flex flex-wrap gap-2">
+                                <!-- Selected users will be added here -->
+                            </div>
+                        </div>
+
+                        <!-- Action buttons -->
+                        <div class="p-4 flex justify-end space-x-2">
+                            <button onclick="document.getElementById('add-members-modal').remove()" 
+                                    class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                                Cancel
+                            </button>
+                            <button onclick="addMembersToGroup()" 
+                                    id="addMembersBtn"
+                                    class="px-4 py-2 bg-gray-300 text-white rounded-lg cursor-not-allowed"
+                                    disabled>
+                                Add Members
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(addMembersModal);
+            }
+            
+            // Reset selected users list
+            listUserAdd = [];
+            updateSelectedGroupMembers();
             break;
     }
 }
 
-function toggleConversationInfo() {
+function toggleConversationInfo(conversationType) {
     const infoBox = document.getElementById('conversation-info-box');
     const chatContainer = document.getElementById('chat-container');
 
@@ -583,106 +712,138 @@ function toggleConversationInfo() {
     }
 
     infoBox.innerHTML = '';
-    var conversationInfoBox = `
-                        <!-- Profile Section -->
-                        <div class="flex flex-col items-center pt-4 pb-6 border-b">
-                            <div class="relative">
-                                <img alt="Profile picture" id="conversation-avatar" class="rounded-full mb-2 border-4 border-blue-100" height="80" src="${conversationAvatar}" width="80"/>
-                                <div class="absolute bottom-2 right-0 bg-green-500 h-3 w-3 rounded-full border-2 border-white"></div>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-lg font-semibold">
-                                    ${conversationName}
-                                </p>
-                                <p class="text-xs text-gray-500">
-                                    Active now
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <!-- Chat Info Section -->
-                        <div class="py-3 px-4 border-b">
-                            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer">
-                                <p class="font-medium text-gray-700 text-sm">
-                                    Chat Info
-                                </p>
-                                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
-                            </div>
-                            <div class="mt-2 pl-2">
-                                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
-                                    <i class="fas fa-thumbtack text-blue-500 text-sm"></i>
-                                    <p class="text-xs">
-                                        View pinned messages
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Customize Chat Section -->
-                        <div class="py-3 px-4 border-b">
-                            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer">
-                                <p class="font-medium text-gray-700 text-sm">
-                                    Customize chat
-                                </p>
-                                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
-                            </div>
-                            <div class="mt-1 space-y-1 pl-2">
-                                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer" onclick="toggleModal('changeName')">
-                                    <i class="fas fa-pencil-alt text-blue-500 text-sm"></i>
-                                    <p class="text-xs">
-                                        Change chat name
-                                    </p>
-                                </div>
-                                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer" onclick="document.getElementById('conversationAvatarModal').click()">
-                                    <i class="fas fa-image text-blue-500 text-sm"></i>
-                                    <p class="text-xs">
-                                        Change photo
-                                    </p>
-                                    <input type="file" id="conversationAvatarModal" style="display:none;" onchange="changeConversationAvatar(event)">
-                                </div>
-                                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
-                                    <i class="fas fa-circle text-blue-500 text-sm"></i>
-                                    <p class="text-xs">
-                                        Change theme
-                                    </p>
-                                </div>
-                                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
-                                    <i class="fas fa-thumbs-up text-blue-500 text-sm"></i>
-                                    <p class="text-xs">
-                                        Change emoji
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Chat Members Section -->
-                        <div class="py-3 px-4 border-b">
-                            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer" onclick="toggleModal('showMembers')">
-                                <p class="font-medium text-gray-700 text-sm">
-                                    Chat members
-                                </p>
-                                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
-                            </div>
-                            <div id="chat-members" class="hidden mt-2 pl-2">
-                                <!-- Members will be appended here -->
-                            </div>
-                        </div>
-                        
-                        <!-- Media Files Section -->
-                        <div class="py-3 px-4 border-b">
-                            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer" onclick="toggleModal('showMediaFiles')">
-                                <p class="font-medium text-gray-700 text-sm">
-                                    Media, files and links
-                                </p>
-                                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
-                            </div>
-                            <div id="media-files" class="hidden mt-2 pl-2">
-                                <!-- Sent media file will be loaded here -->
-                            </div>
-                        </div>
-                    `
+
+    let conversationInfoBox = `
+        <!-- Profile Section -->
+        <div class="flex flex-col items-center pt-4 pb-6 border-b">
+            <div class="relative">
+                <img alt="Profile picture" id="conversation-avatar" class="rounded-full mb-2 border-4 border-blue-100 h-[80px] w-[80px]" src="${conversationAvatar}"/>
+                <div class="absolute bottom-2 right-0 bg-green-500 h-3 w-3 rounded-full border-2 border-white"></div>
+            </div>
+            <div class="text-center">
+                <p class="text-lg font-semibold">
+                    ${conversationName}
+                </p>
+                <p class="text-xs text-gray-500">
+                    Active now
+                </p>
+            </div>
+        </div>
+        
+        <!-- Chat Info Section -->
+        <div class="py-3 px-4 border-b">
+            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer">
+                <p class="font-medium text-gray-700 text-sm">
+                    Chat Info
+                </p>
+                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+            </div>
+            <div class="mt-2 pl-2">
+                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                    <i class="fas fa-thumbtack text-blue-500 text-sm"></i>
+                    <p class="text-xs">
+                        View pinned messages
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Customize Chat Section -->
+        <div class="py-3 px-4 border-b">
+            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer">
+                <p class="font-medium text-gray-700 text-sm">
+                    Customize chat
+                </p>
+                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+            </div>
+            <div class="mt-1 space-y-1 pl-2">
+                ${conversationType !== 'OneToOne' ? `
+                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer" onclick="toggleModal('changeName')">
+                    <i class="fas fa-pencil-alt text-blue-500 text-sm"></i>
+                    <p class="text-xs">
+                        Change chat name
+                    </p>
+                </div>
+                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer" onclick="document.getElementById('conversationAvatarModal').click()">
+                    <i class="fas fa-image text-blue-500 text-sm"></i>
+                    <p class="text-xs">
+                        Change photo
+                    </p>
+                    <input type="file" id="conversationAvatarModal" style="display:none;" onchange="changeConversationAvatar(event)">
+                </div>
+                ` : ''}
+                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                    <i class="fas fa-circle text-blue-500 text-sm"></i>
+                    <p class="text-xs">
+                        Change theme
+                    </p>
+                </div>
+                <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                    <i class="fas fa-thumbs-up text-blue-500 text-sm"></i>
+                    <p class="text-xs">
+                        Change emoji
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Members Section -->
+        ${conversationType !== 'OneToOne' ? `
+        <div class="py-3 px-4 border-b">
+            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer" onclick="toggleModal('showMembers')">
+                <p class="font-medium text-gray-700 text-sm">
+                    Chat members
+                </p>
+                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+            </div>
+            <div id="chat-members" class="hidden mt-2 pl-2">
+                <!-- Members will be appended here -->
+            </div>
+        </div>
+        ` : ''}
+        
+        <!-- Media Files Section -->
+        <div class="py-3 px-4 border-b">
+            <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer" onclick="toggleModal('showMediaFiles')">
+                <p class="font-medium text-gray-700 text-sm">
+                    Media, files and links
+                </p>
+                <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
+            </div>
+            <div id="media-files" class="hidden mt-2 pl-2">
+                <!-- Sent media file will be loaded here -->
+            </div>
+        </div>
+        ${conversationType !== 'OneToOne' ? `
+                <div class="pl-[25px] flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer" onclick="leaveGroup(user_id)">
+                    <i class="fas fa-sign-out-alt text-red-500 text-sm"></i>
+                    <p class="text-xs text-red-500">
+                        Leave group
+                    </p>
+                </div>
+                ` : ''}
+    `;
 
     infoBox.innerHTML += conversationInfoBox;
+}
+
+function leaveGroup(userId) {
+    fetch(`/api/conversation-user/${conversationId}/users/${userId}`, {
+        method: 'DELETE'
+    })
+        .then(response => {
+            if (response.ok) {
+                // Find and remove the conversation from the list in the UI
+                let chatListContainer = document.querySelector(".space-y-4");
+                let conversationElement = chatListContainer.querySelector(`[data-id="${conversationId}"]`);
+                if (conversationElement) {
+                    conversationElement.remove(); // Remove the conversation element
+                }
+                document.getElementById("messengerBox").innerHTML = '';
+            } else {
+                console.error("Failed to leave the group");
+            }
+        })
 }
 
 async function startNewConversation(element) {
@@ -756,4 +917,443 @@ async function startNewConversation(element) {
         sendMessage();
     };
     await sendMessage();
+}
+
+let searchTimeout; // Global variable to track the timeout
+
+function searchUserByEmail(event) {
+    clearTimeout(searchTimeout); // Clear the previous timeout
+    searchTimeout = setTimeout(() => {
+        let searchInput = event.target.value.trim().toLowerCase();
+        let searchResults = event.target.closest('div').querySelector('.searchResults');
+        searchResults.innerHTML = '';
+
+        if (searchInput === '') {
+            searchResults.classList.add('hidden');
+            return;
+        }
+
+        fetch(`/api/user/search/users?email=${searchInput}`)
+            .then(res => res.json())
+            .then(data => {
+                searchResults.innerHTML = ''; // Clear previous results
+                if (data && data.length > 0) {
+                    searchResults.classList.remove('hidden');
+
+                    data.forEach(user => {
+                        // Skip if the user is the current user
+                        if (user.id == user_id) return;
+
+                        // Check if the input is from group modal
+                        const isGroupChat = event.target.id === 'addPeopleInput';
+
+                        if (isGroupChat) {
+                            // Create user element
+                            const userElement = document.createElement('div');
+                            userElement.className = 'flex items-center p-2 hover:bg-gray-100 cursor-pointer';
+                            userElement.innerHTML = `
+                            <div class="w-6 h-6 rounded-full overflow-hidden mr-2">
+                                <img src="${user.avatar_path}" alt="Avatar" class="w-full h-full object-cover">
+                            </div>
+                            <div class="text-xs text-gray-500 ml-2">${user.email}</div>
+                            `;
+
+                            // Add checkbox for group selection
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.className = 'mr-2';
+
+                            // Check if user is already selected
+                            checkbox.checked = listUserAdd.some(selectedUser => selectedUser.id === user.id);
+
+                            checkbox.addEventListener('change', (e) => {
+                                toggleUserSelection(user, e.target.checked);
+                            });
+
+                            userElement.addEventListener('click', () => {
+                                checkbox.checked = !checkbox.checked; // Toggle checkbox state
+                                toggleUserSelection(user, checkbox.checked); // Call the selection handler
+                            });
+
+                            userElement.prepend(checkbox);
+                            searchResults.appendChild(userElement);
+                        } else {
+                            // Create user element
+                            const userElement = document.createElement('div');
+                            userElement.className = 'flex items-center p-2 hover:bg-gray-100 cursor-pointer';
+                            userElement.setAttribute('data-track-user-id', user.id);
+                            userElement.setAttribute('data-conversationName', `${user.first_name} ${user.last_name}`);
+                            userElement.setAttribute('data-conversationAvatar', user.avatar_path);
+                            userElement.setAttribute('data-conversation-type', 'OneToOne');
+                            userElement.setAttribute('onclick', 'setConversation(this)');
+
+                            userElement.innerHTML = `
+                            <div class="w-6 h-6 rounded-full overflow-hidden mr-2">
+                                <img src="${user.avatar_path}" alt="Avatar" class="w-full h-full object-cover">
+                            </div>
+                            <div class="text-xs text-gray-500 ml-2">${user.email}</div>
+                            `;
+                            searchResults.appendChild(userElement);
+                        }
+                    });
+                } else {
+                    searchResults.classList.remove('hidden');
+                    searchResults.innerHTML = '<div class="p-3 text-center text-gray-500">No users found</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error searching for users:', error);
+                searchResults.classList.remove('hidden');
+                searchResults.innerHTML = '<div class="p-3 text-center text-red-500">Error searching for users</div>';
+            });
+    }, 50); // Delay API call by 50ms
+}
+
+function toggleUserSelection(user, isSelected) {
+    if (isSelected) {
+        // Add user if not already in the list
+        if (!listUserAdd.some(selectedUser => selectedUser.id === user.id)) {
+            listUserAdd.push(user);
+            updateSelectedUsersDisplay();
+        }
+    } else {
+        // Remove user from the list
+        listUserAdd = listUserAdd.filter(selectedUser => selectedUser.id !== user.id);
+        updateSelectedUsersDisplay();
+    }
+}
+
+function updateSelectedUsersDisplay() {
+    const selectedUsersContainer = document.getElementById('selectedUsers');
+    selectedUsersContainer.innerHTML = '';
+
+    listUserAdd.forEach(user => {
+        const userTag = document.createElement('div');
+        userTag.className = 'flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm';
+        userTag.innerHTML = `
+            <div class="w-5 h-5 rounded-full overflow-hidden mr-1">
+                <img src="${user.avatar_path}" alt="Avatar" class="w-full h-full object-cover">
+            </div>
+            <span class="mr-1">${user.email}</span>
+            <button class="text-gray-500 hover:text-gray-700" data-user-id="${user.id}">×</button>
+        `;
+
+        // Add click event to remove button
+        const removeButton = userTag.querySelector('button');
+        removeButton.addEventListener('click', () => {
+            removeSelectedUser(user.id);
+        });
+
+        selectedUsersContainer.appendChild(userTag);
+    });
+
+    // Update create button state
+    updateCreateButtonState();
+}
+
+function removeSelectedUser(userId) {
+    listUserAdd = listUserAdd.filter(user => user.id !== userId);
+    updateSelectedUsersDisplay();
+
+    // Update checkboxes in search results if visible
+    const searchResults = document.getElementById('searchResults');
+    if (!searchResults.classList.contains('hidden')) {
+        const checkboxes = searchResults.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            const userElement = checkbox.closest('div');
+            const userEmail = userElement.querySelector('.text-gray-500').textContent;
+            const matchingUser = listUserAdd.find(u => u.email === userEmail);
+            if (matchingUser && matchingUser.id === userId) {
+                checkbox.checked = false;
+            }
+        });
+    }
+}
+
+function updateCreateButtonState() {
+    const createButton = document.getElementById('createGroupBtn');
+    const groupNameInput = document.getElementById('groupNameInput');
+
+    if (groupNameInput.value.trim() !== '' && listUserAdd.length > 0) {
+        createButton.disabled = false;
+        createButton.classList.remove('bg-gray-300', 'cursor-not-allowed');
+        createButton.classList.add('bg-blue-500');
+    } else {
+        createButton.disabled = true;
+        createButton.classList.remove('bg-blue-500');
+        createButton.classList.add('bg-gray-300', 'cursor-not-allowed');
+    }
+}
+
+document.getElementById('groupNameInput').addEventListener('input', updateCreateButtonState);
+
+document.addEventListener('click', (e) =>   {
+    const searchResults = event.target.closest('div').querySelector('.searchResults');
+    const addPeopleInput = document.getElementById('addPeopleInput');
+
+    if (searchResults && !searchResults.classList.contains('hidden') &&
+        !searchResults.contains(e.target) && e.target !== addPeopleInput) {
+        searchResults.classList.add('hidden');
+    }
+});
+
+function createGroup() {
+    const groupName = document.getElementById('groupNameInput').value.trim();
+    const currentUserId = document.getElementById('user_id').value; // Get current user's ID
+
+    if (groupName === '' || listUserAdd.length === 0) {
+        alert("Please enter a group name and select at least one user.");
+        return;
+    }
+
+    // Step 1: Create the group conversation
+    fetch('/api/conversation/group/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            type: "Group",
+            is_Active: true,
+            conversation_avatar: null,
+            conversation_name: groupName
+        })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.id) {
+                const conversationId = data.id;
+                let addUserPromises = [];
+
+                // Add the current user to the group
+                let currentUserData = {
+                    conversation_id: conversationId,
+                    user_id: currentUserId,
+                    admin: true
+                };
+
+                let addCurrentUserPromise = fetch('/api/conversation-user/add-user', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(currentUserData)
+                }).then(res => res.json());
+                addUserPromises.push(addCurrentUserPromise);
+
+                // Step 2: Add each other user (excluding the creator) to the group
+                listUserAdd.forEach(user => {
+                    let userData = {
+                        conversation_id: conversationId,
+                        user_id: user.id,
+                        admin: false
+                    };
+
+                    let addUserPromise = fetch('/api/conversation-user/add-user', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(userData)
+                    }).then(res => res.json());
+
+                    addUserPromises.push(addUserPromise);
+                });
+
+                // Wait for all users to be added
+                return Promise.all(addUserPromises);
+            } else {
+                throw new Error('Failed to create group');
+            }
+        })
+
+        .then(() => {
+            alert('Group created successfully!');
+            document.getElementById('groupNameInput').value = '';
+            listUserAdd = [];
+            updateSelectedUsersDisplay();
+        })
+        .catch(error => {
+            console.error('Error creating group:', error);
+            alert('Error creating group. Please try again.');
+        });
+}
+
+updateCreateButtonState();
+
+function removeMember(userId, userName) {
+    if (!isCurrentUserAdmin) {
+        alert("Only admin can remove members from the group.");
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to remove ${userName} from the group?`)) {
+        leaveGroup(userId);
+        conversationMember = conversationMember.filter(member => member.id !== userId);
+        toggleModal('showMembers');
+    }
+}
+
+function searchUsersForGroup(event) {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        let searchInput = event.target.value.trim().toLowerCase();
+        let searchResults = event.target.closest('div').querySelector('.searchResults');
+        searchResults.innerHTML = '';
+
+        if (searchInput === '') {
+            searchResults.classList.add('hidden');
+            return;
+        }
+
+        fetch(`/api/user/search/users?email=${searchInput}`)
+            .then(res => res.json())
+            .then(data => {
+                searchResults.innerHTML = '';
+                if (data && data.length > 0) {
+                    searchResults.classList.remove('hidden');
+
+                    data.forEach(user => {
+                        // Skip if user is current user or already in the group
+                        if (user.id == user_id || conversationMember.some(member => member.id === user.id)) return;
+
+                        const userElement = document.createElement('div');
+                        userElement.className = 'flex items-center p-2 hover:bg-gray-100 cursor-pointer';
+                        userElement.innerHTML = `
+                            <input type="checkbox" class="mr-2" 
+                                   ${listUserAdd.some(selected => selected.id === user.id) ? 'checked' : ''}>
+                            <div class="w-8 h-8 rounded-full overflow-hidden mr-2">
+                                <img src="${user.avatar_path}" alt="Avatar" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-grow">
+                                <div class="text-sm">${user.first_name} ${user.last_name}</div>
+                                <div class="text-xs text-gray-500">${user.email}</div>
+                            </div>
+                        `;
+
+                        const checkbox = userElement.querySelector('input[type="checkbox"]');
+                        checkbox.addEventListener('change', () => {
+                            toggleGroupMemberSelection(user, checkbox.checked);
+                        });
+
+                        userElement.addEventListener('click', (e) => {
+                            if (e.target !== checkbox) {
+                                checkbox.checked = !checkbox.checked;
+                                toggleGroupMemberSelection(user, checkbox.checked);
+                            }
+                        });
+
+                        searchResults.appendChild(userElement);
+                    });
+                } else {
+                    searchResults.classList.remove('hidden');
+                    searchResults.innerHTML = '<div class="p-3 text-center text-gray-500">No users found</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error searching for users:', error);
+                searchResults.classList.remove('hidden');
+                searchResults.innerHTML = '<div class="p-3 text-center text-red-500">Error searching for users</div>';
+            });
+    }, 300);
+}
+
+function toggleGroupMemberSelection(user, isSelected) {
+    if (isSelected) {
+        if (!listUserAdd.some(selected => selected.id === user.id)) {
+            listUserAdd.push(user);
+        }
+    } else {
+        listUserAdd = listUserAdd.filter(selected => selected.id !== user.id);
+    }
+    updateSelectedGroupMembers();
+}
+
+function updateSelectedGroupMembers() {
+    const container = document.getElementById('selectedGroupMembers');
+    const addButton = document.getElementById('addMembersBtn');
+    
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    listUserAdd.forEach(user => {
+        const tag = document.createElement('div');
+        tag.className = 'flex items-center bg-blue-50 rounded-full px-3 py-1 text-sm';
+        tag.innerHTML = `
+            <img src="${user.avatar_path}" alt="Avatar" class="w-5 h-5 rounded-full mr-2">
+            <span class="text-blue-600">${user.first_name} ${user.last_name}</span>
+            <button class="ml-2 text-blue-400 hover:text-blue-600" onclick="toggleGroupMemberSelection('${user.id}', false)">×</button>
+        `;
+        container.appendChild(tag);
+    });
+
+    // Update add button state
+    if (listUserAdd.length > 0) {
+        addButton.disabled = false;
+        addButton.classList.remove('bg-gray-300', 'cursor-not-allowed');
+        addButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
+    } else {
+        addButton.disabled = true;
+        addButton.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+        addButton.classList.add('bg-gray-300', 'cursor-not-allowed');
+    }
+}
+
+async function addMembersToGroup() {
+    if (!isCurrentUserAdmin) {
+        alert("Only admin can add members to the group.");
+        return;
+    }
+
+    if (listUserAdd.length === 0) return;
+
+    try {
+        const addPromises = listUserAdd.map(user => 
+            fetch('/api/conversation-user/add-user', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    conversation_id: conversationId,
+                    user_id: user.id,
+                    admin: false
+                })
+            }).then(res => res.json())
+        );
+
+        await Promise.all(addPromises);
+
+        // Update local member list
+        conversationMember = [...conversationMember, ...listUserAdd];
+        
+        // Close add members modal
+        document.getElementById('add-members-modal').remove();
+        
+        // Refresh members modal
+        toggleModal('showMembers');
+
+        // Show success message
+        alert(`Successfully added ${listUserAdd.length} member${listUserAdd.length > 1 ? 's' : ''} to the group`);
+        
+        // Reset selected users
+        listUserAdd = [];
+    } catch (error) {
+        console.error('Error adding members:', error);
+        alert('Failed to add members to the group. Please try again.');
+    }
+}
+
+// Add search function
+function searchConversations(event) {
+    const searchTerm = event.target.value.toLowerCase().trim();
+    
+    if (searchTerm === '') {
+        renderHtmlConversation(originalConversationList);
+        return;
+    }
+
+    const filteredConversations = originalConversationList.filter(conversation => {
+        const nameMatch = conversation.conversationName.toLowerCase().includes(searchTerm);
+        const messageMatch = conversation.last_message && 
+                           conversation.last_message.toLowerCase().includes(searchTerm);
+        return nameMatch || messageMatch;
+    });
+
+    renderHtmlConversation(filteredConversations);
 }

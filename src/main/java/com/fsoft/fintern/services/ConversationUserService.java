@@ -66,12 +66,11 @@ public class ConversationUserService {
         return new ResponseEntity<>(conversations, HttpStatus.OK);
     }
 
-    public ResponseEntity<ConversationUser> removeAUserFromConversation(int conversationId, int user_id) {
-        ConversationUserId id = new ConversationUserId(conversationId, user_id);
-        ConversationUser conversationUser = this.conversationUserRepository.findById(id).orElse(null);
-        if (conversationUser != null) {
-            this.conversationUserRepository.delete(conversationUser);
-        } else throw new RuntimeException("User not found");
-        return new ResponseEntity<>(conversationUser, HttpStatus.OK);
+    public ResponseEntity<String> removeAUserFromConversation(int conversationId, int userId) {
+        ConversationUserId id = new ConversationUserId(userId, conversationId);
+        ConversationUser conversationUser = this.conversationUserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        this.conversationUserRepository.delete(conversationUser);
+        return ResponseEntity.ok("User removed from conversation successfully");
     }
 }

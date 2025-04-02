@@ -1,5 +1,7 @@
 package com.fsoft.fintern.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fsoft.fintern.dtos.CreateUserDTO;
 import com.fsoft.fintern.dtos.UpdateUserDTO;
 import com.fsoft.fintern.enums.Role;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -53,14 +56,14 @@ public class UserRestController {
     }
 
     @GetMapping("/{id}")
-    @Operation(description =  "Get User by id")
+    @Operation(description = "Get User by id")
     public ResponseEntity<User> getById(@PathVariable int id) throws BadRequestException {
         return this.userService.getById(id);
     }
 
     @PatchMapping("/update/{id}")
     @Operation(description = "Update user by id")
-    public ResponseEntity<User> update(@RequestBody UpdateUserDTO user, @PathVariable int id) throws BadRequestException  {
+    public ResponseEntity<User> update(@RequestBody UpdateUserDTO user, @PathVariable int id) throws BadRequestException {
         return this.userService.update(id, user);
     }
 
@@ -101,41 +104,35 @@ public class UserRestController {
 
     // Ban a user for a specified duration
     @PostMapping("/ban/{userId}")
-    public ResponseEntity<String> banUser(@PathVariable int userId, @RequestBody Map<String, Long> request) {
-        Long durationInSeconds = request.get("duration");
-        String key = "banned_user:" + userId;
-        redisTemplate.opsForValue().set(key, "banned", durationInSeconds, TimeUnit.SECONDS);
-        return ResponseEntity.ok("User " + userId + " has been banned for " + durationInSeconds + " seconds.");
+    public ResponseEntity<String> banUser(@PathVariable int userId, @RequestBody Map<String, Object> request) {
+        try {
+            Long durationInSeconds = Long.valueOf(request.get("duration").toString());
+            durationInSeconds *= 3600*24;
+            String reason = (String) request.get("reason");
+            return ResponseEntity.ok(userService.banUser(userId, durationInSeconds, reason));
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing ban info.");
+        }
     }
 
     //Get banned information
     @GetMapping("/get-status/{userId}")
-    public ResponseEntity<Map<String, Object>> checkBanStatus(@PathVariable int userId) {
-        String key = "banned_user:" + userId;
-        Boolean isBanned = redisTemplate.hasKey(key);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("userId", userId);
-        response.put("isBanned", isBanned);
-
-        if (isBanned != null && isBanned) {
-            // Get the remaining time
-            Long remainingTime = redisTemplate.getExpire(key, TimeUnit.SECONDS);
-            response.put("duration", remainingTime != null ? remainingTime : 0);
-        } else {
-            response.put("duration", 0);
+    public ResponseEntity<Map<String, Object>> getBanStatus(@PathVariable int userId) {
+        try {
+            return ResponseEntity.ok(userService.getBanStatus(userId));
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.ok(Map.of("userId", userId, "banned", false));
         }
-
-        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/unban/{userId}")
     public ResponseEntity<String> unbanUser(@PathVariable int userId) {
-        String key = "banned_user:" + userId;
-        redisTemplate.opsForHash().delete("banned_users", String.valueOf(userId));
-        redisTemplate.delete(key);
-        return ResponseEntity.ok("User " + userId + " has been unbanned.");
+        return ResponseEntity.ok(userService.unbanUser(userId));
     }
 
-
+    //Get all the users that their email contain input string
+    @GetMapping("/search/users")
+    public ResponseEntity<List<User>> getAllUsersByEmail(@RequestParam String email) {
+        return userService.searchUsersByEmail(email);
+    }
 }

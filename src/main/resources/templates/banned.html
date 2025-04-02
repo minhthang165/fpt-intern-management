@@ -1,10 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Disabled</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 font-sans min-h-screen flex items-center justify-center p-4">
+<div class="bg-white rounded-lg shadow-md p-8 max-w-md w-full">
+    <h1 class="text-2xl font-semibold mb-4">We've disabled your account</h1>
 
+    <p class="text-gray-700 mb-4">
+        We've reviewed your account and found that it still doesn't follow our Community Standards on account integrity.
+    </p>
+
+    <div class="mb-6 space-y-2">
+        <div class="flex">
+            <span class="font-medium w-40">Duration:</span>
+            <span id="duration-value" th:text="${duration / 86400} + ' days'"></span>
+        </div>
+        <div class="flex">
+            <span class="font-medium w-40">Reason:</span>
+            <span id="reason-value" th:text="${reason}"></span>
+        </div>
+        <div class="flex">
+            <span class="font-medium w-40">Unlock Date:</span>
+            <span id="unlock-date" th:text="${#dates.format(#dates.createNow().time + (remainingDuration * 1000), 'dd-MM-yyyy')}"></span>
+        </div>
+    </div>
+
+
+
+    <p class="text-gray-700 mb-4">
+        You cannot request another review of this decision.
+    </p>
+
+    <p class="text-gray-700 mb-6">
+        To learn more about the reasons why we disable accounts, visit the Community Standards.
+    </p>
+
+    <a href="/logout" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md mb-3 transition duration-200 text-center block">
+        Log out
+    </a>
+</div>
 </body>
 </html>

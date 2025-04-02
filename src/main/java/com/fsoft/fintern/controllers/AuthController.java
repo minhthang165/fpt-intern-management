@@ -44,10 +44,6 @@ public class AuthController {
             return "redirect:/login"; // User creation failed, redirect to login
         }
 
-        if (redisTemplate.opsForValue().get("banned_user:"+user.getId()) != null) {
-            return "redirect:/logout";
-        }
-
         // Convert user to DTO and store in session
         LoginUserDTO loginUserDTO = convertToLoginUserDTO(user);
         model.addAttribute("user", loginUserDTO);
