@@ -4,7 +4,6 @@ import java.sql.Timestamp;
 
 
 public class TaskDTO {
-    private Integer id;
     private String taskName;
     private String fileData;
     private Timestamp startTime;
@@ -19,13 +18,6 @@ public class TaskDTO {
         this.creatorId = creator;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
     public Integer getClassId() {
         return classId;
     }

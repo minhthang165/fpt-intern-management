@@ -173,7 +173,185 @@ body {
     display: inline-block;
     width: 8px;
     height: 8px;
-    background-color: yellow;
+    background-color: #ffb700;
     border-radius: 50%;
     margin-right: 5px;
 }
+
+.student-badge {
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 50px;
+    border: 1px solid #20c997;
+    background-color: #fff;
+    color: #333;
+    font-size: 14px;
+    white-space: nowrap;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5); /* Làm nền tối hơn */
+    backdrop-filter: blur(8px); /* Làm mờ nền */
+    display: none;
+}
+.modal {
+    backdrop-filter: blur(8px); /* Làm mờ nền phía sau */
+    background: rgba(0, 0, 0, 0.2); /* Thêm một lớp tối nhẹ */
+}
+.modal-content{
+    margin-top: 150px;
+}
+
+
+.task-item {
+    position: relative;
+    padding: 18px 22px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition: all 0.3s ease-in-out;
+    border-left: 5px solid #ff923a; /* Mặc định màu xanh */
+}
+
+/* Hiệu ứng khi di chuột vào */
+.task-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Chỉnh màu sắc theo độ ưu tiên */
+.task-item.high {
+    border-left-color: #e74c3c;
+    background-color: #ffebee;
+}
+
+.task-item.medium {
+    border-left-color: #f1c40f;
+    background-color: #fff8e1;
+}
+
+.task-item.low {
+    border-left-color: #2ecc71;
+    background-color: #e8f5e9;
+}
+
+/* Tiêu đề task */
+.task-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+/* Nội dung mô tả */
+.task-description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+/* Footer của task */
+.task-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #999;
+}
+
+/* Nút hành động */
+.task-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.task-actions button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s ease-in-out;
+}
+
+.task-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+/* Tiêu đề danh sách công việc */
+.task-list-header h5 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
+
+/* Nút Thêm Công Việc */
+.add-task-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background-color: #ff790e;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.add-task-btn i {
+    font-size: 16px;
+}
+
+/* Hiệu ứng hover */
+.add-task-btn:hover {
+    background-color: #ffae6b;
+    transform: translateY(-2px);
+}
+
+/* Hiệu ứng khi bấm vào */
+.add-task-btn:active {
+    background-color: #1a5f8c;
+    transform: scale(0.98);
+}
+
+
+/* Custom scrollbar styles for better UX */
+.student-container::-webkit-scrollbar,
+.task-list::-webkit-scrollbar,
+.content-card::-webkit-scrollbar {
+    width: 6px;
+}
+
+.student-container::-webkit-scrollbar-track,
+.task-list::-webkit-scrollbar-track,
+.content-card::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.student-container::-webkit-scrollbar-thumb,
+.task-list::-webkit-scrollbar-thumb,
+.content-card::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.student-container::-webkit-scrollbar-thumb:hover,
+.task-list::-webkit-scrollbar-thumb:hover,
+.content-card::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+

@@ -4,6 +4,7 @@ import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.dtos.ClassroomDTO;
 import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.Classroom;
+import com.fsoft.fintern.models.Task;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.repositories.ClassroomRepository;
 import com.fsoft.fintern.repositories.UserRepository;
@@ -136,6 +137,10 @@ public class ClassroomService {
 
     public List<Classroom> getClassroomsByMentorId(Integer mentorId) {
         return class_repository.findClassroomsByMentorId(mentorId);
+    }
+
+    public List<Task> getTasksByClassId(Integer classId) {
+        return class_repository.findTaskIdByClassId(classId);
     }
 
     public ResponseEntity<Classroom> setIsActiveTrue(int id) throws BadRequestException {
