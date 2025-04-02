@@ -20,17 +20,17 @@ public class Schedule extends BaseModel {
     private Integer id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "class_id", nullable = false)
     private Classroom classField;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
@@ -127,4 +127,5 @@ public class Schedule extends BaseModel {
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
+
 }

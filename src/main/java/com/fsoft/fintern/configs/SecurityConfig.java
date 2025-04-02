@@ -21,12 +21,12 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/assets/**","index.html#/**", "/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/api/**")
-                        .permitAll()
-                        .requestMatchers("/logout", "/login", "/register")
-                        .anonymous()
-                        .anyRequest().authenticated()
-                        //.anyRequest().permitAll()
+//                        .requestMatchers("/assets/**","index.html#/**", "/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**", "/api/**")
+//                        .permitAll()
+//                        .requestMatchers("/logout", "/login", "/register")
+//                        .anonymous()
+//                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(new LoggedInRedirectFilter(), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
