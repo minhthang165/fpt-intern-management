@@ -51,7 +51,6 @@ public class ClassroomController {
             try {
                 ResponseEntity<Page<User>> response = userService.findUserByRole(Role.INTERN, pageable);
                 model.addAttribute("internClassList", response.getBody());
-
                 List<Classroom> classrooms = classroomService.getClassroomsByMentorId(user.getId());
                 model.addAttribute("classList", classrooms);
                 model.addAttribute("mentorId", user.getId());

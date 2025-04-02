@@ -1,6 +1,7 @@
 package com.fsoft.fintern.repositories;
 
 import com.fsoft.fintern.models.Classroom;
+import com.fsoft.fintern.models.Task;
 import com.fsoft.fintern.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,5 +22,7 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Integer> {
     List<User> findByClassIdAndIsActiveTrue(@Param("classId") Integer classId);
     @Query("SELECT c FROM Classroom c WHERE c.manager.id = :mentorId")
     List<Classroom> findClassroomsByMentorId(@Param("mentorId") Integer mentorId);
+    @Query(value = "SELECT * FROM Tasks WHERE class_id = :classId", nativeQuery = true)
+    List<Task> findTaskIdByClassId(@Param("classId") Integer classId);
 
 }

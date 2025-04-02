@@ -135,21 +135,29 @@ public class CVInfoService {
             if (user == null) {
                 throw new RuntimeException("Không tìm thấy thông tin người dùng");
             }
+
+            //4. Check user has been added into class
+            if(user.getClassroom() != null)
+            {
+                result.put("success", false);
+                result.put("message", "User has been approved");
+                return result;
+            }
             
-            // 4. Cập nhật role của user thành INTERN nếu là GUEST
+            // 5. Cập nhật role của user thành INTERN nếu là GUEST
             if (user.getRole() == Role.GUEST) {
                 user.setRole(Role.INTERN);
             }
             
-            // 5. Thêm user vào lớp học
+            // 6. Thêm user vào lớp học
             user.setClassroom(classroom);
             userRepository.save(user);
             
-            // 6. Cập nhật số lượng intern trong lớp
+            // 7. Cập nhật số lượng intern trong lớp
             classroom.setNumberOfIntern(classroom.getNumberOfIntern() + 1);
             classroomRepository.save(classroom);
 
-            // 7. Đánh dấu CV hiện tại là inactive (đã được approve)
+            // 8. Đánh dấu CV hiện tại là inactive (đã được approve)
             CVInfoId cvInfoId = new CVInfoId(recruitmentId, fileId);
             Optional<CVInfo> currentCVInfoOptional = cvInfoRepository.findById(cvInfoId);
             if (currentCVInfoOptional.isPresent()) {
