@@ -34,7 +34,7 @@
             <div class="bg-blue-100 w-1/4 left-side overflow-y-auto m-3">
                 <div class="mb-4">
                     <label class="w-full">
-                        <input class="w-full p-2 rounded-full bg-white border border-gray-300" placeholder="Search" type="text"/>
+                        <input class="w-full p-2 rounded-full bg-white border border-gray-300" placeholder="Search" type="text" onkeyup="searchConversations(event)"/>
                     </label>
                 </div>
                 <div class="space-y-4">
@@ -48,41 +48,41 @@
                 <div id="chat-container" class="chat-container flex flex-col w-full transition-all duration-300"></div>
 
                 <!-- Conversation Info Box -->
-                <div id="conversation-info-box"
-                     class="conversation-info-box bg-white h-full w-[30%] absolute right-0 top-0 shadow-lg overflow-y-auto hidden transition-all duration-300">
-                </div>
+                <div id="conversation-info-box" class="conversation-info-box bg-white h-full w-[30%] absolute right-0 top-0 shadow-lg overflow-y-auto hidden transition-all duration-300"></div>
             </div>
         </div>
 
         <!-- Dropdown for one-to-one chat -->
-        <div id="chatDropdown" class="hidden absolute top-16 right-4 w-72 bg-white rounded-lg shadow-lg z-50 overflow-hidden">
+        <div id="chatDropdown" class="hidden absolute top-16 right-4 w-110 bg-white rounded-lg shadow-lg z-50 overflow-hidden">
             <div class="p-4 border-b border-gray-200">
                 <div class="font-semibold mb-2.5">New Conversation</div>
-                <input type="text" class="w-full py-2 px-3 border border-gray-200 rounded-full text-sm" placeholder="Search for users" id="userSearchInput">
-            </div>
-            <div class="max-h-72 overflow-y-auto py-2.5" id="userList">
-                <!-- User list will be populated here -->
+                <input type="text" class="searchInput w-full py-2 px-3 border border-gray-200 rounded-full text-sm" placeholder="Search for users" onkeyup="searchUserByEmail(event)">
+                <div class="searchResults hidden bg-white border border-gray-200 rounded-md shadow-lg overflow-y-auto z-10" style="max-height: 150px;"></div>
             </div>
         </div>
 
         <!-- Modal for group chat -->
         <div id="groupModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg w-96 max-w-[90%] shadow-xl">
+            <div class="bg-white rounded-lg w-[500px] max-w-[95%] shadow-xl"> <!-- Increased width from w-96 to w-[500px] -->
                 <div class="px-5 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div class="text-lg font-semibold">Create Group Chat</div>
                     <button onclick="groupModal.classList.add('hidden')" class="bg-transparent border-none text-xl cursor-pointer text-gray-500">×</button>
                 </div>
-                <div class="p-5">
+                <div class="p-5 max-h-[80vh] overflow-y-auto"> <!-- Added max-height and overflow -->
                     <div class="mb-4">
                         <label class="block mb-1 font-medium">Group Name</label>
                         <input type="text" class="w-full p-2.5 border border-gray-200 rounded text-sm" id="groupNameInput" placeholder="Enter group name">
                     </div>
-                    <div class="mb-4">
+                    <div class="mb-4 relative">
                         <label class="block mb-1 font-medium">Add People</label>
-                        <input type="text" class="w-full p-2.5 border border-gray-200 rounded text-sm" id="addPeopleInput" placeholder="Search for users">
-                        <div class="flex flex-wrap gap-1.5 mt-2.5" id="selectedUsers">
-                            <!-- Selected users will appear here -->
-                        </div>
+                        <input type="text" class="addPeopleInput w-full p-2.5 border border-gray-200 rounded text-sm" id="addPeopleInput" placeholder="Search for users" onkeyup="searchUserByEmail(event)">
+                        <div class="searchResults hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto z-10" style="max-height: 150px;"></div>
+                    </div>
+
+                    <!-- Separate section for selected users with a title -->
+                    <div class="mb-4">
+                        <label class="block mb-1 font-medium">Selected Users</label>
+                        <div id="selectedUsers" class="flex flex-wrap gap-2 mt-1 min-h-[100px] border border-gray-200 rounded-md p-2 overflow-y-auto"></div>
                     </div>
                 </div>
                 <div class="px-5 py-4 border-t border-gray-200 text-right">

@@ -1,7 +1,9 @@
 package com.fsoft.fintern.configs;
 
 //import com.fsoft.fintern.filter.BannedUserFilter;
+import com.fsoft.fintern.filter.BannedUserFilter;
 import com.fsoft.fintern.filter.LoggedInRedirectFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +18,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Autowired
+    private BannedUserFilter bannedUserFilter;
+
+    @Autowired
+    private LoggedInRedirectFilter loggedInRedirectFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http    ) throws Exception {
         http
@@ -28,7 +36,8 @@ public class SecurityConfig {
 //                        .anyRequest().authenticated()
                         .anyRequest().permitAll()
                 )
-                .addFilterBefore(new LoggedInRedirectFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(loggedInRedirectFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(bannedUserFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .permitAll()

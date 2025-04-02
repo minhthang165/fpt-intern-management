@@ -1,6 +1,7 @@
 package com.fsoft.fintern.controllers;
 import com.fsoft.fintern.dtos.ClassroomDTO;
 import com.fsoft.fintern.models.Classroom;
+import com.fsoft.fintern.models.Task;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.ClassroomService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,10 +66,16 @@ public class ClassroomRestController {
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/{mentorId}/")
+    @GetMapping("/mentor/{mentorId}")
     public ResponseEntity<List<Classroom>> getClassByMentor(@PathVariable Integer mentorId) {
         List<Classroom> classrooms = classroomService.getClassroomsByMentorId(mentorId);
         return ResponseEntity.ok(classrooms);
+    }
+
+    @GetMapping("/task/{classId}")
+    public ResponseEntity<List<Task>> getTasksByClass(@PathVariable Integer classId) {
+        List<Task> tasks = classroomService.getTasksByClassId(classId);
+        return ResponseEntity.ok(tasks);
     }
 
     @PatchMapping("/setIsActiveTrue/{id}")

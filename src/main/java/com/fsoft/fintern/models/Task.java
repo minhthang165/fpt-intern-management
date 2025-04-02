@@ -1,5 +1,6 @@
 package com.fsoft.fintern.models;
 
+import com.fsoft.fintern.enums.TaskStatus;
 import com.fsoft.fintern.models.Shared.BaseModel;
 import jakarta.persistence.*;
 
@@ -29,6 +30,18 @@ public class Task extends BaseModel {
     @ManyToOne
     @JoinColumn(name = "class_id", referencedColumnName = "id")
     private Classroom classroom;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = true, length = 50,  columnDefinition = "NVARCHAR(50) CHECK ([status] in ('PENDING', 'IN_PROGRESS', 'COMPLETED')) DEFAULT 'PENDING'")
+    private TaskStatus status;
+
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+    }
 
     // Getters và Setters
     public Classroom getClassroom() {

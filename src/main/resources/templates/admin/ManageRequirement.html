@@ -1279,10 +1279,6 @@
         const tableBody = document.getElementById("candidateTableBody");
         tableBody.innerHTML = "";
 
-        // Lọc chỉ lấy các CV chưa được duyệt (isActive = true)
-
-        // Lọc chỉ lấy các CV chưa được duyệt
-
         candidates = candidates.filter(candidate => candidate.isActive !== false);
 
         if (!candidates || candidates.length === 0) {
@@ -1597,8 +1593,7 @@
                     .then(response => {
                         if (!response.ok) {
                             return response.json().then(data => {
-                                if(data.success === false && data.message === "User has been approved")
-                                {
+                                if(data.success === false && data.message === "User has been approved") {
                                     showToast(data.message, 'warning');
                                     throw new Error(data.message);
                                 }
@@ -1637,8 +1632,9 @@
             })
             .catch(error => {
                 console.error('Error in approval process:', error);
-                if(error.message !== "User has been approved")
+                if(error.message !== "User has been approved") {
                     showToast('Error: ' + error.message, 'error');
+                }
             });
     }
 
@@ -1664,7 +1660,7 @@
             toastIcon.className = 'fas fa-exclamation-circle toast-icon';
             toast.style.borderLeftColor = '#dc3545';
             toastIcon.style.color = '#dc3545';
-        } else if(type === 'warning'){
+        } else if (type === 'warning') {
             toastIcon.className = 'fas fa-exclamation-triangle toast-icon';
             toast.style.borderLeftColor = '#fd7e14';
             toastIcon.style.color = '#fd7e14';

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +53,23 @@ public class CVInfoRestController {
             return ResponseEntity.ok(Map.of("success", true, "message", "Xóa CVInfo thành công"));
         } else {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Không tìm thấy CVInfo để xóa"));
+        }
+    }
+    @GetMapping("/check-cv-info")
+    public ResponseEntity<?> checkCvInfoExist(
+            @RequestParam("fileId") Long fileId,
+            @RequestParam("recruitmentId") Long recruitmentId) {
+        try {
+            boolean exists = cvInfoService.checkCvInfoExist(fileId, recruitmentId);
+            return ResponseEntity.ok(exists);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Lỗi khi kiểm tra thông tin CV: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 

@@ -77,13 +77,9 @@ public class TaskService {
     }
 
     public ResponseEntity<Task> createTask(TaskDTO taskDTO) throws BadRequestException {
-        Task existingTask = this.taskRepository.findById(taskDTO.getId()).orElse(null);
         Classroom existedClass = this.classRepository.findById(taskDTO.getClassId()).orElse(null);
         User creator = this.userRepository.findById(taskDTO.getCreator()).orElse(null);
 
-        if (existingTask != null) {
-            throw new BadRequestException(ErrorDictionaryConstraints.TASK_IS_ALREADY_EXISTS.getMessage());
-        }
 
         if (existedClass == null) {
             throw new BadRequestException(ErrorDictionaryConstraints.CLASS_NOT_EXISTS_ID.getMessage());
@@ -103,7 +99,7 @@ public class TaskService {
         newTask.setStartTime(taskDTO.getStartTime());
         newTask.setEndTime(taskDTO.getEndTime());
         newTask.setClassroom(existedClass);
-        newTask.setCreatedBy(taskDTO.getCreator());
+        newTask.setCreatedBy(creator.getId());
 
 
         Task savedTask = this.taskRepository.save(newTask);

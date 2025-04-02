@@ -179,6 +179,20 @@
       cursor: not-allowed;
     }
 
+    .delete-btn {
+      background-color: #dc3545;
+      color: white;
+      flex-grow: 1;
+      max-width: 200px;
+      display: none; /* Hidden by default, will be shown when user has applied */
+    }
+
+    .delete-btn:hover {
+      background-color: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+
     #message {
       margin-top: 20px;
       font-weight: 600;
@@ -186,44 +200,6 @@
       padding: 10px;
       border-radius: var(--border-radius);
       transition: all 0.3s ease;
-    }
-
-    /* Spinner Overlay */
-    .spinner-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      visibility: hidden;
-      opacity: 0;
-      transition: opacity 0.3s, visibility 0.3s;
-    }
-
-    .spinner-overlay.active {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    /* Spinner */
-    .spinner {
-      width: 60px;
-      height: 60px;
-      border: 5px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: var(--primary-color);
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
     }
 
     @media (max-width: 768px) {
@@ -300,19 +276,16 @@
   <div class="btn-container">
     <a href="/recruitment/recruitments" class="btn back-link">Quay lại danh sách</a>
     <button id="applyButton" class="btn apply-btn">Apply job</button>
+    <button id="deleteButton" class="btn delete-btn">Huỷ apply</button>
   </div>
 
   <div id="message"></div>
 </div>
 
-<!-- Spinner Overlay -->
-<div class="spinner-overlay" id="spinnerOverlay">
-  <div class="spinner"></div>
-</div>
-
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("applyButton").addEventListener("click", applyJob);
+    document.getElementById("deleteButton").addEventListener("click", deleteApplication);
     loadCVList();
   });
 
@@ -323,9 +296,12 @@
     return { recruitmentId };
   }
 
+  let appliedFileId = null; // Biến toàn cục để lưu fileId đã ứng tuyển
+
   async function loadCVList() {
     const userId = document.getElementById("user_id").value;
     const cvSelect = document.getElementById("cvSelect");
+    const { recruitmentId } = getIdsFromPath();
 
     try {
       console.log("Fetching CV list for userId:", userId);
@@ -341,68 +317,125 @@
 
       cvSelect.innerHTML = '<option value="">-- Chọn CV để apply --</option>';
 
+      const fileIds = cvList.map(cv => cv.id);
+      const appliedStatus = await checkcvinfoExist(fileIds, recruitmentId);
+
+      // Tìm fileId đã ứng tuyển (nếu có)
+      const appliedResult = appliedStatus.find(status => status.exists);
+      appliedFileId = appliedResult ? appliedResult.fileId : null;
+
       cvList.forEach(cv => {
         let option = document.createElement("option");
         option.value = cv.id;
-        console.log("CV object:", cv); // Debug dữ liệu
-        option.text = cv.displayName || cv.fileName || `CV ${cv.id}`; // Ưu tiên displayName
-        option.dataset.driveLink = cv.path || cv.driveLink || ""; // Linh hoạt với path/driveLink
+        option.text = cv.displayName || cv.fileName || `CV ${cv.id}`;
+        option.dataset.driveLink = cv.path || cv.driveLink || "";
+
+        if (appliedFileId) {
+          option.disabled = true;
+          option.text += " (Đã Apply)";
+        }
+
         cvSelect.appendChild(option);
       });
+
+      if (appliedFileId) {
+        const applyButton = document.getElementById("applyButton");
+        const deleteButton = document.getElementById("deleteButton");
+        applyButton.disabled = true;
+        applyButton.textContent = "Đã Apply";
+        deleteButton.style.display = "inline-flex";
+        cvSelect.disabled = true;
+
+        let messageEl = document.getElementById("message");
+        messageEl.textContent = "Bạn đã apply cho vị trí này!";
+        messageEl.style.color = "green";
+        messageEl.style.backgroundColor = "#e8f5e9";
+      }
     } catch (error) {
       console.error("Error loading CV list:", error);
       cvSelect.innerHTML = '<option value="">Không có CV nào</option>';
     }
   }
 
-  function showSpinner() {
-    document.getElementById("spinnerOverlay").classList.add("active");
-  }
+  // Hàm checkcvinfoExist: Trả về danh sách trạng thái từng fileId
+  async function checkcvinfoExist(fileIds, recruitmentId) {
+    try {
+      if (!fileIds || fileIds.length === 0 || !recruitmentId) {
+        throw new Error("fileIds và recruitmentId là bắt buộc!");
+      }
 
-  function hideSpinner() {
-    document.getElementById("spinnerOverlay").classList.remove("active");
-  }
+      const fileIdArray = Array.isArray(fileIds) ? fileIds : [fileIds];
 
+      const results = await Promise.all(
+              fileIdArray.map(async (fileId) => {
+                try {
+                  let response = await fetch(`/api/cv-info/check-cv-info?fileId=${fileId}&recruitmentId=${recruitmentId}`, {
+                    method: "GET",
+                    headers: {
+                      "Content-Type": "application/json",
+                    }
+                  });
+
+                  if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Không thể kiểm tra thông tin CV cho fileId ${fileId}!`);
+                  }
+
+                  const exists = await response.json();
+                  return { fileId, exists };
+                } catch (error) {
+                  console.error(`Error checking CV for fileId ${fileId}:`, error);
+                  return { fileId, exists: false };
+                }
+              })
+      );
+
+      return results; // Trả về mảng [{ fileId, exists }, ...]
+    } catch (error) {
+      console.error("Error checking CV info existence:", error);
+      throw error;
+    }
+  }
   async function applyJob() {
     let messageEl = document.getElementById("message");
     let applyButton = document.getElementById("applyButton");
+    let deleteButton = document.getElementById("deleteButton");
     let { recruitmentId } = getIdsFromPath();
     const userId = document.getElementById("user_id").value;
     const cvSelect = document.getElementById("cvSelect");
     const selectedCV = cvSelect.options[cvSelect.selectedIndex];
 
-    applyButton.disabled = true;
     console.log("User ID:", userId);
     console.log("Recruitment ID:", recruitmentId);
     console.log("Selected CV ID:", selectedCV.value);
 
     if (!recruitmentId || !userId || isNaN(recruitmentId) || isNaN(userId)) {
-      messageEl.textContent = " Không tìm thấy thông tin tuyển dụng hoặc người dùng.";
+      messageEl.textContent = "Không tìm thấy thông tin tuyển dụng hoặc người dùng.";
       messageEl.style.color = "red";
       messageEl.style.backgroundColor = "#ffebee";
       return;
     }
 
     if (!selectedCV.value) {
-      messageEl.textContent = " Vui lòng chọn một CV để apply!";
+      messageEl.textContent = "Vui lòng chọn một CV để apply!";
       messageEl.style.color = "red";
       messageEl.style.backgroundColor = "#ffebee";
       return;
     }
 
-    // Show loading spinner
     applyButton.disabled = true;
+    applyButton.textContent = "Đang xử lý...";
     messageEl.textContent = "";
     messageEl.style.backgroundColor = "transparent";
-    messageEl.textContent = "Apply thành công!";
-    messageEl.style.color = "green";
-    messageEl.style.backgroundColor = "#e8f5e9"; // Light green for success
 
     try {
       const fileId = selectedCV.value;
       let driveLink = selectedCV.dataset.driveLink;
 
-      // Nếu driveLink không có trong dataset, fetch từ /file/file/path/{fileId}
+      if (subtractYears(new Date(selectedCV.dataset.createdDate), 2) > new Date()) {
+        throw new Error("CV đã hết hạn sử dụng!");
+      }
+
       if (!driveLink) {
         console.log("No driveLink in dataset, fetching from API for fileId:", fileId);
         let pathResponse = await fetch(`/file/file/path/${fileId}`);
@@ -428,20 +461,131 @@
 
       console.log("Sending data:", { driveLink, fileId, recruitmentId });
 
-      await fetch("/cv/save", {
+      let applyResponse = await fetch("/cv/save", {
         method: "POST",
         body: formData
       });
 
+      console.log("Apply API response status:", applyResponse.status);
 
-      // console.log("Apply API response status:", applyResponse.status);
+      // Lấy email của user (giả định từ API)
+      let userResponse = await fetch(`/api/user/${userId}`);
+      if (!userResponse.ok) {
+        throw new Error("Không thể lấy thông tin người dùng!");
+      }
+      const userData = await userResponse.json();
+      const userEmail = userData.email;
+
+      if (!applyResponse.ok) {
+        const errorText = await applyResponse.text();
+        // Gửi email thông báo thất bại
+        await fetch("/api/email/send-mail", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            recipient: userEmail,
+            msgBody: "Chào bạn, chúng tôi không thể xử lý hồ sơ ứng tuyển của bạn do lỗi: " + errorText + ". Vui lòng thử lại sau.",
+            subject: "Ứng tuyển thất bại",
+            attachment: null
+          })
+        });
+        throw new Error(`Apply thất bại: ${errorText}`);
+      }
+
+      let applyData = await applyResponse.text();
+      console.log("Apply response data:", applyData);
+
+      // Gửi email thông báo thành công
+      await fetch("/api/email/send-mail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipient: userEmail,
+          msgBody: "Chào bạn, chúng tôi đã nhận được hồ sơ ứng tuyển của bạn cho vị trí [Tên vị trí]. Cảm ơn bạn đã quan tâm!",
+          subject: "Xác nhận ứng tuyển thành công",
+          attachment: null
+        })
+      });
+
+      messageEl.textContent = "Apply thành công! Email xác nhận đã được gửi.";
+      messageEl.style.color = "green";
+      messageEl.style.backgroundColor = "#e8f5e9";
+
+      applyButton.textContent = "Đã Apply";
+      applyButton.disabled = true;
+      cvSelect.disabled = true;
+      deleteButton.style.display = "inline-flex";
     } catch (error) {
       console.error("Error:", error);
       messageEl.textContent = error.message;
       messageEl.style.color = "red";
-      messageEl.style.backgroundColor = "#ffebee"; // Light red for error
-    } finally {
-      applyButton.disabled = false; // Re-enable button
+      messageEl.style.backgroundColor = "#ffebee";
+
+      applyButton.disabled = false;
+      applyButton.textContent = "Apply job";
+    }
+  }
+
+  function subtractYears(date, years) {
+    const dateCopy = new Date(date);
+    dateCopy.setFullYear(date.getFullYear() - years);
+    return dateCopy;
+  }
+
+  async function deleteApplication() {
+    let messageEl = document.getElementById("message");
+    let applyButton = document.getElementById("applyButton");
+    let deleteButton = document.getElementById("deleteButton");
+    let { recruitmentId } = getIdsFromPath();
+    const cvSelect = document.getElementById("cvSelect");
+
+    // Disable button during processing
+    deleteButton.disabled = true;
+    deleteButton.textContent = "Đang xử lý...";
+
+    try {
+      // Kiểm tra xem có fileId đã ứng tuyển không
+      if (!appliedFileId) {
+        throw new Error("Không tìm thấy CV đã ứng tuyển để hủy!");
+      }
+
+      // Gửi DELETE request với fileId đã ứng tuyển
+      let response = await fetch(`/api/cv-info/reject?fileId=${appliedFileId}&recruitmentId=${recruitmentId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Không thể huỷ ứng tuyển!");
+      }
+
+      // Reset appliedFileId sau khi xóa thành công
+      appliedFileId = null;
+
+      // Update UI to show not applied state
+      applyButton.disabled = false;
+      applyButton.textContent = "Apply job";
+      deleteButton.style.display = "none";
+      cvSelect.disabled = false;
+
+      messageEl.textContent = "Đã huỷ ứng tuyển thành công!";
+      messageEl.style.color = "blue";
+      messageEl.style.backgroundColor = "#e3f2fd";
+
+      // Reload CV list to update the status of CVs
+      loadCVList();
+    } catch (error) {
+      console.error("Error deleting application:", error);
+      messageEl.textContent = error.message;
+      messageEl.style.color = "red";
+      messageEl.style.backgroundColor = "#ffebee";
+
+      // Re-enable delete button
+      deleteButton.disabled = false;
+      deleteButton.textContent = "Huỷ apply";
     }
   }
 </script>

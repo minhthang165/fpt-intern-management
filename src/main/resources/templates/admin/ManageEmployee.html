@@ -473,7 +473,7 @@
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
     document.addEventListener("click", async function (event) {
-        let icon = event.target.closest(".flaticon-padlock"); // Get the clicked padlock icon
+        let icon = event.target.closest(".flaticon-padlock");
         if (!icon) return;
 
         await loadPage(0, 5);
@@ -482,7 +482,7 @@
         event.stopPropagation();
 
         let userId = icon.getAttribute("data-id");
-        let userEmail = icon.getAttribute("data-user-email"); // Get user email
+        let userEmail = icon.getAttribute("data-user-email");
 
         if (!userId) {
             showModal("Error", "Missing user ID!");
@@ -492,26 +492,37 @@
         let isUnlock = icon.classList.contains("inactive");
         let action = isUnlock ? "unlock" : "lock";
         let duration;
+        let reason;
+
         if (isUnlock) {
-            let response = await fetch(`/get-status/${userId}`)
-                .then(response => response.json())
-                .then(duration = response.duration)
+            try {
+                let response = await fetch(`/get-status/${userId}`);
+                let banInfo = await response.json();
+                duration = banInfo.duration;
+                reason = banInfo.reason;
+            } catch (error) {
+                console.error("Error fetching ban status:", error);
+            }
         }
+
         let message = isUnlock
-            ? `Are you sure you want to unlock this user? \n This user has been banned for ${duration}`
+            ? `Are you sure you want to unlock this user? \nThis user has been banned for ${duration} seconds.\nReason: ${reason}`
             : `Provide details for locking this user.`;
 
         showModal("Lock User", message, !isUnlock, function () {
             let reason = document.getElementById("lockReason").value;
             let duration = document.getElementById("lockDuration").value;
-            toggleUserStatus(userId, userEmail, action, reason, duration); // Pass userEmail
+            toggleUserStatus(userId, userEmail, action, reason, duration);
         }, !isUnlock);
     });
 
-    function toggleUserStatus(userId, userEmail, action, reason = "", duration = "") {
+    function toggleUserStatus(userId, userEmail, action, reason, duration) {
         let url = `api/user/${action === "unlock" ? "unban" : "ban"}/${userId}`;
         let method = action === "unlock" ? "DELETE" : "POST";
-        let body = action === "unlock" ? null : JSON.stringify({duration});
+        let body = action === "unlock" ? null : JSON.stringify({
+            duration: duration,
+            reason: reason
+        });
 
         fetch(url, {
             method,
@@ -527,7 +538,7 @@
                         method: "POST",
                         headers: {"Content-Type": "application/json"},
                         body: JSON.stringify({
-                            recipient: userEmail,  // Use extracted email
+                            recipient: userEmail,
                             msgBody: reason,
                             subject: `Your account has been banned for ${duration} seconds`,
                             attachment: null
