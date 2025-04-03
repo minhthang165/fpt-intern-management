@@ -1,9 +1,7 @@
 package com.fsoft.fintern;
 
-import com.fsoft.fintern.services.CloudinaryService;
-import com.fsoft.fintern.services.MessageService;
-import com.fsoft.fintern.services.RecruitmentService;
-import com.fsoft.fintern.services.UserService;
+import com.fsoft.fintern.models.Conversation;
+import com.fsoft.fintern.services.*;
 import org.apache.coyote.BadRequestException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,34 +20,11 @@ import java.util.Map;
 
 @SpringBootTest
 public class FinternApplicationTests {
-
 	@Autowired
-	private CloudinaryService cloudinaryService;
-
-	@Autowired
-	private RecruitmentService recruitmentService;
-
-	//Test upload file to cloudinary
-	@Test
-	public void testUploadFile() throws BadRequestException, FileNotFoundException {
-		Path path = Paths.get("D:\\test.jpg");
-		String name = "file.txt";
-		String originalFileName = "file.txt";
-		String contentType = "text/plain";
-		byte[] content = null;
-		try {
-			content = Files.readAllBytes(path);
-		} catch (final IOException e) {
-		}
-		MultipartFile result = new MockMultipartFile(name,
-				originalFileName, contentType, content);
-		Map data = cloudinaryService.upload(result);
-		System.out.println((String) data.get("url"));
-	}
+	ClassroomService classroomService;
 
 	@Test
-	public void testGetRecruitment() throws BadRequestException {
-		Pageable pageable = PageRequest.of(0, 10);
-		recruitmentService.findAll(pageable);
+	public void Test() {
+		Conversation conv = classroomService.getClassroomsByMentorId(4).getFirst().getConversation();
 	}
 }
