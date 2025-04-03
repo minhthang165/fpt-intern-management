@@ -14,6 +14,10 @@ public class ScheduleController {
 
     @GetMapping
     private String viewSchedule(@SessionAttribute("user")LoginUserDTO user, Model model) {
+        // Lấy userID từ session và đưa vào model
+        model.addAttribute("userId", user.getId());
+        model.addAttribute("userRole", user.getRole().toString());
+        
         if (user.getRole() == Role.EMPLOYEE) {
             return "/employee/EmpSchedule";
         } else

@@ -143,7 +143,7 @@ public class CVInfoService {
                 result.put("message", "User has been approved");
                 return result;
             }
-            
+
             // 5. Cập nhật role của user thành INTERN nếu là GUEST
             if (user.getRole() == Role.GUEST) {
                 user.setRole(Role.INTERN);
