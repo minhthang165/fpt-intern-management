@@ -3,19 +3,19 @@
 // Mảng lưu trữ events
 let events = [];
 
-// Kiểm tra và lấy events từ localStorage
-function loadEventsFromStorage() {
-    const storedEvents = localStorage.getItem('calendarEvents');
-    if (storedEvents) {
-        events = JSON.parse(storedEvents);
-        renderEvents();
-    }
-}
-
-// Lưu events vào localStorage
-function saveEventsToStorage() {
-    localStorage.setItem('calendarEvents', JSON.stringify(events));
-}
+// // Kiểm tra và lấy events từ localStorage
+// function loadEventsFromStorage() {
+//     const storedEvents = localStorage.getItem('calendarEvents');
+//     if (storedEvents) {
+//         events = JSON.parse(storedEvents);
+//         renderEvents();
+//     }
+// }
+//
+// // Lưu events vào localStorage
+// function saveEventsToStorage() {
+//     localStorage.setItem('calendarEvents', JSON.stringify(events));
+// }
 
 // Tạo ID duy nhất cho event
 function generateId() {
@@ -23,158 +23,531 @@ function generateId() {
 }
 
 // Thêm event
-function addEvent(title, startDate, startHour, endDate, endHour, color = '#4f46e5') {
+function addEvent(title, Date, startHour, endDate, endHour, color = '#4f46e5') {
     const newEvent = {
         id: generateId(),
         title: title,
-        startDate: startDate,
+        startDate: Date, // Sửa key thành startDate để khớp với renderEvents
         startHour: startHour,
-        endDate: endDate || startDate,
+        endDate: endDate || Date, // Sử dụng Date nếu endDate không có
         endHour: endHour || (parseInt(startHour) + 1).toString(),
         color: color
     };
-
+    console.log('Event vừa được thêm:', newEvent);
     events.push(newEvent);
-    saveEventsToStorage();
-    renderEvents();
+    renderEvents(); // Chỉ render, không lưu
 }
-
 // Xóa event
 function deleteEvent(eventId) {
     events = events.filter(event => event.id !== eventId);
-    saveEventsToStorage();
-    renderEvents();
+    renderEvents(); // Chỉ render, không lưu
 }
 
-// Hiển thị tất cả events lên lịch
-function renderEvents() {
-    // Xóa tất cả events hiện tại trên UI
-    const eventElements = document.querySelectorAll('.calendar-event');
-    eventElements.forEach(el => el.remove());
+// Hàm fetch dữ liệu từ API và thêm vào events
+async function fetchAndRenderSchedules() {
+    try {
+        console.log("Bắt đầu fetchAndRenderSchedules")
 
-    // Lấy ngày hiện tại trên lịch
-    const currentDates = [];
-    document.querySelectorAll('.calendar-header-cell .day-number').forEach((el, index) => {
-        if (index > 0) { // Bỏ qua ô đầu tiên (trống)
-            currentDates.push(parseInt(el.textContent.trim()));
+        // Xóa events cũ
+        events = []
+        
+        // Lấy userId từ input hidden
+        const userId = document.getElementById('userId').value;
+        const userRole = document.getElementById('userRole').value;
+        console.log(`Đang lấy lịch học cho user: ${userId}, vai trò: ${userRole}`);
+
+        // Endpoint API dựa vào vai trò người dùng
+        let endpoint = "/api/scheduling/all";
+        
+        // Nếu có userId và không phải ADMIN, lọc theo userId
+        if (userId && userRole !== 'ADMIN') {
+            endpoint = `/api/scheduling/user/${userId}`;
         }
-    });
+        
+        // Gọi API để lấy lịch học
+        const response = await fetch(endpoint, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
 
-    const currentMonth = document.getElementById('current-month').textContent;
-    const monthYear = currentMonth.split(' ');
-    const month = getMonthNumber(monthYear[0]);
-    const year = parseInt(monthYear[1]);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch schedules: ${response.status} ${response.statusText}`)
+        }
 
-    // Hiển thị events
-    events.forEach(event => {
-        const eventDate = new Date(event.startDate);
-        const eventDay = eventDate.getDate();
+        // Lấy dữ liệu từ response
+        const schedules = await response.json()
 
-        // Kiểm tra xem event có trong tuần hiện tại không
-        if (currentDates.includes(eventDay)) {
-            const dayIndex = currentDates.indexOf(eventDay) + 1;
-            const hourIndex = parseInt(event.startHour);
+        // Ghi log chi tiết dữ liệu để kiểm tra
+        console.log("Dữ liệu từ API (chi tiết):", JSON.stringify(schedules, null, 2))
 
-            // Tìm cell tương ứng
-            const rows = document.querySelectorAll('.calendar-body');
-            if (rows.length > 0) {
-                const timeRow = rows[0].children[hourIndex * 6]; // Mỗi hàng có 6 ô (1 cho giờ, 5 cho các ngày)
-                if (timeRow) {
-                    const dayCell = rows[0].children[hourIndex * 6 + dayIndex];
+        // Kiểm tra xem schedules có phải là mảng không
+        if (!Array.isArray(schedules)) {
+            throw new Error("Dữ liệu trả về không phải là mảng")
+        }
 
-                    if (dayCell) {
-                        // Tạo event element
-                        const eventEl = document.createElement('div');
-                        eventEl.className = 'calendar-event';
-                        eventEl.style.position = 'absolute';
-                        eventEl.style.inset = '0.25rem';
-                        eventEl.style.backgroundColor = event.color + '80'; // Thêm độ trong suốt
-                        eventEl.style.borderLeft = `3px solid ${event.color}`;
-                        eventEl.style.borderRadius = '0.125rem';
-                        eventEl.style.zIndex = '10';
-                        eventEl.style.cursor = 'pointer';
-                        eventEl.setAttribute('data-event-id', event.id);
+        console.log(`Đã nhận ${schedules.length} lịch từ API`)
 
-                        // Thêm nội dung cho event
-                        eventEl.innerHTML = `
-                                    <div style="padding: 0.25rem; font-size: 0.75rem; font-weight: 500; color: white;">${event.title}</div>
-                                `;
+        // Duyệt qua từng schedule và thêm vào events
+        schedules.forEach((schedule, index) => {
+            // Kiểm tra xem schedule có các trường cần thiết không
+            if (!schedule.room || !schedule.subject || !schedule.classField) {
+                console.warn("Schedule thiếu các trường cần thiết:", schedule)
+                return // Bỏ qua schedule này
+            }
 
-                        // Thêm event vào cell
-                        dayCell.style.position = 'relative';
-                        dayCell.appendChild(eventEl);
+            // Lấy các trường từ dữ liệu API
+            const roomName = schedule.room.roomName || `Room ${schedule.room.id}`
+            const subjectName = schedule.subject.subjectName || `Subject ${schedule.subject.id}`
+            const className = schedule.classField.className || `Class ${schedule.classField.id}`
+            
+            // Lấy thông tin ngày từ dayOfWeek và startDate
+            const dayOfWeek = schedule.dayOfWeek // MONDAY, TUESDAY, etc.
+            const startDate = schedule.startDate // YYYY-MM-DD
+            
+            // Tính toán ngày thực tế dựa trên dayOfWeek và startDate
+            let eventDate = startDate;
+            
+            // Chuyển đổi dayOfWeek thành số (0 = Chủ Nhật, 1 = Thứ 2, etc.)
+            const dayMap = {
+                "MONDAY": 1,
+                "TUESDAY": 2,
+                "WEDNESDAY": 3,
+                "THURSDAY": 4,
+                "FRIDAY": 5,
+                "SATURDAY": 6,
+                "SUNDAY": 0
+            };
+            
+            // Lấy thời gian từ startTime và endTime
+            const startTime = schedule.startTime // Định dạng HH:mm:ss
+            const endTime = schedule.endTime // Định dạng HH:mm:ss
 
-                        // Thêm event listener cho event
-                        eventEl.addEventListener('click', function() {
-                            showEventDetails(event);
-                        });
-                    }
+            // Tạo title từ tên phòng, tên môn học và tên lớp
+            const title = `${className} - ${subjectName} - ${roomName}`
+
+            // Lấy giờ bắt đầu và kết thúc từ startTime và endTime
+            let startHour = "0" // Giá trị mặc định
+            let endHour = "1" // Giá trị mặc định
+
+            // Kiểm tra và xử lý startTime
+            if (startTime && typeof startTime === "string") {
+                const startTimeParts = startTime.split(":")
+                if (startTimeParts.length >= 1) {
+                    startHour = Number.parseInt(startTimeParts[0]).toString()
+                }
+            } else {
+                console.warn("startTime không hợp lệ:", startTime)
+            }
+
+            // Kiểm tra và xử lý endTime
+            if (endTime && typeof endTime === "string") {
+                const endTimeParts = endTime.split(":")
+                if (endTimeParts.length >= 1) {
+                    endHour = Number.parseInt(endTimeParts[0]).toString()
+                }
+            } else {
+                console.warn("endTime không hợp lệ:", endTime)
+            }
+
+            // Chọn màu dựa trên môn học
+            let color = "#4f46e5"; // Màu mặc định
+            if (subjectName.includes("Japanese")) {
+                color = "#EF4444"; // Đỏ
+            } else if (subjectName.includes("Korean")) {
+                color = "#F97316"; // Cam
+            } else if (subjectName.includes("Code")) {
+                color = "#3B82F6"; // Xanh
+            } else if (subjectName.includes("Advanced")) {
+                color = "#8B5CF6"; // Tím
+            }
+
+            // Thêm sự kiện vào mảng events
+            const newEvent = {
+                id: generateId(),
+                title: title,
+                startDate: eventDate, // Đã đúng định dạng YYYY-MM-DD
+                startHour: startHour,
+                endDate: eventDate,
+                endHour: endHour,
+                color: color,
+                // Lưu thêm thông tin chi tiết để hiển thị khi click
+                details: {
+                    className: className,
+                    subjectName: subjectName,
+                    roomName: roomName,
+                    dayOfWeek: dayOfWeek,
+                    startTime: startTime,
+                    endTime: endTime,
+                    location: roomName
+                },
+            }
+
+            console.log(`Thêm sự kiện #${index}:`, newEvent)
+            events.push(newEvent)
+        })
+
+        console.log(`Đã thêm ${events.length} sự kiện vào mảng events`)
+
+        // Thêm CSS styles cho events
+        addEventStyles()
+
+        // Render events lên lịch
+        renderEvents()
+    } catch (error) {
+        console.error("Error fetching schedules:", error)
+    }
+}
+// Hiển thị tất cả events lên lịch
+// Hiển thị tất cả events lên lịch - phiên bản với khối liên tục
+function renderEvents() {
+    console.log("renderEvents được gọi với", events.length, "sự kiện");
+
+    // Xóa tất cả events hiện tại trên UI
+    document.querySelectorAll('.calendar-event').forEach(el => el.remove());
+
+    if (events.length === 0) {
+        console.log("Không có sự kiện nào để hiển thị");
+        return;
+    }
+
+    // Debug: In ra cấu trúc của calendar-body
+    const calendarBody = document.querySelector('.calendar-body');
+    if (!calendarBody) {
+        console.error("Không tìm thấy .calendar-body");
+        return;
+    }
+
+    // Lấy thông tin về các ngày hiển thị trên lịch
+    const headerCells = document.querySelectorAll('.calendar-header-cell');
+    if (headerCells.length <= 1) {
+        console.error("Không tìm thấy đủ .calendar-header-cell");
+        return;
+    }
+
+    // Lấy tháng và năm từ tiêu đề
+    const currentMonthText = document.getElementById('current-month').textContent;
+    console.log("Tháng hiện tại:", currentMonthText);
+
+    // Xử lý trường hợp hiển thị 2 tháng (ví dụ: "March - April 2025")
+    let firstMonthName, secondMonthName, year;
+
+    if (currentMonthText.includes(' - ')) {
+        // Trường hợp 2 tháng
+        const parts = currentMonthText.split(' - ');
+        firstMonthName = parts[0].trim();
+
+        // Phần thứ hai có thể là "April 2025"
+        const secondParts = parts[1].trim().split(' ');
+        secondMonthName = secondParts[0].trim();
+        year = parseInt(secondParts[1]);
+    } else {
+        // Trường hợp 1 tháng
+        const parts = currentMonthText.split(' ');
+        firstMonthName = parts[0].trim();
+        secondMonthName = null;
+        year = parseInt(parts[1]);
+    }
+
+    if (isNaN(year)) {
+        console.error("Không thể phân tích năm từ:", currentMonthText);
+        return;
+    }
+
+    const firstMonthIndex = getMonthNumber(firstMonthName);
+    const secondMonthIndex = secondMonthName ? getMonthNumber(secondMonthName) : -1;
+
+    if (firstMonthIndex === -1) {
+        console.error("Tháng không hợp lệ:", firstMonthName);
+        return;
+    }
+
+    console.log(`Đang hiển thị: Tháng ${firstMonthIndex + 1}${secondMonthIndex !== -1 ? ' và ' + (secondMonthIndex + 1) : ''} năm ${year}`);
+
+    // Tạo mapping giữa ngày và cột, đồng thời lưu thông tin tháng của từng ngày
+    const dayToColumnMap = new Map();
+    const dayToMonthMap = new Map();
+
+    // Bỏ qua ô đầu tiên vì nó trống
+    for (let i = 1; i < headerCells.length; i++) {
+        const dayNumber = headerCells[i].querySelector('.day-number');
+        if (dayNumber) {
+            const day = parseInt(dayNumber.textContent.trim());
+            if (!isNaN(day)) {
+                // Lưu mapping giữa ngày và cột (index bắt đầu từ 1)
+                dayToColumnMap.set(day, i);
+
+                // Xác định tháng của ngày này (dựa vào logic: nếu ngày nhỏ và có tháng thứ 2, thì thuộc tháng thứ 2)
+                // Thông thường, ngày cuối tháng > 28, ngày đầu tháng < 7
+                if (secondMonthIndex !== -1 && day < 15) {
+                    dayToMonthMap.set(day, secondMonthIndex);
+                } else {
+                    dayToMonthMap.set(day, firstMonthIndex);
                 }
             }
+        }
+    }
+
+    console.log("Mapping ngày -> cột:", Object.fromEntries(dayToColumnMap));
+    console.log("Mapping ngày -> tháng:", Object.fromEntries(dayToMonthMap));
+
+    // Hiển thị từng sự kiện
+    events.forEach((event, index) => {
+        console.log(`Xử lý sự kiện #${index}:`, event);
+
+        try {
+            // Phân tích ngày từ startDate (định dạng YYYY-MM-DD)
+            const dateParts = event.startDate.split('-');
+            if (dateParts.length !== 3) {
+                console.error(`Định dạng ngày không hợp lệ cho sự kiện #${index}:`, event.startDate);
+                return;
+            }
+
+            const eventYear = parseInt(dateParts[0]);
+            const eventMonth = parseInt(dateParts[1]) - 1; // Tháng trong JS bắt đầu từ 0
+            const eventDay = parseInt(dateParts[2]);
+
+            // Kiểm tra xem năm có khớp không
+            if (eventYear !== year) {
+                console.log(`Sự kiện #${index} không nằm trong năm hiện tại: ${eventYear} vs ${year}`);
+                return;
+            }
+
+            // Kiểm tra xem tháng có khớp với một trong hai tháng hiển thị không
+            const isInFirstMonth = (eventMonth === firstMonthIndex);
+            const isInSecondMonth = (secondMonthIndex !== -1 && eventMonth === secondMonthIndex);
+
+            if (!isInFirstMonth && !isInSecondMonth) {
+                console.log(`Sự kiện #${index} không nằm trong tháng hiển thị: ${eventMonth + 1} vs ${firstMonthIndex + 1}${secondMonthIndex !== -1 ? ' hoặc ' + (secondMonthIndex + 1) : ''}`);
+                return;
+            }
+
+            // Tìm cột tương ứng với ngày
+            const column = dayToColumnMap.get(eventDay);
+            if (!column) {
+                console.log(`Không tìm thấy cột cho ngày ${eventDay} của sự kiện #${index}`);
+                return;
+            }
+
+            // Kiểm tra xem tháng của ngày trên lịch có khớp với tháng của sự kiện không
+            const dayMonth = dayToMonthMap.get(eventDay);
+            if (dayMonth !== eventMonth) {
+                console.log(`Ngày ${eventDay} trên lịch thuộc tháng ${dayMonth + 1}, nhưng sự kiện thuộc tháng ${eventMonth + 1}`);
+                return;
+            }
+
+            // Lấy giờ bắt đầu và kết thúc
+            const startHour = parseInt(event.startHour);
+            const endHour = parseInt(event.endHour);
+
+            if (isNaN(startHour) || startHour < 0 || startHour > 23) {
+                console.error(`Giờ bắt đầu không hợp lệ cho sự kiện #${index}:`, event.startHour);
+                return;
+            }
+
+            if (isNaN(endHour) || endHour < 0 || endHour > 23) {
+                console.error(`Giờ kết thúc không hợp lệ cho sự kiện #${index}:`, event.endHour);
+                return;
+            }
+
+            // Lấy tất cả các ô trong calendar-body
+            const cells = Array.from(calendarBody.children);
+
+            // Tính toán vị trí của ô bắt đầu và ô kết thúc
+            const startCellIndex = (startHour * 6) + column;
+            const endCellIndex = (endHour * 6) + column;
+
+            if (startCellIndex >= cells.length) {
+                console.error(`Vị trí ô bắt đầu (${startCellIndex}) vượt quá số lượng ô (${cells.length}) cho sự kiện #${index}`);
+                return;
+            }
+
+            // Lấy ô bắt đầu
+            const startCell = cells[startCellIndex];
+            console.log(`Đã tìm thấy ô bắt đầu cho sự kiện #${index}:`, startCell);
+
+            // Tính toán chiều cao của sự kiện (dựa trên số giờ)
+            const hourHeight = 60; // Chiều cao mỗi ô giờ (px)
+            const eventHeight = (endHour - startHour) * hourHeight;
+
+            // Tạo phần tử hiển thị sự kiện
+            const eventEl = document.createElement('div');
+            eventEl.className = "calendar-event"
+            eventEl.style.position = "absolute"
+            eventEl.style.top = "5px"
+            eventEl.style.left = "5px"
+            eventEl.style.right = "5px"
+            eventEl.style.height = `${eventHeight - 10}px` // Trừ đi padding
+            eventEl.style.backgroundColor = event.color + "80"
+            eventEl.style.borderLeft = `3px solid ${event.color}`
+            eventEl.style.borderRadius = "0.125rem"
+            eventEl.style.padding = "0.25rem"
+            eventEl.style.fontSize = "0.75rem"
+            eventEl.style.color = "white"
+            eventEl.style.display = "block" // Thay đổi từ 'flex' thành 'block'
+            eventEl.style.cursor = "pointer"
+            eventEl.style.zIndex = "10"
+            eventEl.style.overflow = "auto" // Cho phép scroll nếu nội dung quá dài
+            eventEl.style.whiteSpace = "normal" // Cho phép xuống dòng
+            eventEl.style.wordBreak = "break-word" // Cho phép ngắt từ khi cần thiết
+            eventEl.style.lineHeight = "1.2" // Giảm khoảng cách giữa các dòng
+            eventEl.innerHTML = `
+              <div><strong>Class:</strong> ${event.details.className}</div>
+              <div><strong>Subject:</strong> ${event.details.subjectName}</div>
+              <div><strong>Room:</strong> ${event.details.roomName}</div>
+            `
+            // Thêm sự kiện vào ô
+            startCell.appendChild(eventEl);
+            console.log(`Đã thêm sự kiện #${index} vào ô`);
+
+            // Thêm sự kiện click
+            eventEl.addEventListener('click', function() {
+                showEventDetails(event);
+            });
+        } catch (error) {
+            console.error(`Lỗi khi xử lý sự kiện #${index}:`, error);
         }
     });
 }
 
 // Hiển thị chi tiết event khi click
 function showEventDetails(event) {
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    modal.innerHTML = `
-                <div class="bg-white rounded-md p-4 max-w-md w-full">
-                    <h3 class="text-lg font-medium mb-2">${event.title}</h3>
-                    <p class="text-sm text-gray-500 mb-4">
-                        ${formatDate(event.startDate)} ${event.startHour}:00 - ${event.endHour}:00
-                    </p>
-                    <div class="flex justify-end gap-2">
-                        <button class="btn btn-outline delete-event">Delete</button>
-                        <button class="btn btn-primary close-modal">Close</button>
-                    </div>
-                </div>
-            `;
+    const modal = document.createElement("div")
+    modal.className = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
 
-    document.body.appendChild(modal);
+    // Tạo nội dung chi tiết hơn nếu có thông tin details
+    let detailsHTML = ""
+    if (event.details) {
+        detailsHTML = `
+            <p class="text-sm text-gray-700 mb-1"><strong>Lớp:</strong> ${event.details.className}</p>
+            <p class="text-sm text-gray-700 mb-1"><strong>Môn học:</strong> ${event.details.subjectName}</p>
+            <p class="text-sm text-gray-700 mb-1"><strong>Phòng:</strong> ${event.details.roomName}</p>
+            <p class="text-sm text-gray-700 mb-4"><strong>Thời gian:</strong> ${formatTime(event.details.startTime)} - ${formatTime(event.details.endTime)}</p>
+        `
+    } else {
+        detailsHTML = `
+            <p class="text-sm text-gray-500 mb-4">
+                ${formatDate(event.startDate)} ${event.startHour}:00 - ${event.endHour}:00
+            </p>
+        `
+    }
+
+    modal.innerHTML = `
+        <div class="bg-white rounded-md p-4 max-w-md w-full">
+            <h3 class="text-lg font-medium mb-2">${event.title}</h3>
+            ${detailsHTML}
+            <div class="flex justify-end gap-2">
+                <button class="btn btn-outline delete-event">Delete</button>
+                <button class="btn btn-primary close-modal">Close</button>
+            </div>
+        </div>
+    `
+
+    document.body.appendChild(modal)
 
     // Xử lý đóng modal
-    modal.querySelector('.close-modal').addEventListener('click', function() {
-        modal.remove();
-    });
+    modal.querySelector(".close-modal").addEventListener("click", () => {
+        modal.remove()
+    })
 
     // Xử lý xóa event
-    modal.querySelector('.delete-event').addEventListener('click', function() {
-        deleteEvent(event.id);
-        modal.remove();
-    });
+    modal.querySelector(".delete-event").addEventListener("click", () => {
+        deleteEvent(event.id)
+        modal.remove()
+    })
 
     // Đóng modal khi click bên ngoài
-    modal.addEventListener('click', function(e) {
+    modal.addEventListener("click", (e) => {
         if (e.target === modal) {
-            modal.remove();
+            modal.remove()
         }
-    });
+    })
 }
-
 // Định dạng ngày
 function formatDate(dateString) {
     const date = new Date(dateString);
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 }
-
-// Lấy số tháng từ tên tháng
+function addEventStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .calendar-event {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            height: 80%;
+            border-radius: 0.125rem;
+            padding: 0.25rem;
+            font-size: 0.75rem;
+            color: black;
+            background-color: #ffcccc;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .calendar-body > div {
+            position: relative;
+        }
+    `;
+    document.head.appendChild(style);
+}
+// Sửa lại hàm getMonthNumber để trả về index (0-11)
 function getMonthNumber(monthName) {
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    return months.indexOf(monthName);
+    return months.findIndex(m => m.toLowerCase() === monthName.toLowerCase());
 }
 
+
 // Hàm cập nhật các ngày trong tuần
+function updateMonthDisplay(startDate) {
+    if (!startDate || isNaN(startDate.getTime())) {
+        console.error("startDate không hợp lệ trong updateMonthDisplay:", startDate);
+        return; // Không fallback về ngày hiện tại
+    }
+
+    try {
+        const monday = new Date(startDate);
+        const friday = new Date(startDate);
+        friday.setDate(monday.getDate() + 4); // Ngày thứ 6
+
+        const mondayMonth = monday.getMonth();
+        const fridayMonth = friday.getMonth();
+
+        const mondayMonthName = getMonthName(mondayMonth) || 'January';
+        const fridayMonthName = getMonthName(fridayMonth) || 'January';
+
+        if (mondayMonth === fridayMonth) {
+            document.getElementById('current-month').textContent = `${mondayMonthName} ${monday.getFullYear()}`;
+        } else {
+            const mondayYear = monday.getFullYear();
+            const fridayYear = friday.getFullYear();
+
+            if (mondayYear === fridayYear) {
+                document.getElementById('current-month').textContent = `${mondayMonthName} - ${fridayMonthName} ${mondayYear}`;
+            } else {
+                document.getElementById('current-month').textContent = `${mondayMonthName} ${mondayYear} - ${fridayMonthName} ${fridayYear}`;
+            }
+        }
+    } catch (error) {
+        console.error("Lỗi khi cập nhật hiển thị tháng:", error);
+        // Không fallback về ngày hiện tại, giữ nguyên trạng thái
+    }
+}
+
 function updateWeekDays(startDate) {
     if (!startDate || isNaN(startDate.getTime())) {
-        // Nếu ngày không hợp lệ, sử dụng ngày hiện tại
-        startDate = new Date();
-        const dayOfWeek = startDate.getDay() || 7;
-        startDate.setDate(startDate.getDate() - dayOfWeek + 1);
+        console.error("startDate không hợp lệ trong updateWeekDays:", startDate);
+        return; // Không fallback về ngày hiện tại
     }
 
     try {
@@ -197,8 +570,6 @@ function updateWeekDays(startDate) {
 
             // Lấy tên ngày trong tuần
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-            // Cập nhật tên ngày
             if (dayNameElements[i]) {
                 dayNameElements[i].textContent = dayNames[date.getDay()];
             }
@@ -220,55 +591,9 @@ function updateWeekDays(startDate) {
         }
     } catch (error) {
         console.error("Lỗi khi cập nhật ngày trong tuần:", error);
-        // Trong trường hợp lỗi, không làm gì để tránh việc hiển thị không đúng
+        // Không fallback về ngày hiện tại, giữ nguyên trạng thái
     }
 }
-
-// Hàm cập nhật hiển thị tháng (có thể chuyển giao giữa 2 tháng)
-function updateMonthDisplay(startDate) {
-    if (!startDate || isNaN(startDate.getTime())) {
-        // Nếu ngày không hợp lệ, sử dụng ngày hiện tại
-        startDate = new Date();
-        const dayOfWeek = startDate.getDay() || 7;
-        startDate.setDate(startDate.getDate() - dayOfWeek + 1);
-    }
-
-    try {
-        const monday = new Date(startDate);
-        const friday = new Date(startDate);
-        friday.setDate(monday.getDate() + 4); // Ngày thứ 6
-
-        const mondayMonth = monday.getMonth();
-        const fridayMonth = friday.getMonth();
-
-        // Lấy tên tháng một cách an toàn
-        const mondayMonthName = getMonthName(mondayMonth) || 'January';
-        const fridayMonthName = getMonthName(fridayMonth) || 'January';
-
-        if (mondayMonth === fridayMonth) {
-            // Cùng một tháng
-            document.getElementById('current-month').textContent = `${mondayMonthName} ${monday.getFullYear()}`;
-        } else {
-            // Khác tháng
-            const mondayYear = monday.getFullYear();
-            const fridayYear = friday.getFullYear();
-
-            if (mondayYear === fridayYear) {
-                // Cùng năm, khác tháng
-                document.getElementById('current-month').textContent = `${mondayMonthName} - ${fridayMonthName} ${mondayYear}`;
-            } else {
-                // Khác cả năm và tháng
-                document.getElementById('current-month').textContent = `${mondayMonthName} ${mondayYear} - ${fridayMonthName} ${fridayYear}`;
-            }
-        }
-    } catch (error) {
-        console.error("Lỗi khi cập nhật hiển thị tháng:", error);
-        // Trong trường hợp có lỗi, hiển thị tháng hiện tại
-        const now = new Date();
-        document.getElementById('current-month').textContent = `${getMonthName(now.getMonth())} ${now.getFullYear()}`;
-    }
-}
-
 // Lấy tên tháng từ số tháng
 function getMonthName(monthNumber) {
     const months = [
@@ -616,9 +941,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Khởi tạo kéo thả
     initDragToCreate();
 
-    // Load events từ localStorage
-    loadEventsFromStorage();
-
+    // Fetch dữ liệu từ API và hiển thị
+    fetchAndRenderSchedules();
     // Xử lý nút Today
     document.querySelector('.btn-today').addEventListener('click', function() {
         navigateToDate('today');
@@ -823,9 +1147,9 @@ function navigateToDate(direction) {
 
         // Xử lý chuyển đổi giữa các tuần
         try {
-            // Lấy ngày cuối cùng hiển thị trên lịch để xử lý chuyển tháng chính xác hơn
-            const lastDayElement = document.querySelector('.calendar-header-cell:nth-child(6) .day-number');
+            // Lấy ngày đầu tiên và cuối cùng hiển thị trên lịch
             const firstDayElement = document.querySelector('.calendar-header-cell:nth-child(2) .day-number');
+            const lastDayElement = document.querySelector('.calendar-header-cell:nth-child(6) .day-number');
 
             if (firstDayElement && lastDayElement) {
                 const monthParts = currentMonth.split(' - ');
@@ -838,15 +1162,25 @@ function navigateToDate(direction) {
                     year = parseInt(lastMonthYear[lastMonthYear.length - 1]);
                     const lastDay = parseInt(lastDayElement.textContent.trim());
                     date = new Date(year, month, lastDay);
-                    date.setDate(date.getDate() + 3); // Thêm 3 ngày để đảm bảo sang tuần mới
+                    date.setDate(date.getDate() + 7); // Chuyển sang tuần sau (thêm 7 ngày)
                 } else if (direction === 'prev') {
                     // Sử dụng tháng của ngày đầu tiên khi đi lui
                     const firstMonthYear = monthParts[0].split(' ');
                     month = getMonthNumber(firstMonthYear[0]);
                     year = parseInt(firstMonthYear[1]);
                     const firstDay = parseInt(firstDayElement.textContent.trim());
+
+                    // Kiểm tra giá trị hợp lệ
+                    if (isNaN(month) || isNaN(year) || isNaN(firstDay)) {
+                        throw new Error("Invalid month, year, or firstDay");
+                    }
+
                     date = new Date(year, month, firstDay);
-                    date.setDate(date.getDate() - 3); // Trừ 3 ngày để đảm bảo lùi về tuần trước
+                    console.log("Before subtracting 7 days:", date); // Debug
+
+                    // Lùi về tuần trước
+                    date.setDate(date.getDate() - 7);
+                    console.log("After subtracting 7 days:", date); // Debug
                 } else if (direction === 'today') {
                     date = new Date();
                 }
@@ -855,26 +1189,60 @@ function navigateToDate(direction) {
                     // Điều chỉnh về đầu tuần (thứ Hai)
                     const dayOfWeek = date.getDay() || 7;
                     date.setDate(date.getDate() - dayOfWeek + 1);
+                    console.log("After adjusting to Monday:", date); // Debug
                 }
+            } else {
+                throw new Error("Cannot find firstDayElement or lastDayElement");
             }
         } catch (error) {
             console.error("Lỗi khi phân tích ngày:", error);
-            // Sử dụng ngày hiện tại nếu có lỗi
-            date = new Date();
+            // Nếu có lỗi, thử lấy ngày từ tháng hiện tại
+            const monthParts = currentMonth.split(' - ');
+            let month, year;
+
+            // Lấy tháng và năm từ phần đầu tiên của currentMonth
+            const firstMonthYear = monthParts[0].split(' ');
+            month = getMonthNumber(firstMonthYear[0]);
+            year = parseInt(firstMonthYear[1]);
+
+            if (isNaN(month) || isNaN(year)) {
+                // Nếu không lấy được tháng/năm, sử dụng ngày hiện tại
+                const now = new Date();
+                month = now.getMonth();
+                year = now.getFullYear();
+            }
+
+            // Tạo ngày từ tháng và năm hiện tại
+            date = new Date(year, month, 1);
+
+            if (direction === 'prev') {
+                // Lùi về tháng trước
+                // Cập nhật lại ngày để nằm trong tuần cuối của tháng trước
+                date.setDate(1); // Đặt về ngày 1 của tháng
+                date.setDate(date.getDate() - 7); // Lùi về tuần trước
+            } else if (direction === 'next') {
+                // Tiến tới tháng sau
+                date.setMonth(date.getMonth() + 1);
+            }
+
+            // Điều chỉnh về đầu tuần (thứ Hai)
             const dayOfWeek = date.getDay() || 7;
             date.setDate(date.getDate() - dayOfWeek + 1);
         }
 
-        if (!date) {
+        if (!date || isNaN(date.getTime())) {
+            console.error("Ngày không hợp lệ, sử dụng ngày hiện tại");
             date = new Date();
             const dayOfWeek = date.getDay() || 7;
             date.setDate(date.getDate() - dayOfWeek + 1);
         }
 
         // Cập nhật tiêu đề tháng/năm và các ngày trong tuần
+        console.log("Before updating display:", date); // Debug
         updateMonthDisplay(date);
         updateWeekDays(date);
         renderEvents();
+        console.log("After updating display:", document.getElementById('current-month').textContent); // Debug
 
     } catch (error) {
         console.error("Lỗi khi chuyển đổi giữa các tuần:", error);
@@ -896,11 +1264,30 @@ function showMonthPicker() {
     const oldPicker = document.querySelector('.month-picker');
     if (oldPicker) oldPicker.remove();
 
-    // Lấy thông tin tháng hiện tại
+    // Lấy thông tin tuần hiện tại từ lịch
     const currentMonthText = document.getElementById('current-month').textContent;
-    const monthYear = currentMonthText.split(' - ')[0].split(' ');
-    const currentMonth = getMonthNumber(monthYear[0]);
-    const currentYear = parseInt(monthYear[1]);
+    const monthParts = currentMonthText.split(' - ');
+    const firstMonthYear = monthParts[0].split(' ');
+    let currentMonth = getMonthNumber(firstMonthYear[0]);
+    let currentYear = parseInt(firstMonthYear[1]);
+
+    // Lấy ngày đầu tiên (thứ Hai) của tuần hiện tại
+    const firstDayElement = document.querySelector('.calendar-header-cell:nth-child(2) .day-number');
+    const firstDay = parseInt(firstDayElement.textContent.trim());
+
+    // Kiểm tra giá trị hợp lệ
+    if (isNaN(currentMonth) || isNaN(currentYear) || isNaN(firstDay)) {
+        console.error("Invalid month, year, or first day:", currentMonth, currentYear, firstDay);
+        currentMonth = new Date().getMonth();
+        currentYear = new Date().getFullYear();
+    }
+
+    // Tạo ngày thứ Hai của tuần hiện tại
+    let currentMonday = new Date(currentYear, currentMonth, firstDay);
+    if (isNaN(currentMonday.getTime())) {
+        console.error("Invalid date for currentMonday:", currentMonday);
+        currentMonday = new Date();
+    }
 
     // Tạo month picker container
     const picker = document.createElement('div');
@@ -910,18 +1297,18 @@ function showMonthPicker() {
     const header = document.createElement('div');
     header.className = 'month-picker-nav';
     header.innerHTML = `
-                <button class="month-nav-btn" id="prev-picker-month">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                </button>
-                <span class="month-picker-title">${getMonthName(currentMonth)} ${currentYear}</span>
-                <button class="month-nav-btn" id="next-picker-month">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
-            `;
+        <button class="month-nav-btn" id="prev-picker-month">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <span class="month-picker-title"></span>
+        <button class="month-nav-btn" id="next-picker-month">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+    `;
     picker.appendChild(header);
 
     // Thêm header cho các ngày trong tuần
@@ -939,14 +1326,35 @@ function showMonthPicker() {
     const grid = document.createElement('div');
     grid.className = 'month-picker-grid';
 
-    function renderMonth(year, month) {
+    // Hàm xác định tháng hiển thị (ưu tiên tháng trước nếu giữa hai tháng)
+    function getDisplayMonth(startDate) {
+        const monday = new Date(startDate);
+        const friday = new Date(startDate);
+        friday.setDate(monday.getDate() + 4);
+
+        const mondayMonth = monday.getMonth();
+        const mondayYear = monday.getFullYear();
+
+        // Ưu tiên tháng của ngày thứ Hai (tháng trước)
+        return { month: mondayMonth, year: mondayYear };
+    }
+
+    // Hàm render tháng
+    function renderMonth(date) {
         grid.innerHTML = '';
+        const { month, year } = getDisplayMonth(date);
+
+        // Kiểm tra giá trị hợp lệ
+        if (isNaN(month) || isNaN(year)) {
+            console.error("Invalid month or year in renderMonth:", month, year);
+            return;
+        }
+
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const startingDay = firstDay.getDay();
         const totalDays = lastDay.getDate();
 
-        // Lấy ngày hiện tại theo LocalDate
         const today = new Date();
         const isCurrentMonth = month === today.getMonth() && year === today.getFullYear();
 
@@ -965,12 +1373,10 @@ function showMonthPicker() {
             dayEl.className = 'month-picker-cell';
             dayEl.textContent = i;
 
-            // Chỉ thêm chấm tròn cho ngày hôm nay nếu đang ở tháng hiện tại
             if (isCurrentMonth && i === today.getDate()) {
                 dayEl.classList.add('today');
             }
 
-            // Thêm sự kiện click để chọn ngày
             dayEl.addEventListener('click', () => {
                 const selectedDate = new Date(year, month, i);
                 const dayOfWeek = selectedDate.getDay() || 7;
@@ -996,32 +1402,30 @@ function showMonthPicker() {
         }
 
         // Cập nhật tiêu đề
-        header.querySelector('.month-picker-title').textContent =
-            `${getMonthName(month)} ${year}`;
+        const monthName = getMonthName(month);
+        if (!monthName) {
+            console.error("Invalid month name for month:", month);
+            return;
+        }
+        header.querySelector('.month-picker-title').textContent = `${monthName} ${year}`;
     }
 
     picker.appendChild(grid);
-    renderMonth(currentYear, currentMonth);
+    renderMonth(currentMonday);
 
     // Thêm xử lý sự kiện cho nút điều hướng
     header.querySelector('#prev-picker-month').addEventListener('click', (e) => {
         e.stopPropagation();
-        currentMonth--;
-        if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
-        }
-        renderMonth(currentYear, currentMonth);
+        const current = getDisplayMonth(currentMonday);
+        currentMonday = new Date(current.year, current.month - 1, 1); // Chuyển sang tháng trước
+        renderMonth(currentMonday);
     });
 
     header.querySelector('#next-picker-month').addEventListener('click', (e) => {
         e.stopPropagation();
-        currentMonth++;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
-        }
-        renderMonth(currentYear, currentMonth);
+        const current = getDisplayMonth(currentMonday);
+        currentMonday = new Date(current.year, current.month + 1, 1); // Chuyển sang tháng sau
+        renderMonth(currentMonday);
     });
 
     // Định vị month picker
@@ -1041,6 +1445,5 @@ function showMonthPicker() {
         }
     });
 }
-
 // Thêm event listener cho current-month
 document.getElementById('current-month').addEventListener('click', showMonthPicker);
