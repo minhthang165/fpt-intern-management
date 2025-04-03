@@ -1,5 +1,6 @@
+
 document.addEventListener("DOMContentLoaded", function () {
-    const userId = document.getElementById("userId").value;
+    const userId = document.getElementById("user_id").value;
     console.log("User ID:", userId);
 
     let stompClient = null;
@@ -40,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
                 text-align: center;">
                 <p>📞 Incoming Call from <b>${callerName}</b></p>
-                <button onclick="window.location.href='/video-call.html?room=${roomID}&user=${userId}'">Accept</button>
+                <button onclick="window.open('/video-call.html?room=${roomID}&user=${userId}', '_blank')">Accept</button>
                 <button onclick="document.getElementById('call-popup').remove()">Reject</button>
             </div>`;
         document.body.appendChild(callDialog);
