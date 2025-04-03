@@ -8,6 +8,7 @@ public class TaskDTO {
     private String fileData;
     private Timestamp startTime;
     private Timestamp endTime;
+    private String description;
     private Integer creatorId;
     private Integer classId;
     public Integer getCreator() {
@@ -16,6 +17,14 @@ public class TaskDTO {
 
     public void setCreator(Integer creator) {
         this.creatorId = creator;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Integer getClassId() {

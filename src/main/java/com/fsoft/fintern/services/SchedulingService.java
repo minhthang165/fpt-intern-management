@@ -438,7 +438,7 @@ public class SchedulingService {
                 markRoomAsOccupied(selectedRoom, day, NOON_START, NOON_END, roomSchedule);
                 ScheduleResultDTO advLangScheduleDTO = createScheduleDTO(
                     classData.getClassName(),
-                    "Advanced " + languageSubject.getSubjectName(),
+                    languageSubject.getSubjectName(),
                     selectedRoom.getRoomName(),
                     day,
                     NOON_START,

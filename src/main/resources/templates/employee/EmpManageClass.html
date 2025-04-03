@@ -590,8 +590,8 @@
         } catch (error) {
             // Show error message
             document.getElementById("task-list").innerHTML = `
-                <div class="alert alert-danger">
-                    Không thể tải danh sách task. Vui lòng thử lại sau.
+                <div class="alert">
+                    Chưa có task nào được giao.
                 </div>
             `;
             console.error("Error fetching tasks:", error);
@@ -632,7 +632,7 @@
 
             taskElement.innerHTML = `
                 <div class="task-title">${task.taskName}</div>
-                <div class="task-description">${task.description || 'description sẽ được hiển thị ở đây'}</div>
+                <div class="task-description">${task.description || 'Description'}</div>
                 <div class="task-meta">
                     <div class="task-deadline">
                         <span>Hạn nộp Task: ${formattedEndTime}</span>

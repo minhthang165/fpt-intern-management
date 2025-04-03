@@ -91,6 +91,7 @@ public class SchedulingRestController {
             @Parameter(description = "List of scheduling data")
             @RequestBody List<SchedulingDTO> data) {
         List<ScheduleResultDTO> schedule = schedulingService.generateSchedule(data);
+        schedulingService.saveSchedule(schedule);
         return ResponseEntity.ok(schedule);
     }
 

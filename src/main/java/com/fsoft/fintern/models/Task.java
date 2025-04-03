@@ -3,6 +3,7 @@ package com.fsoft.fintern.models;
 import com.fsoft.fintern.enums.TaskStatus;
 import com.fsoft.fintern.models.Shared.BaseModel;
 import jakarta.persistence.*;
+import org.checkerframework.checker.units.qual.C;
 
 import java.sql.Timestamp;
 
@@ -26,6 +27,8 @@ public class Task extends BaseModel {
     @Column(name = "[file]")
     private String fileData;
 
+    @Column(name = "description")
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "class_id", referencedColumnName = "id")
@@ -34,6 +37,14 @@ public class Task extends BaseModel {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = true, length = 50,  columnDefinition = "NVARCHAR(50) CHECK ([status] in ('PENDING', 'IN_PROGRESS', 'COMPLETED')) DEFAULT 'PENDING'")
     private TaskStatus status;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public TaskStatus getStatus() {
         return status;
