@@ -7,6 +7,7 @@
     <title>Classroom Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -160,77 +161,9 @@
             font-size: 18px;
         }
 
-        .modal-backdrop{
-            display: none;
-        }
-
-        /* Student container styles with scrolling */
-        .student-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-            max-height: 150px; /* Limit height to enable scrolling */
-            overflow-y: auto; /* Enable vertical scrolling */
-            padding: 5px;
-            border-radius: 8px;
-        }
-
-        /* Student badge styles */
-        .student-badge {
-            display: inline-block;
-            padding: 8px 15px;
-            border-radius: 50px;
-            border: 1px solid #20c997;
-            background-color: #fff;
-            color: #333;
-            font-size: 14px;
-            white-space: nowrap;
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-
-        /* Task list styles with scrolling */
-        .task-list {
-            max-height: 300px; /* Limit height to enable scrolling */
-            overflow-y: auto; /* Enable vertical scrolling */
-            padding: 10px 5px;
-            border-radius: 8px;
-        }
-
-        /* Task item styles */
-        .task-item {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 3px solid #e67e22;
-        }
-
-        .task-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .task-description {
-            color: #666;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .task-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #888;
-        }
-
-
-    </style>
 </head>
 <body class="body-area">
-<input type="hidden" id="user_id" th:value="${user.id}">
-
+<input type="hidden" id="user_id" th:value="${mentorId}">
 <th:block th:replace="~{include/employee-sidebar :: sidebar(~{::content})}">
     <div class="app__slide-wrapper" th:fragment="content">
         <div class="breadcrumb__area">
@@ -342,41 +275,6 @@
         </template>
 
         <template id="chatTemplate">
-            <div class="chat-box h-100">
-                <div class="chat-container">
-                    <div class="mb-3 fw-bold">Trao đổi với giám thị</div>
-
-                    <div class="chat-message">
-                        <div>??</div>
-                        <div class="text-muted small">23:18, 30/03/2025</div>
-                    </div>
-
-                    <div class="chat-message ms-auto" style="background-color: #fff8e1; max-width: 80%;">
-                        <div>??</div>
-                        <div class="text-muted small">23:18, 30/03/2025</div>
-                    </div>
-
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="fw-bold">{username}</div>
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
-                        <div class="text-warning">Bàn giao cho tôi</div>
-                    </div>
-                </div>
-
-                <div class="chat-input">
-                    <div class="input-group">
-                        <button class="btn btn-outline-secondary">
-                            <i class="bi bi-image"></i>
-                        </button>
-                        <input type="text" class="form-control" placeholder="Tin nhắn">
-                        <button class="btn btn-warning">
-                            <i class="bi bi-send-fill"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
         </template>
 
         <!-- Modal for adding a new task -->
@@ -415,20 +313,44 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="taskDetailModal" tabindex="-1" aria-labelledby="taskDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="taskDetailModalLabel">Task Name</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h5>Bài nộp của Intern:</h5>
+                        <div id="submissionList" class="submission-list">
+                            <!-- Submissions will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <!-- Bạn có thể thêm các nút nếu cần -->
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/messenger.js"></script>
 <script>
-    // Global variable to track currently selected classroom
-    let currentlySelectedId = null;
+
+    var currentlySelectedId = null;
+    var user_id = document.getElementById("user_id").value;
 
     document.addEventListener("DOMContentLoaded", () => {
         // Get mentor ID from the data attribute
         const classroomList = document.getElementById("classroomList");
         const mentorId = classroomList.getAttribute("data-mentor-id");
-
+        connectWebSocket();
         if (mentorId) {
             fetchClassrooms(mentorId);
         } else {
@@ -667,14 +589,88 @@
             // Load tasks for this classroom
             await fetchTasks(classId);
 
-            // Load chat for this classroom
-            loadChatForClassroom(classId, username);
+            // Load conversation for this classroom
+            await loadClassroomConversation(classId, className);
 
         } catch (error) {
             console.error("Error loading classroom details:", error);
             document.getElementById("detailsContainer").innerHTML = `
                 <div class="alert alert-danger">
                     Không thể tải chi tiết lớp học. Vui lòng thử lại sau.
+                </div>
+            `;
+        }
+    }
+
+    async function loadClassroomConversation(classId, className) {
+        try {
+            // Fetch class details to get conversation_id
+            const classResponse = await fetch(`/api/class/${classId}`);
+            if (!classResponse.ok) {
+                throw new Error("Failed to fetch class details");
+            }
+            const classData = await classResponse.json();
+
+            // Get chat container
+            const chatContainer = document.getElementById("chatContainer");
+
+            // Set up chat container with header and message area
+            chatContainer.innerHTML = `
+                <div class="chat-box">
+                    <!-- Chat Header -->
+                    <div class="chat-header p-3 border-bottom">
+                        <h5 class="mb-0">${className}</h5>
+                    </div>
+                    
+                    <!-- Chat Messages -->
+                    <div class="chat-container" id="chat">
+                        <div class="text-center p-4">
+                            <div class="spinner-border text-warning" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="chat-input">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="message" placeholder="Nhập tin nhắn...">
+                            <button class="btn btn-warning" onclick="sendMessage()">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Set conversation ID and name
+            conversationId = classData.conversation.id;
+            conversationName = className;
+
+            // Load existing messages
+            await loadMessages(conversationId);
+
+            // Set up message input and send button
+            const messageInput = chatContainer.querySelector('#message');
+            const sendButton = chatContainer.querySelector('.btn-warning');
+
+            // Add event listeners
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            sendButton.addEventListener('click', function() {
+                sendMessage();
+            });
+
+        } catch (error) {
+            console.error("Error loading classroom conversation:", error);
+            document.getElementById("chatContainer").innerHTML = `
+                <div class="alert alert-danger">
+                    Không thể tải tin nhắn. Vui lòng thử lại sau.
                 </div>
             `;
         }
@@ -734,30 +730,6 @@
 
             studentContainer.appendChild(studentBadge);
         });
-    }
-
-    function loadChatForClassroom(classId, username) {
-        try {
-            // Load chat
-            const chatContainer = document.getElementById("chatContainer");
-            const chatTemplate = document.getElementById("chatTemplate").innerHTML;
-
-            // Replace placeholders with actual data
-            let chatHtml = chatTemplate.replace(/{username}/g, username || "system");
-
-            chatContainer.innerHTML = chatHtml;
-
-            // Set up chat functionality (if needed)
-            // This would include event listeners for the send button, etc.
-
-        } catch (error) {
-            console.error("Error loading chat:", error);
-            document.getElementById("chatContainer").innerHTML = `
-                <div class="alert alert-danger">
-                    Không thể tải tin nhắn. Vui lòng thử lại sau.
-                </div>
-            `;
-        }
     }
 
     // Function to fetch tasks for a specific classroom
@@ -827,17 +799,22 @@
             // Create task element
             const taskElement = document.createElement("div");
             taskElement.className = "task-item";
+            taskElement.style.cursor = "pointer";
 
             taskElement.innerHTML = `
                 <div class="task-title">${task.taskName}</div>
                 <div class="task-description">${task.description || 'description sẽ được hiển thị ở đây'}</div>
                 <div class="task-meta">
-
                     <div class="task-deadline">
                         <span>Hạn nộp Task: ${formattedEndTime}</span>
                     </div>
                 </div>
             `;
+
+            // Add click event to open task detail modal
+            taskElement.addEventListener("click", () => {
+                openTaskDetailModal(task);
+            });
 
             taskListElement.appendChild(taskElement);
         });
@@ -956,6 +933,37 @@
             document.getElementById("addTaskForm").reset();
         }
     }
+
+    // Hàm mở modal chi tiết task
+    // Hàm mở modal và đặt nội dung
+    function openTaskDetailModal(task) {
+        // Đặt tên task vào modal header
+        document.getElementById("taskDetailModalLabel").textContent = task.taskName;
+
+        // Hiển thị modal bằng Bootstrap
+        var taskDetailModal = new bootstrap.Modal(document.getElementById("taskDetailModal"));
+        taskDetailModal.show();
+    }
+
+    // Hàm gán sự kiện click cho từng task
+    function attachTaskEventListeners() {
+        document.querySelectorAll(".task-item").forEach(taskDiv => {
+            taskDiv.addEventListener("click", function () {
+                const task = {
+                    taskName: this.getAttribute("data-task-name") || "Không có tên nhiệm vụ"
+                };
+                openTaskDetailModal(task);
+            });
+        });
+    }
+
+    // Gọi hàm gán sự kiện khi trang load xong
+    document.addEventListener("DOMContentLoaded", attachTaskEventListeners);
+
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="/assets/js/messenger.js"></script>
 </body>
 </html>

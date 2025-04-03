@@ -3,6 +3,7 @@
     import com.fsoft.fintern.enums.ClassStatus;
     import com.fsoft.fintern.models.Shared.BaseModel;
     import jakarta.persistence.*;
+    import org.hibernate.annotations.ColumnDefault;
     import org.springframework.beans.factory.annotation.Value;
 
     import java.util.List;
@@ -32,6 +33,18 @@
 
         @Column(name = "class_description")
         private String classDescription;
+
+        @ManyToOne(fetch = FetchType.EAGER)
+        @JoinColumn(name = "conversation_id")
+        private Conversation conversation;
+
+        public Conversation getConversation() {
+            return conversation;
+        }
+
+        public void setConversation(Conversation conversation) {
+            this.conversation = conversation;
+        }
 
         public String getClassDescription() {
             return classDescription;

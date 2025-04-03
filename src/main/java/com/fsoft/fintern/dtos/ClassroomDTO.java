@@ -9,6 +9,7 @@ public class ClassroomDTO {
     private Integer managerId;
     private String classDescription;
     private ClassStatus status;
+    private Integer conversationId;
 
     public String getClassDescription() {return classDescription;}
     public void setClassDescription(String classDescription) {this.classDescription = classDescription;}
@@ -43,5 +44,13 @@ public class ClassroomDTO {
 
     public void setNumberOfIntern(Integer numberOfIntern) {
         this.numberOfIntern = numberOfIntern;
+    }
+
+    public Integer getConversationId() {
+        return conversationId;
+    }
+
+    public void setConversationId(Integer conversationId) {
+        this.conversationId = conversationId;
     }
 }
