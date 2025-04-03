@@ -7,6 +7,7 @@
     <title>Classroom Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -229,6 +230,7 @@
     </style>
 </head>
 <body class="body-area">
+<input type="hidden" id="user_id" th:value="${mentorId}">
 <th:block th:replace="~{include/employee-sidebar :: sidebar(~{::content})}">
     <div class="app__slide-wrapper" th:fragment="content">
         <div class="breadcrumb__area">
@@ -340,41 +342,6 @@
         </template>
 
         <template id="chatTemplate">
-            <div class="chat-box h-100">
-                <div class="chat-container">
-                    <div class="mb-3 fw-bold">Trao đổi với giám thị</div>
-
-                    <div class="chat-message">
-                        <div>??</div>
-                        <div class="text-muted small">23:18, 30/03/2025</div>
-                    </div>
-
-                    <div class="chat-message ms-auto" style="background-color: #fff8e1; max-width: 80%;">
-                        <div>??</div>
-                        <div class="text-muted small">23:18, 30/03/2025</div>
-                    </div>
-
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="fw-bold">{username}</div>
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
-                        <div class="text-warning">Bàn giao cho tôi</div>
-                    </div>
-                </div>
-
-                <div class="chat-input">
-                    <div class="input-group">
-                        <button class="btn btn-outline-secondary">
-                            <i class="bi bi-image"></i>
-                        </button>
-                        <input type="text" class="form-control" placeholder="Tin nhắn">
-                        <button class="btn btn-warning">
-                            <i class="bi bi-send-fill"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
         </template>
 
         <!-- Modal for adding a new task -->
@@ -418,15 +385,17 @@
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/messenger.js"></script>
 <script>
-    // Global variable to track currently selected classroom
-    let currentlySelectedId = null;
+
+    var currentlySelectedId = null;
+    var user_id = document.getElementById("user_id").value;
 
     document.addEventListener("DOMContentLoaded", () => {
         // Get mentor ID from the data attribute
         const classroomList = document.getElementById("classroomList");
         const mentorId = classroomList.getAttribute("data-mentor-id");
-
+        connectWebSocket();
         if (mentorId) {
             fetchClassrooms(mentorId);
         } else {
@@ -665,14 +634,88 @@
             // Load tasks for this classroom
             await fetchTasks(classId);
 
-            // Load chat for this classroom
-            loadChatForClassroom(classId, username);
+            // Load conversation for this classroom
+            await loadClassroomConversation(classId, className);
 
         } catch (error) {
             console.error("Error loading classroom details:", error);
             document.getElementById("detailsContainer").innerHTML = `
                 <div class="alert alert-danger">
                     Không thể tải chi tiết lớp học. Vui lòng thử lại sau.
+                </div>
+            `;
+        }
+    }
+
+    async function loadClassroomConversation(classId, className) {
+        try {
+            // Fetch class details to get conversation_id
+            const classResponse = await fetch(`/api/class/${classId}`);
+            if (!classResponse.ok) {
+                throw new Error("Failed to fetch class details");
+            }
+            const classData = await classResponse.json();
+
+            // Get chat container
+            const chatContainer = document.getElementById("chatContainer");
+
+            // Set up chat container with header and message area
+            chatContainer.innerHTML = `
+                <div class="chat-box">
+                    <!-- Chat Header -->
+                    <div class="chat-header p-3 border-bottom">
+                        <h5 class="mb-0">${className}</h5>
+                    </div>
+                    
+                    <!-- Chat Messages -->
+                    <div class="chat-container" id="chat">
+                        <div class="text-center p-4">
+                            <div class="spinner-border text-warning" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="chat-input">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="message" placeholder="Nhập tin nhắn...">
+                            <button class="btn btn-warning" onclick="sendMessage()">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Set conversation ID and name
+            conversationId = classData.conversation.id;
+            conversationName = className;
+
+            // Load existing messages
+            await loadMessages(conversationId);
+
+            // Set up message input and send button
+            const messageInput = chatContainer.querySelector('#message');
+            const sendButton = chatContainer.querySelector('.btn-warning');
+
+            // Add event listeners
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            sendButton.addEventListener('click', function() {
+                sendMessage();
+            });
+
+        } catch (error) {
+            console.error("Error loading classroom conversation:", error);
+            document.getElementById("chatContainer").innerHTML = `
+                <div class="alert alert-danger">
+                    Không thể tải tin nhắn. Vui lòng thử lại sau.
                 </div>
             `;
         }
@@ -732,30 +775,6 @@
 
             studentContainer.appendChild(studentBadge);
         });
-    }
-
-    function loadChatForClassroom(classId, username) {
-        try {
-            // Load chat
-            const chatContainer = document.getElementById("chatContainer");
-            const chatTemplate = document.getElementById("chatTemplate").innerHTML;
-
-            // Replace placeholders with actual data
-            let chatHtml = chatTemplate.replace(/{username}/g, username || "system");
-
-            chatContainer.innerHTML = chatHtml;
-
-            // Set up chat functionality (if needed)
-            // This would include event listeners for the send button, etc.
-
-        } catch (error) {
-            console.error("Error loading chat:", error);
-            document.getElementById("chatContainer").innerHTML = `
-                <div class="alert alert-danger">
-                    Không thể tải tin nhắn. Vui lòng thử lại sau.
-                </div>
-            `;
-        }
     }
 
     // Function to fetch tasks for a specific classroom
@@ -955,5 +974,9 @@
         }
     }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="/assets/js/messenger.js"></script>
 </body>
 </html>
