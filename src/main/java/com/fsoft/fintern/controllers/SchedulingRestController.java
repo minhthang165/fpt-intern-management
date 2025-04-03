@@ -1,6 +1,6 @@
 package com.fsoft.fintern.controllers;
 
-import com.fsoft.fintern.dtos.ScheduleResultDTO;
+import com.fsoft.fintern.dtos.ScheduleDTO;
 import com.fsoft.fintern.dtos.SchedulingDTO;
 import com.fsoft.fintern.models.Schedule;
 import com.fsoft.fintern.services.ScheduleService;
@@ -87,30 +87,31 @@ public class SchedulingRestController {
         @ApiResponse(responseCode = "400", description = "Invalid scheduling data"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<List<ScheduleResultDTO>> generateSchedule(
+    public ResponseEntity<List<ScheduleDTO>> generateSchedule(
             @Parameter(description = "List of scheduling data")
             @RequestBody List<SchedulingDTO> data) {
-        List<ScheduleResultDTO> schedule = schedulingService.generateSchedule(data);
+        List<ScheduleDTO> schedule = schedulingService.generateSchedule(data);
+        schedulingService.saveSchedule(schedule);
         return ResponseEntity.ok(schedule);
     }
 
-    @PostMapping("/save")
-    @Operation(description = "Saves the generated schedule to the database")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Schedule saved successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid schedule data"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<?> saveSchedule(
-            @Parameter(description = "List of schedule results to save")
-            @RequestBody List<ScheduleResultDTO> schedules) {
-        try {
-            boolean success = schedulingService.saveSchedule(schedules);
-            return ResponseEntity.ok(Map.of("success", success, "message", "Lịch học đã được lưu thành công"));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Lỗi hệ thống: " + e.getMessage()));
-        }
-    }
+//    @PostMapping("/save")
+//    @Operation(description = "Saves the generated schedule to the database")
+//    @ApiResponses(value = {
+//        @ApiResponse(responseCode = "200", description = "Schedule saved successfully"),
+//        @ApiResponse(responseCode = "400", description = "Invalid schedule data"),
+//        @ApiResponse(responseCode = "500", description = "Internal server error")
+//    })
+//    public ResponseEntity<?> saveSchedule(
+//            @Parameter(description = "List of schedule results to save")
+//            @RequestBody List<ScheduleDTO> schedules) {
+//        try {
+//            boolean success = schedulingService.saveSchedule(schedules);
+//            return ResponseEntity.ok(Map.of("success", success, "message", "Lịch học đã được lưu thành công"));
+//        } catch (IllegalArgumentException e) {
+//            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+//        } catch (Exception e) {
+//            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Lỗi hệ thống: " + e.getMessage()));
+//        }
+//    }
 } 

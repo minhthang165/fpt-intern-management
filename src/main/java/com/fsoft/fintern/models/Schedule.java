@@ -56,6 +56,10 @@ public class Schedule extends BaseModel {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "mentor_id")
+    private User mentor;
+
     public Integer getId() {
         return id;
     }
@@ -128,4 +132,11 @@ public class Schedule extends BaseModel {
         this.endDate = endDate;
     }
 
+    public User getMentor() {
+        return mentor;
+    }
+
+    public void setMentor(User mentor) {
+        this.mentor = mentor;
+    }
 }
