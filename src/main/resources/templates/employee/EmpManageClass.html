@@ -7,226 +7,7 @@
     <title>Classroom Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-        }
 
-        .search-bar {
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 8px 12px;
-        }
-
-        .filter-btn {
-            border: 1px solid #e67e22;
-            color: #e67e22;
-            background-color: transparent;
-            border-radius: 20px;
-            padding: 4px 12px;
-            margin-right: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-
-        .filter-btn:hover {
-            background-color: #e67e22;
-            color: white;
-        }
-
-        .card {
-            border-radius: 8px;
-            border: none;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-        }
-
-        .sidebar-card {
-            background-color: #f0f2f5;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .sidebar-card:hover {
-            background-color: #e9ecef;
-        }
-
-        .sidebar-card.active {
-            background-color: #e9ecef;
-            border-left: 3px solid #e67e22;
-        }
-
-        .gamma-header {
-            color: #e67e22;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .content-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-            height: 100%;
-            overflow-y: auto; /* Add scroll for the entire content card */
-            max-height: calc(100vh - 120px); /* Limit height to enable scrolling */
-        }
-
-        .main-content {
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-        }
-
-        .error-tag {
-            background-color: #fff2e6;
-            color: #e67e22;
-            border: 1px solid #e67e22;
-            border-radius: 15px;
-            padding: 2px 10px;
-            font-size: 12px;
-            display: inline-block;
-        }
-
-        .chat-box {
-            border-left: 1px solid #eee;
-            height: 100%;
-            position: relative;
-        }
-
-        .student-list {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .student-list li {
-            margin-bottom: 8px;
-        }
-
-        .date-picker {
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 6px 12px;
-            background-color: white;
-        }
-
-        .chat-message {
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .chat-container {
-            padding: 15px;
-            height: calc(100% - 60px);
-            overflow-y: auto;
-        }
-
-        .chat-input {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 15px;
-            background-color: white;
-        }
-
-        .filters-container {
-            overflow-x: auto;
-            white-space: nowrap;
-            padding-bottom: 10px;
-        }
-
-        /* Hide scrollbar for Chrome, Safari and Opera */
-        .filters-container::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Hide scrollbar for IE, Edge and Firefox */
-        .filters-container {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-
-        .detail-placeholder {
-            display: flex;
-            height: 100%;
-            align-items: center;
-            justify-content: center;
-            color: #aaa;
-            font-size: 18px;
-        }
-
-        .modal-backdrop{
-            display: none;
-        }
-
-        /* Student container styles with scrolling */
-        .student-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-            max-height: 150px; /* Limit height to enable scrolling */
-            overflow-y: auto; /* Enable vertical scrolling */
-            padding: 5px;
-            border-radius: 8px;
-        }
-
-        /* Student badge styles */
-        .student-badge {
-            display: inline-block;
-            padding: 8px 15px;
-            border-radius: 50px;
-            border: 1px solid #20c997;
-            background-color: #fff;
-            color: #333;
-            font-size: 14px;
-            white-space: nowrap;
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-
-        /* Task list styles with scrolling */
-        .task-list {
-            max-height: 300px; /* Limit height to enable scrolling */
-            overflow-y: auto; /* Enable vertical scrolling */
-            padding: 10px 5px;
-            border-radius: 8px;
-        }
-
-        /* Task item styles */
-        .task-item {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 3px solid #e67e22;
-        }
-
-        .task-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .task-description {
-            color: #666;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .task-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #888;
-        }
-
-
-    </style>
 </head>
 <body class="body-area">
 <th:block th:replace="~{include/employee-sidebar :: sidebar(~{::content})}">
@@ -413,6 +194,28 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="taskDetailModal" tabindex="-1" aria-labelledby="taskDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="taskDetailModalLabel">Task Name</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h5>Bài nộp của Intern:</h5>
+                        <div id="submissionList" class="submission-list">
+                            <!-- Submissions will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <!-- Bạn có thể thêm các nút nếu cần -->
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
@@ -825,17 +628,22 @@
             // Create task element
             const taskElement = document.createElement("div");
             taskElement.className = "task-item";
+            taskElement.style.cursor = "pointer";
 
             taskElement.innerHTML = `
                 <div class="task-title">${task.taskName}</div>
                 <div class="task-description">${task.description || 'description sẽ được hiển thị ở đây'}</div>
                 <div class="task-meta">
-
                     <div class="task-deadline">
                         <span>Hạn nộp Task: ${formattedEndTime}</span>
                     </div>
                 </div>
             `;
+
+            // Add click event to open task detail modal
+            taskElement.addEventListener("click", () => {
+                openTaskDetailModal(task);
+            });
 
             taskListElement.appendChild(taskElement);
         });
@@ -954,6 +762,33 @@
             document.getElementById("addTaskForm").reset();
         }
     }
+
+    // Hàm mở modal chi tiết task
+    // Hàm mở modal và đặt nội dung
+    function openTaskDetailModal(task) {
+        // Đặt tên task vào modal header
+        document.getElementById("taskDetailModalLabel").textContent = task.taskName;
+
+        // Hiển thị modal bằng Bootstrap
+        var taskDetailModal = new bootstrap.Modal(document.getElementById("taskDetailModal"));
+        taskDetailModal.show();
+    }
+
+    // Hàm gán sự kiện click cho từng task
+    function attachTaskEventListeners() {
+        document.querySelectorAll(".task-item").forEach(taskDiv => {
+            taskDiv.addEventListener("click", function () {
+                const task = {
+                    taskName: this.getAttribute("data-task-name") || "Không có tên nhiệm vụ"
+                };
+                openTaskDetailModal(task);
+            });
+        });
+    }
+
+    // Gọi hàm gán sự kiện khi trang load xong
+    document.addEventListener("DOMContentLoaded", attachTaskEventListeners);
+
 </script>
 </body>
 </html>
