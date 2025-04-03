@@ -140,7 +140,7 @@ public class CVInfoService {
             if(user.getClassroom() != null)
             {
                 result.put("success", false);
-                result.put("message", "User has been approved");
+                result.put("message", "User has been approved into another class");
                 return result;
             }
 
