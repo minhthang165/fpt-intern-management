@@ -33,6 +33,7 @@ public class UserController {
     public String redirectManageUserPage(@SessionAttribute("user") LoginUserDTO user,
                                          @RequestParam(name="role", required=false) String role,
                                          Model model){
+        model.addAttribute("user", user);
         if (user.getRole() == Role.ADMIN) {
             if ("intern".equals(role)) {
                 model.addAttribute("selectedRole", role);

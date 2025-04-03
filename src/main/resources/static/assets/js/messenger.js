@@ -24,6 +24,10 @@ var selectedRecipientId = null;
 var conversation_list = [];
 let originalConversationList = []; // Lưu trữ danh sách conversation gốc
 var isCurrentUserAdmin = false; // Thêm biến global mới
+const userId = document.getElementById("user_id").value;
+window.userId = userId; // Gắn vào window
+localStorage.setItem("userId", userId);
+console.log("✅ User ID:", window.userId);
 
 document.addEventListener("DOMContentLoaded", async function () {
     await loadConversation(user_id);
@@ -59,20 +63,80 @@ function connectWebSocket() {
         stompClient.subscribe('/topic/messenger', printMessage);
     });
 }
+//---------------------------------------- Call SETUP ----------------------------------------------
+
+window.makeCall = () => {
+    if (!conversationId) {
+        alert("Please select a conversation first!");
+        return;
+    }
+
+    if (converstionType !== "OneToOne") {
+        alert("Calling is only supported for one-to-one conversations.");
+        return;
+    }
+
+    const receiverId = window.receiverId;
+    if (!receiverId) {
+        alert("Unable to determine the recipient for the call!");
+        console.error("Receiver ID not found. Members:", conversationMember);
+        return;
+    }
+
+    console.log("✅ Initiating call with receiverId:", receiverId);
+    startCall(receiverId);
+};
+
+const startCall = (receiverId) => {
+    if (!receiverId) {
+        alert("Invalid Receiver ID!");
+        return;
+    }
+
+    const roomID = Math.floor(Math.random() * 10000) + "";
+    localStorage.setItem("roomID", roomID);
+
+    fetch(`/calls/create/${window.userId}/${receiverId}/${roomID}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.roomID) {
+                window.open(`/video-call.html?room=${data.roomID}`, '_blank');
+            } else {
+                alert("Receiver is busy or unavailable!");
+            }
+        })
+        .catch(error => console.error("Error starting call:", error));
+};
+
 
 //---------------------------------------- CONVERSATION INTERACT (SET, LOAD) ------------------------------------------------
-async function loadMember(conversationId) {
+async function loadMember(conversationId, conversationType) {
     try {
         let response = await fetch(`/api/conversation-user/get-users/` + conversationId);
         if (!response.ok) {
             throw new Error("No user found for conversation " + conversationId);
         }
         conversationMember = await response.json();
-        // Kiểm tra xem user hiện tại có phải admin không
-        const currentUserInGroup = conversationMember.find(member => member.id == user_id);
-        isCurrentUserAdmin = currentUserInGroup ? currentUserInGroup.admin : false;
+        console.log("✅ Loaded members for conversation", conversationId, ":", conversationMember);
+        console.log("✅ Current user_id:", user_id);
+
+        // Kiểm tra nếu là hội thoại 1:1 và có ít nhất 2 thành viên
+        if (conversationType === "OneToOne" && conversationMember.length >= 2) {
+            // Sử dụng user_id thay vì userId để đảm bảo đúng người dùng hiện tại
+            const otherMember = conversationMember.find(member => member.id != user_id);
+
+            if (otherMember) {
+                window.receiverId = otherMember.id;
+                console.log("✅ Receiver ID set to:", window.receiverId);
+            } else {
+                console.error("❌ Could not find the other member in this conversation");
+            }
+        }
     } catch (error) {
-        console.error("Error fetching conversation's member " + error);
+        console.error("❌ Lỗi khi tải danh sách thành viên:", error);
     }
 }
 
@@ -126,77 +190,77 @@ function setConversation(element) {
     document.getElementById("chat-container").innerHTML = ''; // Clear UI
     document.getElementById('conversation-info-box').classList.add('hidden');
     document.getElementById('chat-container').classList.remove('w-[70%]'); // Reset to full width
-    conversationId = null;
-    conversationName = '';
-    conversationAvatar = '';
-    conversationMember = [];
-    messages = [];
+
     conversationId = element.getAttribute('data-id');
-    conversationName = element.getAttribute(`data-conversationName`);
-    conversationAvatar = element.getAttribute(`data-conversationAvatar`);
-    converstionType = element.getAttribute(`data-conversation-type`);
+    conversationName = element.getAttribute('data-conversationName');
+    conversationAvatar = element.getAttribute('data-conversationAvatar');
+    converstionType = element.getAttribute('data-conversation-type'); // Sửa lỗi chính tả
     selectedRecipientId = element.getAttribute('data-track-user-id');
+
     let existingConversation = conversation_list.find(conver => conver.conversationName === conversationName);
     if (existingConversation) {
         conversationId = existingConversation.id;
     }
-    // New chat section
+
     var rightSide = `
-                        <!-- Conversation Header -->
-                        <div class="flex items-center justify-between p-2 border-b">
-                            <div class="flex items-center space-x-2">
-                                <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationAvatar}" width="40"/>
-                                <div>
-                                    <div class="font-bold conversation-name">
-                                        ${conversationName}
-                                    </div>
-                                    <div class="text-green-500 text-sm">
-                                        Đang hoạt động
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-2 rounded-full hover:bg-gray-100 cursor-pointer btn_conversation_information" onclick="toggleConversationInfo(converstionType)">
-                                <i class="fas fa-ellipsis-v text-gray-600"></i>
-                            </div>
-                        </div>
-                        
-                        <!-- Chat Messages -->
-                        <div class="flex-grow space-y-4 overflow-y-auto p-4" id="chat" style="height: 400px;">
-                            <!-- Messages will be loaded dynamically here -->
-                        </div>
-                        
-                        <!-- Message Input -->
-                        <div class="flex items-center space-x-2 p-3 border-t">
-                            <label for="media-upload" class="p-2 rounded-full hover:bg-gray-100 cursor-pointer">
-                                <i class="fas fa-paperclip text-gray-600 text-xl"></i>
-                                <input id="media-upload" accept="*/*" multiple type="file" style="display: none;">
-                            </label>
-                            <button class="p-2 rounded-full hover:bg-gray-100">
-                                <i class="fas fa-smile text-gray-600 text-xl"></i>
-                            </button>
-                            <div class="flex flex-col flex-grow relative">
-                                <ul class="w-100 flex bottom-full list-file space-x-2 absolute"></ul>
-                                <input class="flex-grow p-2 rounded-full bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" id="message" placeholder="Enter Here" type="text"/>
-                            </div>
-                            <button class="p-2 rounded-full hover:bg-gray-100" onclick="conversationId ? sendMessage() : startNewConversation(this)">
-                                <i class="fas fa-paper-plane text-blue-500 text-xl"></i>
-                            </button>
-                        </div>
+        <!-- Conversation Header -->
+        <div class="flex items-center justify-between p-2 border-b">
+            <div class="flex items-center space-x-2">
+                <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" width="40"/>
+                <div>
+                    <div class="font-bold conversation-name">${conversationName}</div>
+                    <div class="text-green-500 text-sm">Đang hoạt động</div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <!-- Call Button -->
+                <div class="p-2 rounded-full hover:bg-gray-100 cursor-pointer btn_call">
+                    <i class="fas fa-phone text-gray-600"></i>
+                </div>
+                <!-- Info Button -->
+                <div class="p-2 rounded-full hover:bg-gray-100 cursor-pointer btn_conversation_information" onclick="toggleConversationInfo('${converstionType}')">
+                    <i class="fas fa-ellipsis-v text-gray-600"></i>
+                </div>
+            </div>
+        </div>
+        <!-- Chat Messages -->
+        <div class="flex-grow space-y-4 overflow-y-auto p-4" id="chat" style="height: 400px;"></div>
+        <!-- Message Input -->
+        <div class="flex items-center space-x-2 p-3 border-t">
+            <label for="media-upload" class="p-2 rounded-full hover:bg-gray-100 cursor-pointer">
+                <i class="fas fa-paperclip text-gray-600 text-xl"></i>
+                <input id="media-upload" accept="*/*" multiple type="file" style="display: none;">
+            </label>
+            <button class="p-2 rounded-full hover:bg-gray-100">
+                <i class="fas fa-smile text-gray-600 text-xl"></i>
+            </button>
+            <div class="flex flex-col flex-grow relative">
+                <ul class="w-100 flex bottom-full list-file space-x-2 absolute"></ul>
+                <input class="flex-grow p-2 rounded-full bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" id="message" placeholder="Enter Here" type="text"/>
+            </div>
+            <button class="p-2 rounded-full hover:bg-gray-100" onclick="conversationId ? sendMessage() : startNewConversation(this)">
+                <i class="fas fa-paper-plane text-blue-500 text-xl"></i>
+            </button>
+        </div>
     `;
 
-
-    // Select the div and append the HTML
     document.getElementById("chat-container").innerHTML += rightSide;
 
-    // If for temp conversation scenario
-    if (conversationId != null) {
-        // After adding the HTML, load messages
+    if (conversationId) {
         loadMessages(conversationId);
-        // Load member in group (store at client's side)
-        conversationMember = loadMember(conversationId);
+        loadMember(conversationId,converstionType).then(members => {
+            conversationMember = members;
+        });
     }
 
-    //Handle file upload
+    const callButton = document.querySelector(".btn_call");
+    if (converstionType === "OneToOne") { // Sửa lỗi chính tả
+        callButton.addEventListener("click", window.makeCall);
+    } else {
+        callButton.addEventListener("click", () => alert("Please select a one-to-one conversation"));
+    }
+
+    // Handle file upload
     displayFiles();
 }
 
@@ -699,7 +763,7 @@ function toggleModal(option) {
     }
 }
 
-function toggleConversationInfo(conversationType) {
+function toggleConversationInfo(converstionType) {
     const infoBox = document.getElementById('conversation-info-box');
     const chatContainer = document.getElementById('chat-container');
 
@@ -757,7 +821,7 @@ function toggleConversationInfo(conversationType) {
                 <i class="fas fa-chevron-down text-gray-500 text-xs"></i>
             </div>
             <div class="mt-1 space-y-1 pl-2">
-                ${conversationType !== 'OneToOne' ? `
+                ${converstionType !== 'OneToOne' ? `
                 <div class="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer" onclick="toggleModal('changeName')">
                     <i class="fas fa-pencil-alt text-blue-500 text-sm"></i>
                     <p class="text-xs">
@@ -788,7 +852,7 @@ function toggleConversationInfo(conversationType) {
         </div>
         
         <!-- Chat Members Section -->
-        ${conversationType !== 'OneToOne' ? `
+        ${converstionType !== 'OneToOne' ? `
         <div class="py-3 px-4 border-b">
             <div class="flex justify-between items-center section-header p-2 rounded-lg cursor-pointer" onclick="toggleModal('showMembers')">
                 <p class="font-medium text-gray-700 text-sm">
@@ -814,7 +878,7 @@ function toggleConversationInfo(conversationType) {
                 <!-- Sent media file will be loaded here -->
             </div>
         </div>
-        ${conversationType !== 'OneToOne' ? `
+        ${converstionType !== 'OneToOne' ? `
                 <div class="pl-[25px] flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-lg cursor-pointer" onclick="leaveGroup(user_id)">
                     <i class="fas fa-sign-out-alt text-red-500 text-sm"></i>
                     <p class="text-xs text-red-500">

@@ -229,6 +229,8 @@
     </style>
 </head>
 <body class="body-area">
+<input type="hidden" id="user_id" th:value="${user.id}">
+
 <th:block th:replace="~{include/employee-sidebar :: sidebar(~{::content})}">
     <div class="app__slide-wrapper" th:fragment="content">
         <div class="breadcrumb__area">
