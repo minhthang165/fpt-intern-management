@@ -1,15 +1,12 @@
 var stompClient = null;
 var user_id = document.getElementById("user_id").value;
 var user_avatar = document.getElementById("user_avatar").value;
-var typeChat = "user";
 var messages;
 var conversationAvatar = null;
 var conversationName = null;
 var converstionType = null;
 var conversationMember = {};
 var back = null;
-var rightSide = null;
-var leftSide = null;
 var conversationId = null;
 var attachFile = null;
 var imageFile = null;
@@ -18,8 +15,6 @@ var fileList = [];
 var typeFile = "image";
 var deleteAttach = null;
 var listUserAdd = [];
-var listUserDelete = [];
-var numberMember = 0;
 var selectedRecipientId = null;
 var conversation_list = [];
 let originalConversationList = []; // Lưu trữ danh sách conversation gốc
@@ -56,7 +51,7 @@ function connectWebSocket() {
     stompClient = Stomp.over(socket);
 
     stompClient.connect({}, function () {
-        stompClient.subscribe('/topic/messenger', printMessage);
+        stompClient.subscribe('/topic/messenger', handleWebsocketPayload);
     });
 }
 
@@ -274,8 +269,41 @@ function scrollToLatestMessage() {
     });
 }
 
-function printMessage(payload) {
+function handleWebsocketPayload(payload) {
     var message = JSON.parse(payload.body);
+    
+    // Kiểm tra xem tin nhắn có thuộc về cuộc trò chuyện hiện tại không
+    if (message.conversation.id !== conversationId) {
+        // Nếu đây là tin nhắn đầu tiên từ một cuộc trò chuyện mới
+        if (!conversation_list.some(conv => conv.id === message.conversation.id)) {
+            handleNewConversation(message);
+        }
+        return;
+    }
+    
+    // Nếu là cuộc trò chuyện hiện tại, hiển thị tin nhắn
+    displayMessage(message);
+}
+
+function handleNewConversation(message) {
+    // Tạo một đối tượng conversation mới
+    const newConversation = {
+        id: message.conversation.id,
+        conversationName: message.conversation.conversationName,
+        conversationAvatar: message.conversation.avatar_path,
+        last_message: message.messageContent,
+        type: message.conversation.type
+    };
+    
+    // Thêm vào đầu danh sách
+    conversation_list.unshift(newConversation);
+    originalConversationList.unshift(newConversation);
+    
+    // Cập nhật UI
+    renderHtmlConversation(conversation_list);
+}
+
+function displayMessage(message) {
     var currentChat = document.getElementById('chat');
     var newChatMsg = customLoadMessage(message);
     currentChat.innerHTML += newChatMsg;

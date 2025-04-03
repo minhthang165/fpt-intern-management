@@ -47,7 +47,7 @@ public class ConversationUserService {
         conversationUser.setId(id);
         conversationUser.setUser(user);
         conversationUser.setConversation(conversation);
-        conversationUser.setAdmin(false);
+        conversationUser.setAdmin(conversationUserDTO.isAdmin());
 
         ConversationUser savedUser = conversationUserRepository.save(conversationUser);
 

@@ -4,9 +4,11 @@ import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.dtos.ClassroomDTO;
 import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.Classroom;
+import com.fsoft.fintern.models.Conversation;
 import com.fsoft.fintern.models.Task;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.repositories.ClassroomRepository;
+import com.fsoft.fintern.repositories.ConversationRepository;
 import com.fsoft.fintern.repositories.UserRepository;
 import com.fsoft.fintern.utils.BeanUtilsHelper;
 import org.apache.coyote.BadRequestException;
@@ -27,10 +29,11 @@ import java.util.Optional;
 public class ClassroomService {
     private final ClassroomRepository class_repository;
     private final UserRepository userRepository;
-
-    public ClassroomService(ClassroomRepository class_repository, UserRepository userRepository) {
+    private final ConversationRepository conversationRepository;
+    public ClassroomService(ClassroomRepository class_repository, UserRepository userRepository, ConversationRepository conversationRepository) {
         this.class_repository = class_repository;
         this.userRepository = userRepository;
+        this.conversationRepository = conversationRepository;
     }
 
     public ResponseEntity<Classroom> createClass(ClassroomDTO classDTO) throws BadRequestException {
@@ -40,7 +43,7 @@ public class ClassroomService {
         }
 
         User manager = this.userRepository.findById(classDTO.getManagerId()).orElse(null);
-
+        Conversation conv = this.conversationRepository.findById(classDTO.getConversationId()).orElse(null);
         if (manager == null || manager.getRole() != Role.EMPLOYEE) {
             throw new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage());
         }
@@ -51,7 +54,7 @@ public class ClassroomService {
         newClass.setStatus(classDTO.getStatus());
         newClass.setClassDescription(classDTO.getClassDescription());
         newClass.setManager(manager);
-
+        newClass.setConversation(conv);
         Classroom savedClass = class_repository.save(newClass);
         return new ResponseEntity<>(savedClass, HttpStatus.CREATED);
     }
