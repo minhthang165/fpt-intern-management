@@ -281,9 +281,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px 18px;
-    background-color: #f8f9fa;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 15px;
 }
 
@@ -354,4 +352,304 @@ body {
 .content-card::-webkit-scrollbar-thumb:hover {
     background: #aaa;
 }
+
+/* Nền mờ khi mở modal */
+.task-detail-modal {
+    display: none; /* Ẩn mặc định */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Mờ nền */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Nội dung modal */
+.task-detail-content {
+    background: white;
+    width: 50%;
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Hiệu ứng mở modal */
+@keyframes fadeIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Nút đóng modal */
+.task-detail-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+}
+
+.task-detail-close:hover {
+    color: red;
+}
+
+/* Header của modal */
+.task-detail-header {
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Phần thân modal */
+.task-detail-body {
+    font-size: 16px;
+}
+
+/* Danh sách bài nộp */
+.submission-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    background: #f9f9f9;
+}
+.task-list {
+    border-radius: 8px;
+    overflow-y: auto; /* Cho phép cuộn dọc */
+    padding: 10px 15px; /* Thêm padding cho đẹp */
+    flex-grow: 1;
+    max-height: 800px; /* Đặt chiều cao tối đa cho task list */
+    background-color: #f9f9f9; /* Thêm màu nền */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Thêm bóng nhẹ */
+}
+
+
+
+/* Task item styles */
+.task-item {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 3px solid #e67e22;
+}
+.content-card {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 50px); /* Mở rộng gần hết màn hình */
+}
+
+.task-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Chiếm toàn bộ không gian còn lại */
+    overflow: hidden;
+}
+
+
+
+.task-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.task-description {
+    color: #666;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.task-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #888;
+}
+.student-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    max-height: 150px; /* Limit height to enable scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 5px;
+    border-radius: 8px;
+}
+
+.modal-backdrop{
+    display: none;
+}
+
+.detail-placeholder {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    font-size: 18px;
+}
+
+
+ body {
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+     background-color: #f5f5f5;
+ }
+
+.search-bar {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+}
+
+.filter-btn {
+    border: 1px solid #e67e22;
+    color: #e67e22;
+    background-color: transparent;
+    border-radius: 20px;
+    padding: 4px 12px;
+    margin-right: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    background-color: #e67e22;
+    color: white;
+}
+
+.card {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+.sidebar-card {
+    background-color: #f0f2f5;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sidebar-card:hover {
+    background-color: #e9ecef;
+}
+
+.sidebar-card.active {
+    background-color: #e9ecef;
+    border-left: 3px solid #e67e22;
+}
+
+.gamma-header {
+    color: #e67e22;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.content-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    max-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 50px); /* Mở rộng tối đa */
+    overflow: hidden; /* Loại bỏ scroll từ container */
+}
+
+.main-content {
+    max-height: calc(100vh - 50px);
+    min-height: 100%;
+    overflow-y: auto;
+    }
+
+.error-tag {
+    background-color: #fff2e6;
+    color: #e67e22;
+    border: 1px solid #e67e22;
+    border-radius: 15px;
+    padding: 2px 10px;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.chat-box {
+    border-left: 1px solid #eee;
+    height: 100%;
+    position: relative;
+}
+
+.student-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.student-list li {
+    margin-bottom: 8px;
+}
+
+.date-picker {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 6px 12px;
+    background-color: white;
+}
+
+.chat-message {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.chat-container {
+    padding: 15px;
+    height: calc(100% - 60px);
+    overflow-y: auto;
+}
+
+.chat-input {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 15px;
+    background-color: white;
+}
+
+.filters-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 10px;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.filters-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.filters-container {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
 

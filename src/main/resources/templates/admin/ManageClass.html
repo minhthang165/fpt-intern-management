@@ -495,6 +495,11 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="newClassDescription" class="form-label">Class Description</label>
+                                <input type="text" class="form-control" id="newClassDescription" required>
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="newNumberOfInterns" class="form-label">Number of Interns</label>
                                 <input type="number" class="form-control" id="newNumberOfInterns" required min="1">
                             </div>
@@ -770,11 +775,13 @@
         event.stopPropagation();
 
         let className = document.getElementById("newClassName").value;
+        let classDescription = document.getElementById("newClassDescription").value;
         let numberOfIntern = document.getElementById("newNumberOfInterns").value;
         let managerId = document.getElementById("newManager").value;
 
         let requestData = {
             className: className,
+            classDescription: classDescription,
             numberOfIntern: numberOfIntern,
             managerId: managerId
         };
@@ -795,8 +802,9 @@
                 if (row) {
                     row.children[0].textContent = newClass.className;
                     row.children[1].textContent = newClass.numberOfIntern;
+                    row.children[1].textContent = newClass.classDescription;
                     row.children[2].setAttribute("data-manager-id", newClass.manager.id);
-                    row.children[2].textContent = newClass.manager.first_nameName + " " + newClass.manager.last_name;
+                    row.children[2].textContent = newClass.manager.first_name + " " + newClass.manager.last_name;
                 }
 
                 alert("Created a new class successfully!");
