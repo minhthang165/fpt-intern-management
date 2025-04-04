@@ -227,7 +227,7 @@
                     <div class="fw-bold mb-2 card-name"></div>
                     <div class="error-tag mb-2 card-description"></div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted card-manager"></span>
+
                         <div>
                             <span class="card-status"></span>
                             <span class="status-dot"></span>
@@ -240,17 +240,19 @@
         <!-- Templates for dynamic content -->
         <template id="detailsTemplate">
             <div class="content-card">
-                <div class="gamma-header mb-3 card-name"></div>
-                <div class="text-muted mb-4 card-time"></div>
-                <div class="mb-4">
-                    <strong>Sinh viên:</strong>
-                    <div class="student-container" id="student-container">
-                        <!-- Students will be inserted here -->
-                        <div class="spinner-border spinner-border-sm text-warning" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <span>Đang tải danh sách sinh viên...</span>
+                <div>
+                    <div class="gamma-header mb-3 card-name"></div>
+                    <div class="text-muted mb-4 card-time"></div>
+                    <div class="mb-4 d-flex align-items-center">
+                    <strong class="me-2">Sinh viên:</strong>
+                    <button class="btn btn-light border-0 p-1" id="student-menu-btn">⋮</button>
+                </div>
+                <div class="student-container" id="student-container">
+                    <div class="spinner-border spinner-border-sm text-warning" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
+                    <span>Đang tải danh sách sinh viên...</span>
+                </div>
                 </div>
                 <div class="mb-3">
                     <div class="task-list-header">
@@ -270,6 +272,7 @@
                         </div>
                     </div>
                 </div>
+
 
             </div>
         </template>
@@ -303,6 +306,13 @@
                                 <label for="endTime" class="form-label">Thời gian kết thúc</label>
                                 <input type="datetime-local" class="form-control" id="endTime" required>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">Chọn lớp áp dụng:</label>
+                                <div id="classCheckboxList" class="row">
+                                    <!-- JS sẽ đổ các lớp ở đây -->
+                                </div>
+                            </div>
+
                             <input type="hidden" id="classId" value="">
                         </form>
                     </div>
@@ -335,6 +345,24 @@
             </div>
         </div>
 
+        <!-- Modal for Student List -->
+        <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document"> <!-- Hoặc modal-dialog custom-modal -->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="studentModalLabel">Danh sách sinh viên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="student-list">
+                        <!-- Danh sách sinh viên sẽ được hiển thị ở đây -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
@@ -345,12 +373,16 @@
 
     var currentlySelectedId = null;
     var user_id = document.getElementById("user_id").value;
+    var membersOfClass;
+    let cachedClassrooms = [];
+
 
     document.addEventListener("DOMContentLoaded", () => {
         // Get mentor ID from the data attribute
         const classroomList = document.getElementById("classroomList");
         const mentorId = classroomList.getAttribute("data-mentor-id");
         connectWebSocket();
+
         if (mentorId) {
             fetchClassrooms(mentorId);
         } else {
@@ -359,7 +391,31 @@
 
         // Add event listener for the save task button
         document.getElementById("saveTaskBtn").addEventListener("click", handleSaveTask);
+
+        // Gắn sự kiện click cho nút ⋮ để mở modal
+        const studentMenuButton = document.querySelector("#student-menu-btn");
+        if (studentMenuButton) {
+            studentMenuButton.addEventListener("click", openStudentModal);
+        }
     });
+
+
+    function openStudentModal() {
+        // Kiểm tra xem đã có dữ liệu sinh viên trong `membersOfClass` chưa
+        if (membersOfClass && membersOfClass.length > 0) {
+            displayUsers(membersOfClass); // Hiển thị danh sách sinh viên trong modal
+        } else {
+            // Nếu không có dữ liệu, hiển thị thông báo loading
+            const studentContainer = document.getElementById("student-list");
+            if (studentContainer) {
+                studentContainer.innerHTML = "<div class='spinner-border spinner-border-sm text-warning' role='status'><span class='visually-hidden'>Loading...</span></div>";
+            }
+        }
+
+        // Mở modal
+        const modal = new bootstrap.Modal(document.getElementById("studentModal"));
+        modal.show();
+    }
 
     async function fetchClassrooms(mentorId) {
         try {
@@ -386,6 +442,7 @@
 
             // Render the classroom cards
             renderClassroomCards(classrooms);
+            cachedClassrooms = classrooms;
 
             // Hide loading indicator
             document.getElementById("loading-indicator").style.display = "none";
@@ -475,7 +532,7 @@
                 card.querySelector(".card-date").textContent = formattedDate;
                 card.querySelector(".card-name").textContent = classroom.className || "Unnamed Class";
                 card.querySelector(".card-description").textContent = classroom.classDescription || "Không có mô tả";
-                card.querySelector(".card-manager").textContent = managerName;
+
                 // card.querySelector(".card-status").textContent = classroom.status || "PENDING";
                 const statusElement = card.querySelector(".card-status");
                 statusElement.textContent = getStatusText(classroom.status);
@@ -583,6 +640,11 @@
                 openAddTaskModal(classId);
             });
 
+            const studentMenuButton = detailsContainer.querySelector("#student-menu-btn");
+            studentMenuButton.addEventListener("click", function() {
+                openStudentModal(); // Mở modal và hiển thị danh sách sinh viên
+            });
+
             // Load users for this classroom
             loadUsers(classId);
 
@@ -621,7 +683,7 @@
                     <div class="chat-header p-3 border-bottom">
                         <h5 class="mb-0">${className}</h5>
                     </div>
-                    
+
                     <!-- Chat Messages -->
                     <div class="chat-container" id="chat">
                         <div class="text-center p-4">
@@ -630,7 +692,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Chat Input -->
                     <div class="chat-input">
                         <div class="input-group">
@@ -691,6 +753,7 @@
                 return response.json();
             })
             .then(users => {
+                membersOfClass = users;
                 displayUsers(users);
             })
             .catch(error => {
@@ -699,49 +762,96 @@
             });
     }
 
-    function displayUsers(users) {
-        const studentContainer = document.getElementById("student-container");
+    function openStudentModal() {
+
+        if (membersOfClass && membersOfClass.length > 0) {
+            displayUsers(membersOfClass, "modal");
+        } else {
+            const studentContainer = document.getElementById("student-list");
+            if (studentContainer) {
+                studentContainer.innerHTML = "<div class='spinner-border spinner-border-sm text-warning' role='status'><span class='visually-hidden'>Loading...</span></div>";
+            }
+        }
+        const modal = new bootstrap.Modal(document.getElementById("studentModal"));
+        modal.show();
+    }
+
+    function displayUsers(users, displayType = "badge") {
+        let studentContainer;
+
+        if (displayType === "badge") {
+            studentContainer = document.getElementById("student-container");
+        } else if (displayType === "modal") {
+            studentContainer = document.getElementById("student-list");
+        }
+
         if (!studentContainer) return;
 
         studentContainer.innerHTML = "";
 
         if (!users || users.length === 0) {
-            studentContainer.innerHTML = '<div class="text-muted">Không có sinh viên nào trong lớp mình</div>';
+            studentContainer.innerHTML = "<div class='text-muted'>Không có sinh viên nào trong lớp.</div>";
             return;
         }
-
         users.forEach(user => {
-            const studentBadge = document.createElement("div");
-            studentBadge.className = "student-badge";
-            studentBadge.style.display = "inline-block";
-            studentBadge.style.padding = "8px 15px";
-            studentBadge.style.borderRadius = "50px";
-            studentBadge.style.border = "1px solid #20c997";
-            studentBadge.style.backgroundColor = "#fff";
-            studentBadge.style.color = "#333";
-            studentBadge.style.fontSize = "14px";
-            studentBadge.style.whiteSpace = "nowrap";
-            studentBadge.style.marginRight = "10px";
-            studentBadge.style.marginBottom = "10px";
+            let studentElement;
+            if (displayType === "badge") {
+                studentElement = document.createElement("div");
+                studentElement.className = "student-badge";
+                studentElement.style.display = "inline-block";
+                studentElement.style.padding = "8px 15px";
+                studentElement.style.borderRadius = "50px";
+                studentElement.style.border = "1px solid #20c997";
+                studentElement.style.backgroundColor = "#fff";
+                studentElement.style.color = "#333";
+                studentElement.style.fontSize = "14px";
+                studentElement.style.whiteSpace = "nowrap";
+                studentElement.style.marginRight = "10px";
+                studentElement.style.marginBottom = "10px";
 
-            // Format the student ID and name
-            const studentName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-            studentBadge.textContent = `${studentName}`;
+                const studentName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                studentElement.textContent = studentName;
+            } else if (displayType === "modal") {
+                studentElement = document.createElement("div");
+                studentElement.classList.add("student-card");
+                studentElement.style.padding = "10px";
+                studentElement.style.marginBottom = "10px";
+                studentElement.style.border = "1px solid #20c997";
+                studentElement.style.borderRadius = "5px";
 
-            studentContainer.appendChild(studentBadge);
+                const studentName = `${user.first_name} ${user.last_name}`;
+                const studentEmail = user.email;
+                const studentPhone = user.phone_number || "Intern not add Phone number yet";
+                const studentPicture = user.picture || "assets/img/users/default-avatar.png";
+                const studentGender = user.gender || "OTHER";
+
+                studentElement.innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <img src="${studentPicture}" alt="Student Picture" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                    <div>
+                        <strong>${studentName}</strong><br>
+                        Email: ${studentEmail}<br>
+                        Phone: ${studentPhone}<br>
+                        Gender: ${studentGender}
+                    </div>
+                </div>
+            `;
+            }
+
+            studentContainer.appendChild(studentElement);
         });
     }
 
-    // Function to fetch tasks for a specific classroom
     async function fetchTasks(classId) {
         try {
             // Show loading indicator in the task list
-            document.getElementById("task-list").innerHTML = `
-                <div class="d-flex align-items-center">
-                    <div class="spinner-border spinner-border-sm text-warning me-2" role="status"></div>
-                    <span>Đang tải danh sách task...</span>
-                </div>
-            `;
+            const taskListElement = document.getElementById("task-list");
+            taskListElement.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm text-warning me-2" role="status"></div>
+                <span>Đang tải danh sách task...</span>
+            </div>
+        `;
 
             // Fetch tasks from API
             const response = await fetch(`/api/class/task/${classId}`);
@@ -755,21 +865,30 @@
             const tasks = await response.json();
             console.log("Tasks API Response:", tasks); // Debug log
 
+            // If no tasks found
+            if (tasks.length === 0) {
+                taskListElement.innerHTML = `
+                <div class="alert alert-info">
+                    Không có nhiệm vụ nào cho lớp này.
+                </div>
+            `;
+                return;
+            }
+
             // Render the tasks with the new design
             renderTasksNewDesign(tasks);
 
         } catch (error) {
-            // Show error message
+            // Show error message if API call fails
             document.getElementById("task-list").innerHTML = `
-                <div class="alert alert-danger">
-                    Không thể tải danh sách task. Vui lòng thử lại sau.
-                </div>
-            `;
+            <div class="alert alert-danger">
+                Không thể tải danh sách task. Vui lòng thử lại sau.
+            </div>
+        `;
             console.error("Error fetching tasks:", error);
         }
     }
 
-    // Function to render tasks with the new design
     function renderTasksNewDesign(tasks) {
         const taskListElement = document.getElementById("task-list");
 
@@ -820,15 +939,17 @@
         });
     }
 
-    // Function to open the add task modal
-    function openAddTaskModal(classId) {
-        // Set the class ID in the hidden field
-        document.getElementById("classId").value = classId;
-
-        // Reset the form
+    function openAddTaskModal() {
+        // Reset lại form
         document.getElementById("addTaskForm").reset();
 
-        // Open the modal
+        // Xóa giá trị classId cũ
+        document.getElementById("classId").value = "";
+
+        // Gọi lại để hiển thị danh sách checkbox lớp học từ cachedClassrooms
+        renderClassCheckboxes();
+
+        // Mở modal
         const modal = new bootstrap.Modal(document.getElementById("addTaskModal"));
         modal.show();
     }
@@ -838,11 +959,14 @@
         const fileInput = document.getElementById("fileData");
         const startTime = document.getElementById("startTime").value;
         const endTime = document.getElementById("endTime").value;
-        const classId = document.getElementById("classId").value;
 
-        // Validate form
-        if (!taskName || !startTime || !endTime || !classId) {
-            alert("Vui lòng điền đầy đủ thông tin!");
+        // 🔥 Lấy danh sách classId đã được chọn từ checkbox
+        const selectedClassIds = Array.from(document.querySelectorAll("#classCheckboxList input:checked"))
+            .map(input => input.value);
+
+        // ✅ Kiểm tra dữ liệu
+        if (!taskName || !startTime || !endTime || selectedClassIds.length === 0) {
+            alert("Vui lòng điền đầy đủ thông tin và chọn ít nhất một lớp!");
             return;
         }
 
@@ -856,7 +980,7 @@
             taskName: taskName,
             startTime: new Date(startTime).toISOString(),
             endTime: new Date(endTime).toISOString(),
-            classId: classId,
+            classIds: selectedClassIds,
             creator: mentorId,
             fileData: ""
         };
@@ -869,60 +993,63 @@
         saveButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...`;
 
         try {
-            // Check if file is selected
+            // Nếu có file
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
                 const reader = new FileReader();
 
                 reader.onload = async function(e) {
-                    // If file selected, encode it as base64 and set in taskData
-                    taskData.fileData = e.target.result.split(',')[1]; // Get base64 data
-                    console.log("File Data (Base64):", taskData.fileData);  // Log file data to check
-
-                    // Submit task with file data
-                    await submitTask(taskData, saveButton);
+                    taskData.fileData = e.target.result.split(',')[1]; // Base64
+                    await submitTaskForClasses(taskData, saveButton); // Gửi task cho các lớp
                 };
 
                 reader.readAsDataURL(file);
             } else {
-                console.log("No file selected, submitting with default fileData.");
-                // Submit task without file (fileData will be empty string)
-                await submitTask(taskData, saveButton);
+                await submitTaskForClasses(taskData, saveButton); // Gửi task cho các lớp
             }
         } catch (error) {
             console.error("Error creating task:", error);
             alert("Không thể tạo task. Vui lòng thử lại sau.");
-
             saveButton.disabled = false;
             saveButton.textContent = originalText;
         }
     }
 
-    async function submitTask(taskData, saveButton) {
+    async function submitTaskForClasses(taskData, saveButton) {
         try {
-            console.log("Sending task data:", taskData);
+            // Lặp qua tất cả các classIds đã chọn
+            for (const classId of taskData.classIds) {
+                const taskDataForClass = { ...taskData, classId };
 
-            const response = await fetch('/api/task/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(taskData)
-            });
+                console.log("Sending task data for classId:", classId, JSON.stringify(taskDataForClass, null, 2));
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Failed to create task: ${response.status} ${response.statusText}. Details: ${errorText}`);
+                const response = await fetch('/api/task/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(taskDataForClass)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to create task for classId ${classId}: ${response.status} ${response.statusText}. Details: ${errorText}`);
+                }
+
+                const result = await response.json();
+                console.log("Task created for classId:", classId, result);
             }
 
-            const result = await response.json();
-            console.log("Task created:", result);
-
+            // Sau khi tạo tất cả task thành công
             const modal = bootstrap.Modal.getInstance(document.getElementById("addTaskModal"));
             modal.hide();
 
-            fetchTasks(taskData.classId);
-            alert("Task đã được tạo thành công!");
+            // Gọi lại hàm fetchTasks để tải lại danh sách task mới
+            taskData.classIds.forEach(classId => {
+                fetchTasks(classId);  // Tải lại danh sách tasks cho mỗi lớp đã chọn
+            });
+
+            alert("Tất cả các task đã được tạo thành công!");
 
         } catch (error) {
             console.error("Error creating task:", error);
@@ -934,8 +1061,6 @@
         }
     }
 
-    // Hàm mở modal chi tiết task
-    // Hàm mở modal và đặt nội dung
     function openTaskDetailModal(task) {
         // Đặt tên task vào modal header
         document.getElementById("taskDetailModalLabel").textContent = task.taskName;
@@ -945,7 +1070,6 @@
         taskDetailModal.show();
     }
 
-    // Hàm gán sự kiện click cho từng task
     function attachTaskEventListeners() {
         document.querySelectorAll(".task-item").forEach(taskDiv => {
             taskDiv.addEventListener("click", function () {
@@ -957,8 +1081,36 @@
         });
     }
 
+    function renderClassCheckboxes() {
+        const container = document.getElementById("classCheckboxList");
+        container.innerHTML = "";
+
+        if (!Array.isArray(cachedClassrooms)) return;
+
+        cachedClassrooms.forEach(cls => {
+            const col = document.createElement("div");
+            col.className = "col-6";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = cls.id;
+            checkbox.id = `checkbox-${cls.id}`;
+            checkbox.className = "form-check-input me-1";
+
+            const label = document.createElement("label");
+            label.htmlFor = checkbox.id;
+            label.className = "form-check-label";
+            label.textContent = cls.className;
+
+            col.appendChild(checkbox);
+            col.appendChild(label);
+            container.appendChild(col);
+        });
+    }
+
     // Gọi hàm gán sự kiện khi trang load xong
     document.addEventListener("DOMContentLoaded", attachTaskEventListeners);
+
 
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>

@@ -652,4 +652,13 @@ body {
     scrollbar-width: none;  /* Firefox */
 }
 
+.student-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.student-card:hover {
+    transform: scale(1.03);
+}
+
+
 
