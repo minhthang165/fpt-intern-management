@@ -1,33 +1,20 @@
 package com.fsoft.fintern.dtos;
 
-import java.sql.Date;
-import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 
 public class ScheduleDTO {
     private Integer id;
-    private Integer classId;
-    private Integer subjectId;
-    private Integer roomId;
-    private String dayOfWeek;
-    private Time startTime;
-    private Time endTime;
-    private Date startDate;
-    private Date endDate;
+    private String className;
+    private Integer mentorID;
 
-    public ScheduleDTO() {
+    public Integer getMentorId() {
+        return mentorID;
     }
 
-    public ScheduleDTO(Integer id, Integer classId, Integer subjectId, Integer roomId, String dayOfWeek, 
-                      Time startTime, Time endTime, Date startDate, Date endDate) {
-        this.id = id;
-        this.classId = classId;
-        this.subjectId = subjectId;
-        this.roomId = roomId;
-        this.dayOfWeek = dayOfWeek;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.startDate = startDate;
-        this.endDate = endDate;
+    public void setMentorId(Integer mentorID) {
+        this.mentorID = mentorID;
     }
 
     public Integer getId() {
@@ -38,28 +25,28 @@ public class ScheduleDTO {
         this.id = id;
     }
 
-    public Integer getClassId() {
-        return classId;
+    public String getClassName() {
+        return className;
     }
 
-    public void setClassId(Integer classId) {
-        this.classId = classId;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
-    public Integer getSubjectId() {
-        return subjectId;
+    public String getSubjectName() {
+        return subjectName;
     }
 
-    public void setSubjectId(Integer subjectId) {
-        this.subjectId = subjectId;
+    public void setSubjectName(String subjectName) {
+        this.subjectName = subjectName;
     }
 
-    public Integer getRoomId() {
-        return roomId;
+    public String getRoomName() {
+        return roomName;
     }
 
-    public void setRoomId(Integer roomId) {
-        this.roomId = roomId;
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
     }
 
     public String getDayOfWeek() {
@@ -70,35 +57,58 @@ public class ScheduleDTO {
         this.dayOfWeek = dayOfWeek;
     }
 
-    public Time getStartTime() {
+    public LocalTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Time startTime) {
+    public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
 
-    public Time getEndTime() {
+    public LocalTime getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(Time endTime) {
+    public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
     }
 
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
-}
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public ScheduleDTO(Integer id, String className, String subjectName, String roomName, String dayOfWeek, LocalTime startTime, LocalTime endTime, LocalDate endDate, LocalDate startDate) {
+        this.id = id;
+        this.className = className;
+        this.subjectName = subjectName;
+        this.roomName = roomName;
+        this.dayOfWeek = dayOfWeek;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.endDate = endDate;
+        this.startDate = startDate;
+    }
+
+    public ScheduleDTO() {
+    }
+
+    private String subjectName;
+    private String roomName;
+    private String dayOfWeek;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private LocalDate startDate;
+    private LocalDate endDate;
+} 

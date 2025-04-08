@@ -18,6 +18,7 @@ public class AttendanceDTO {
         this.status = status;
     }
 
+
     public Integer getId() {
         return id;
     }

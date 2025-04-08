@@ -1,6 +1,6 @@
 package com.fsoft.fintern.controllers;
 
-import com.fsoft.fintern.dtos.ScheduleResultDTO;
+import com.fsoft.fintern.dtos.ScheduleDTO;
 import com.fsoft.fintern.dtos.SchedulingDTO;
 import com.fsoft.fintern.models.Schedule;
 import com.fsoft.fintern.services.ScheduleService;
@@ -87,10 +87,10 @@ public class SchedulingRestController {
         @ApiResponse(responseCode = "400", description = "Invalid scheduling data"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<List<ScheduleResultDTO>> generateSchedule(
+    public ResponseEntity<List<ScheduleDTO>> generateSchedule(
             @Parameter(description = "List of scheduling data")
             @RequestBody List<SchedulingDTO> data) {
-        List<ScheduleResultDTO> schedule = schedulingService.generateSchedule(data);
+        List<ScheduleDTO> schedule = schedulingService.generateSchedule(data);
         return ResponseEntity.ok(schedule);
     }
 
@@ -103,7 +103,7 @@ public class SchedulingRestController {
     })
     public ResponseEntity<?> saveSchedule(
             @Parameter(description = "List of schedule results to save")
-            @RequestBody List<ScheduleResultDTO> schedules) {
+            @RequestBody List<ScheduleDTO> schedules) {
         try {
             boolean success = schedulingService.saveSchedule(schedules);
             return ResponseEntity.ok(Map.of("success", success, "message", "Lịch học đã được lưu thành công"));
