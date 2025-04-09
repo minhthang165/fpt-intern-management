@@ -495,6 +495,11 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="newClassDescription" class="form-label">Class Description</label>
+                                <input type="text" class="form-control" id="newClassDescription" required>
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="newNumberOfInterns" class="form-label">Number of Interns</label>
                                 <input type="number" class="form-control" id="newNumberOfInterns" required min="1">
                             </div>
@@ -770,6 +775,7 @@
         event.stopPropagation();
 
         let className = document.getElementById("newClassName").value;
+        let classDescription = document.getElementById("newClassDescription").value;
         let numberOfIntern = document.getElementById("newNumberOfInterns").value;
         let managerId = document.getElementById("newManager").value;
 
@@ -777,6 +783,13 @@
             conversation_name: className + " - Group Chat",
             conversation_avatar: "assets/img/users/default-avatar.png",
             type: "Group"
+        }
+
+        let requestData = {
+            className: className,
+            classDescription: classDescription,
+            numberOfIntern: numberOfIntern,
+            managerId: managerId
         };
 
         // Bước 1: Tạo conversation
@@ -785,45 +798,23 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(conversationData)
         })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text); });
-                }
-                return response.json();
-            })
-            .then(conversation => {
-                let conversationUserData = {
-                    conversation_id: conversation.id,
-                    user_id: managerId,
-                    is_admin: true
-                };
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text); });
+            }
+            return response.json();
+        })
+        .then(conversation => {
+            let conversationUserData = {
+                conversation_id: conversation.id,
+                user_id: managerId,
+                is_admin: true
+            };
 
-                return fetch(`/api/conversation-user/add-user`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(conversationUserData)
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.text().then(text => { throw new Error(text); });
-                        }
-                        return response.json();
-                    })
-                    .then(() => conversation.id);
-            })
-            .then(conversationId => {
-                let requestData = {
-                    className: className,
-                    numberOfIntern: numberOfIntern,
-                    managerId: managerId,
-                    conversationId: conversationId
-                };
-
-                return fetch(`/api/class/create`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(requestData)
-                });
+            return fetch(`/api/conversation-user/add-user`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(conversationUserData)
             })
             .then(response => {
                 if (!response.ok) {
@@ -831,21 +822,51 @@
                 }
                 return response.json();
             })
-            .then(newClass => {
+            .then(() => conversation.id);
+        })
+        .then(conversationId => {
+            let requestData = {
+                className: className,
+                numberOfIntern: numberOfIntern,
+                managerId: managerId,
+                conversationId: conversationId
+            }
                 let row = document.getElementById(`class-${newClass.id}`);
                 if (row) {
                     row.children[0].textContent = newClass.className;
                     row.children[1].textContent = newClass.numberOfIntern;
+                    row.children[1].textContent = newClass.classDescription;
                     row.children[2].setAttribute("data-manager-id", newClass.manager.id);
                     row.children[2].textContent = newClass.manager.first_name + " " + newClass.manager.last_name;
                 }
 
-                alert("Created a new class successfully!");
-                let newClassModal = bootstrap.Modal.getInstance(document.getElementById("newClassModal"));
-                newClassModal.hide();
-                document.getElementById("newClassForm").reset();
-            })
-            .catch(error => alert("Error Create class: " + error.message));
+            return fetch(`/api/class/create`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestData)
+            });
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text); });
+            }
+            return response.json();
+        })
+        .then(newClass => {
+            let row = document.getElementById(`class-${newClass.id}`);
+            if (row) {
+                row.children[0].textContent = newClass.className;
+                row.children[1].textContent = newClass.numberOfIntern;
+                row.children[2].setAttribute("data-manager-id", newClass.manager.id);
+                row.children[2].textContent = newClass.manager.first_name + " " + newClass.manager.last_name;
+            }
+
+            alert("Created a new class successfully!");
+            let newClassModal = bootstrap.Modal.getInstance(document.getElementById("newClassModal"));
+            newClassModal.hide();
+            document.getElementById("newClassForm").reset();
+        })
+        .catch(error => alert("Error Create class: " + error.message));
     });
 
 

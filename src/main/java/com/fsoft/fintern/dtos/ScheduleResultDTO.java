@@ -7,10 +7,41 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-
+@Data
 public class ScheduleResultDTO {
+
+    public ScheduleResultDTO(Integer id, String className, String subjectName, String roomName, String dayOfWeek, LocalTime startTime, LocalTime endTime, LocalDate startDate, LocalDate endDate) {
+        this.id = id;
+        this.className = className;
+        this.subjectName = subjectName;
+        this.roomName = roomName;
+        this.dayOfWeek = dayOfWeek;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    public ScheduleResultDTO() {
+    }
+
     private Integer id;
     private String className;
+    private String subjectName;
+    private String roomName;
+    private String dayOfWeek;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private LocalDate startDate;
+    private LocalDate endDate;
+
+    public String getDayOfWeek() {
+        return dayOfWeek;
+    }
+
+    public void setDayOfWeek(String dayOfWeek) {
+        this.dayOfWeek = dayOfWeek;
+    }
 
     public Integer getId() {
         return id;
@@ -44,14 +75,6 @@ public class ScheduleResultDTO {
         this.roomName = roomName;
     }
 
-    public String getDayOfWeek() {
-        return dayOfWeek;
-    }
-
-    public void setDayOfWeek(String dayOfWeek) {
-        this.dayOfWeek = dayOfWeek;
-    }
-
     public LocalTime getStartTime() {
         return startTime;
     }
@@ -68,14 +91,6 @@ public class ScheduleResultDTO {
         this.endTime = endTime;
     }
 
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
     public LocalDate getStartDate() {
         return startDate;
     }
@@ -84,26 +99,11 @@ public class ScheduleResultDTO {
         this.startDate = startDate;
     }
 
-    public ScheduleResultDTO(Integer id, String className, String subjectName, String roomName, String dayOfWeek, LocalTime startTime, LocalTime endTime, LocalDate endDate, LocalDate startDate) {
-        this.id = id;
-        this.className = className;
-        this.subjectName = subjectName;
-        this.roomName = roomName;
-        this.dayOfWeek = dayOfWeek;
-        this.startTime = startTime;
-        this.endTime = endTime;
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
-        this.startDate = startDate;
     }
-
-    public ScheduleResultDTO() {
-    }
-
-    private String subjectName;
-    private String roomName;
-    private String dayOfWeek;
-    private LocalTime startTime;
-    private LocalTime endTime;
-    private LocalDate startDate;
-    private LocalDate endDate;
-} 
+}

@@ -6,16 +6,32 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
+@Data
 public class SchedulingDTO {
-    private String classId;
 
-    public SchedulingDTO(String classId, String className,  ClassType classType, LanguageType languageType,Integer roomId) {
+    public SchedulingDTO(String classId, String className, ClassType classType, LanguageType languageType, Integer roomId) {
         this.classId = classId;
         this.className = className;
-        this.languageType = languageType;
         this.classType = classType;
+        this.languageType = languageType;
         this.roomId = roomId;
+    }
+
+    public SchedulingDTO() {
+    }
+
+    private String classId;
+    private String className;
+    private ClassType classType;
+    private LanguageType languageType;
+    private Integer roomId;
+
+    public String getClassId() {
+        return classId;
+    }
+
+    public void setClassId(String classId) {
+        this.classId = classId;
     }
 
     public String getClassName() {
@@ -24,14 +40,6 @@ public class SchedulingDTO {
 
     public void setClassName(String className) {
         this.className = className;
-    }
-
-    public String getClassId() {
-        return classId;
-    }
-
-    public void setClassId(String classId) {
-        this.classId = classId;
     }
 
     public ClassType getClassType() {
@@ -57,9 +65,4 @@ public class SchedulingDTO {
     public void setRoomId(Integer roomId) {
         this.roomId = roomId;
     }
-
-    private String className;
-    private ClassType classType;
-    private LanguageType languageType;
-    private Integer roomId;
-} 
+}
