@@ -380,7 +380,7 @@ function renderAttendance(data) {
 
     // Thêm script xử lý cập nhật trạng thái
     const script = document.createElement("script");
-    script.innerHTML = `
+    script.innerHTML =
       function handleAttendanceUpdate(id, newStatus, currentStatus) {
         // Nếu trạng thái mới giống trạng thái hiện tại, hiển thị thông báo lỗi
         if (newStatus === currentStatus) {
@@ -437,10 +437,9 @@ function renderAttendance(data) {
         // Gọi hàm cập nhật API
         updateStatus(id, newStatus);
       }
-    `;
+    ;
     document.body.appendChild(script);
 }
-
 function showEventDetails(event) {
     if (document.querySelector("#event-modal")) return;
 
