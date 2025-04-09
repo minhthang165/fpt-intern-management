@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="include/master-header :: head"></head>
 <body class="body-area">
-<input type="hidden" id="user_id" th:value="${user.id}">
+<input type="hidden" id="user_id" th:value="${userId}">
 
 <th:block th:replace="~{include/employee-sidebar :: sidebar(~{::content})}">
   <!--header breadcrumb area-->

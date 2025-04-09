@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 public class ScheduleController {
 
     @GetMapping
-    private String viewSchedule(@SessionAttribute("user")LoginUserDTO user, Model model) {
+    private String viewSchedule(@SessionAttribute("user") LoginUserDTO user, Model model) {
         // Lấy userID từ session và đưa vào model
         model.addAttribute("userId", user.getId());
         model.addAttribute("userRole", user.getRole().toString());

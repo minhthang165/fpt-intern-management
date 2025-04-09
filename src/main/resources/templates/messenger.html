@@ -7,38 +7,660 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
     <link href="/assets/css/main.css" rel="stylesheet"/>
+    <style>
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            line-height: 1.6;
+            background-color: #fff;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header styles (Đồng bộ với Trang CSS 1) */
+        header {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            margin-right: 15px;
+        }
+
+        nav {
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            nav {
+                display: flex;
+                gap: 24px;
+            }
+        }
+
+        nav a {
+            color: #4b5563;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #ea580c;
+        }
+
+        .user-account {
+            position: relative;
+        }
+
+        .user-account-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #4b5563;
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        .user-account-btn:hover {
+            color: #ea580c;
+        }
+
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 110%;
+            right: 0;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            width: 220px;
+            padding: 10px 0;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .user-dropdown.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .user-dropdown ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .user-dropdown li {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-dropdown li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #333;
+            font-weight: 500;
+            padding: 5px;
+            border-radius: 5px;
+            text-decoration: none;
+            width: 100%;
+        }
+
+        .user-dropdown li a:hover {
+            background: #f0f0f0;
+        }
+
+        .user-dropdown svg {
+            margin-right: 10px;
+            fill: #666;
+        }
+
+        /* Các style riêng cho Trang CSS 2 */
+        /* Hero banner styles */
+        .hero-banner {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+            margin-left: auto;
+        }
+
+        .hero-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.6), transparent);
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-content {
+            color: white;
+            max-width: 600px;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+        }
+
+        .hero-description {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background-color: #ea580c;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #c2410c;
+        }
+
+        .btn-rounded {
+            border-radius: 9999px;
+        }
+
+        .section {
+            padding: 80px 0;
+        }
+
+        .section-subtitle {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #ea580c;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .section-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        .highlight {
+            position: relative;
+            color: #ea580c;
+        }
+
+        .highlight-underline {
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+        }
+
+        .about-subtitle {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 16px;
+        }
+
+        .about-description {
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+        }
+
+        @media (min-width: 768px) {
+            .flex-row {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+
+        .col-half {
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .col-half {
+                width: 50%;
+            }
+        }
+
+        .image-wrapper {
+            position: relative;
+        }
+
+        .image-main {
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .image-secondary {
+            position: absolute;
+            bottom: -24px;
+            left: -24px;
+            width: 66%;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 0;
+        }
+
+        .video-btn {
+            position: absolute;
+            bottom: -16px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            background-color: #ea580c;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            transition: background-color 0.3s;
+        }
+
+        .video-btn:hover {
+            background-color: #c2410c;
+        }
+
+        /* Carousel styles */
+        .bg-gray {
+            background-color: #f9fafb;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .carousel-container {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .carousel-inner {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            height: 500px;
+        }
+
+        .carousel-item {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .carousel-item.active {
+            opacity: 1;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .carousel-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #d1d5db;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .carousel-indicator.active {
+            background-color: #ea580c;
+        }
+
+        .carousel-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            background-color: #ea580c;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            border: none;
+            transition: background-color 0.3s;
+        }
+
+        .carousel-control:hover {
+            background-color: #c2410c;
+        }
+
+        .carousel-control-prev {
+            left: 16px;
+        }
+
+        .carousel-control-next {
+            right: 16px;
+        }
+
+        /* Stats section styles */
+        .bg-gradient {
+            background: linear-gradient(to right, #0f172a, #1e293b);
+            color: white;
+        }
+
+        .stats-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .stats-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 32px;
+        }
+
+        @media (min-width: 768px) {
+            .stats-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .stat-item {
+            padding: 16px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #facc15;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #d1d5db;
+        }
+
+        .text-gray {
+            color: #9ca3af;
+        }
+
+        .mt-6 {
+            margin-top: 24px;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        /* Footer styles */
+        .footer {
+            background-color: #111827;
+            color: white;
+            padding: 48px 0;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+        }
+
+        @media (min-width: 768px) {
+            .footer-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .footer-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .footer-text {
+            color: #9ca3af;
+        }
+
+        .footer-links {
+            list-style: none;
+            margin-top: 16px;
+        }
+
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+
+        .footer-links a {
+            color: #9ca3af;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .social-link {
+            color: #9ca3af;
+            transition: color 0.3s;
+        }
+
+        .social-link:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            margin-top: 40px;
+            padding-top: 24px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+
+        .video-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .video-modal.show {
+            display: flex;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body class="bg-white">
+<header th:replace="include/user-header :: header"></header>
 <input type="hidden" id="user_avatar" th:value="${user.avatar_path}">
 <input type="hidden" id="user_id" th:value="${user.id}">
 
-<div class="flex h-screen">
+<div class="flex" style="height: calc(100vh - 12vh)">
     <!-- Main Content -->
     <div class="flex flex-col flex-grow">
-        <!-- Chat Header -->
-        <div class="bg-blue-500 text-white p-4 flex items-center justify-between">
-            <div class="text-xl font-bold">Chat</div>
-            <div class="flex space-x-3">
-                <button onclick="toggleModal('startGroupChat')" class="p-2 rounded-full hover:bg-blue-600 transition-colors">
-                    <i class="fas fa-users" aria-label="Group Chat"></i>
-                </button>
-                <button onclick="toggleModal('startOneToOneChat')" class="p-2 rounded-full hover:bg-blue-600 transition-colors">
-                    <i class="fas fa-comment" aria-label="One-to-One Chat"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Chat Section --> 
+        <!-- Chat Section -->
         <div class="flex flex-grow h-screen bg-blue-100">
-            <!-- Chat List -->
             <div class="bg-blue-100 w-1/4 left-side overflow-y-auto m-3">
+                <!-- Chat Header -->
+                <div class="text-black p-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <button id="backButton" class="hidden p-2 rounded-full hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div class="text-xl font-bold">Chat</div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="toggleModal('startGroupChat')" class="p-2 rounded-full hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-users" aria-label="Group Chat"></i>
+                        </button>
+                        <button onclick="toggleModal('startOneToOneChat')" class="p-2 rounded-full hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-comment" aria-label="One-to-One Chat"></i>
+                        </button>
+                    </div>
+                </div>
                 <div class="mb-4">
                     <label class="w-full">
                         <input class="w-full p-2 rounded-full bg-white border border-gray-300" placeholder="Search" type="text" onkeyup="searchConversations(event)"/>
                     </label>
                 </div>
-                <div class="space-y-4">
+                <div class="space-y-4" id="conversationList">
                     <!-- Chat list items will be populated here -->
+                </div>
+                <div id="searchResults" class="space-y-4 hidden">
+                    <!-- Search results will be populated here -->
                 </div>
             </div>
 

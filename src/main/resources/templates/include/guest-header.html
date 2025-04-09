@@ -3,7 +3,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-12">
-                    <div class="mega__menu-wrapper p-relative">
+                    <div class="mega__menu-wrapper">
                         <div class="header__navigation d-flex align-items-center justify-content-between">
                             <div class="header__logo">
                                 <a href="/home">
@@ -23,11 +23,11 @@
                                 </div>
                                 <div class="header__action-inner">
                                     <div class="header__hamburger">
-                                        <div class="nav-item p-relative">
+                                        <div class="nav-item">
                                             <a id="userportfolio" href="#">
                                                 <div class="user__portfolio">
                                                     <div class="user__portfolio-thumb">
-                                                        <img src="/assets/img/users/default-avatar.png" alt="imge not found">
+                                                        <img th:src="${user.avatar_path}" alt="imge not found">
                                                     </div>
                                                     <div class="user__content">
                                                         <span th:text="${username}">User</span>

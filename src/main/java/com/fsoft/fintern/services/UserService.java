@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -113,8 +114,10 @@ public class UserService {
 
     public ResponseEntity<Page<User>> findUserByRole(Role role, Pageable pageable) throws BadRequestException {
         Page<User> users = userRepository.findByRole(role, pageable);
-        if (users.isEmpty()) {
-            throw new BadRequestException(ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage());
+        for (User user : users.getContent()) {
+            String key = BAN_PREFIX + user.getId();
+            String banInfoJson = redisTemplate.opsForValue().get(key);
+            user.setActive(banInfoJson == null);
         }
         return new ResponseEntity<>(users, HttpStatus.OK);
     }

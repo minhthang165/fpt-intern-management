@@ -11,10 +11,8 @@
     </nav>
     <div class="user-account">
       <button id="userportfolio" class="user-account-btn">
-        Account
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 9l6 6 6-6"/>
-        </svg>
+        <img th:src="${user.avatar_path}" alt="" style="border-radius: 50%; width: 45px">
+        <span th:text="${user.first_name + ' ' + user.last_name}" style="font-weight: bold; font-size: 15px"></span>
       </button>
       <div class="user-dropdown">
         <ul>

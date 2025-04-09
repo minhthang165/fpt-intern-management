@@ -13,12 +13,12 @@ public class ProfileController {
     public String profile(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) throws BadRequestException {
         if (user_id != null) {
             model.addAttribute("user_id", user_id);
-            return "profile";
+            model.addAttribute("user", loginUserDTO);
         }
         else {
-            model.addAttribute("user_id", loginUserDTO.getId());
-            return "profile";
+            model.addAttribute("user", loginUserDTO);
         }
+        return "profile";
     }
 
 }

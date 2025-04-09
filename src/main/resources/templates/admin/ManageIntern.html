@@ -443,11 +443,38 @@
             ? `Are you sure you want to unlock this user? \n This user has been banned for ${duration} days`
             : `Provide details for locking this user.`;
 
-        showModal("Lock User", message, !isUnlock, function () {
-            let reason = document.getElementById("lockReason").value;
-            let duration = document.getElementById("lockDuration").value;
-            toggleUserStatus(userId, userEmail, action, reason, duration); // Pass userEmail
-        }, !isUnlock);
+        if (isUnlock) {
+            showModal("Unlock User", message, true, function() {
+                fetch(`/api/user/unban/${userId}`, {
+                    method: "DELETE",
+                    headers: {"Content-Type": "application/json"},
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showModal("Success", "User has been unlocked!");
+                        let icon = document.querySelector(`.flaticon-padlock[data-id="${userId}"]`);
+                        if (icon) {
+                            if (icon.classList.contains("inactive")) {
+                                icon.classList.remove("inactive");
+                                icon.classList.add("active");
+                            } else if (icon.classList.contains("active")) {
+                                icon.classList.remove("active");
+                                icon.classList.add("inactive");
+                            }
+                        }
+                    } else {
+                        throw new Error("Failed to unlock user");
+                    }
+                })
+                .catch(error => showModal("Error", `Error: ${error.message}`));
+            });
+        } else {
+            showModal("Lock User", message, true, function () {
+                let reason = document.getElementById("lockReason").value;
+                let duration = document.getElementById("lockDuration").value;
+                toggleUserStatus(userId, userEmail, action, reason, duration);
+            }, true);
+        }
     });
 
 
@@ -476,6 +503,11 @@
                             attachment: null
                         })
                     });
+                } else if (action === "unlock") {
+                    fetch(`api/user/unban/${userId}`, {
+                        method: "DELETE",
+                        headers: {"Content-Type": "application/json"},
+                    });
                 }
 
                 showModal("Success", `User has been ${action}ed!`);
@@ -486,7 +518,7 @@
             .catch(error => showModal("Error", `Error: ${error.message}`));
     }
 
-    function showModal(title, message, isConfirm = false, confirmCallback = null, showInputs = false) {
+    function showModal(title, message, isConfirm, confirmCallback = null, showInputs = false) {
         let modalElement = document.getElementById("genericModal");
         let modalTitle = document.getElementById("modalTitle");
         let modalMessage = document.getElementById("modalMessage");
@@ -509,10 +541,20 @@
                 let modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
                 modalInstance.hide();
             };
+
+            cancelBtn.onclick = function () {
+                let modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modalInstance.hide();
+            };
         } else {
             confirmBtn.classList.add("d-none");
             cancelBtn.classList.add("d-none");
             okBtn.classList.remove("d-none");
+
+            okBtn.onclick = function () {
+                let modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modalInstance.hide();
+            };
         }
 
         let modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
@@ -685,10 +727,9 @@
             <td>${user.gender}</td>
             <td>${user.role}</td>
             <td class="${user.active ? 'active' : 'inactive'}">
-                <a href="#" data-id="${user.id}" class="toggle-class-status open-modal">
+                <a href="#" data-id="${user.id}" class="toggle-class-status">
                     <i data-id="${user.id}" data-user-email="${user.email}"
-                       class="flaticon-padlock ${user.active ? 'active' : 'inactive'}"
-                       onclick="showModal()">
+                       class="flaticon-padlock ${user.active ? 'active' : 'inactive'}">
                     </i>
                 </a>
                 <a href="#" class="edit-user-modal" data-id="${user.id}"

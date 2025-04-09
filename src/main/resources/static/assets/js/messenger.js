@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     });
     document.addEventListener('click', function (event) {
-        const isClickInside = chatDropdown.contains(event.target) || event.target.closest('.bg-blue-500');
+        const isClickInside = chatDropdown.contains(event.target) || event.target.closest('.text-black');
         if (!isClickInside) {
             chatDropdown.classList.add('hidden');
         }
@@ -243,9 +243,7 @@ function setConversation(element) {
 
     if (conversationId) {
         loadMessages(conversationId);
-        loadMember(conversationId,converstionType).then(members => {
-            conversationMember = members;
-        });
+        loadMember(conversationId,converstionType);
     }
 
     const callButton = document.querySelector(".btn_call");
@@ -316,7 +314,7 @@ function renderFile(typeFile) {
     if (fileList.length == 0) {
         file.innerHTML = "";
         file.classList.remove("active");
-    } else {
+} else {
         file.innerHTML = listFileHTML;
         file.classList.add("active");
     }
@@ -484,7 +482,9 @@ function buildMessageToDTO(messageContent, messageType) {
 }
 
 async function sendAttachments() {
-    for (file of fileList) {
+    tempFilelist = fileList;
+    fileList = [];
+    for (file of tempFilelist) {
         let formData = new FormData();
         formData.append('file', file);
         let fileData = await fetch("cloudinary/upload", {
@@ -502,11 +502,15 @@ async function sendAttachments() {
                     }
                 });
                 let responseData = await response.json();
+                document.querySelector(".list-file").innerHTML = '';
                 stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(responseData));
             }).catch(error => {
                 console.log(error);
             })
     }
+    // Xóa file đính kèm sau khi gửi
+    document.querySelector(".list-file").innerHTML = '';
+    document.querySelector(".list-file").classList.remove("active");
 }
 
 async function sendText() {
@@ -645,8 +649,6 @@ function toggleModal(option) {
                             </button>
                         </div>
                         
-                        <!-- Add member button - chỉ hiện khi là admin -->
-                        ${isCurrentUserAdmin ? `
                         <div class="p-4 border-b">
                             <button class="w-full flex items-center justify-center space-x-2 p-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600" 
                                     onclick="toggleModal('addMembers')">
@@ -654,7 +656,6 @@ function toggleModal(option) {
                                 <span>Add Members</span>
                             </button>
                         </div>
-                        ` : ''}
                         <div id="members-list" class="p-4 overflow-y-auto max-h-[60vh]">
                         </div>
                     </div>
@@ -665,24 +666,26 @@ function toggleModal(option) {
             let membersList = document.getElementById("members-list");
             membersList.innerHTML = "";
             conversationMember.forEach(member => {
+                if (member.user.id == user_id && member.admin == true) {
+                    isCurrentUserAdmin = true;
+                }
                 let memberItem = `
                     <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg group">
                         <div class="flex items-center flex-grow cursor-pointer"
-                             data-track-user-id="${member.id}" 
-                             data-conversationName="${member.first_name} ${member.last_name}" 
+                             data-track-user-id="${member.user.id}" 
+                             data-conversationName="${member.user.first_name} ${member.user.last_name}" 
                              data-conversationAvatar="${member.avatar_path}" 
                              data-conversation-type="OneToOne" 
-                             ${member.id != user_id ? 'onclick="setConversation(this); document.getElementById(\'member-modal\').remove();"' : ''}>
-                            <img class="w-10 h-10 rounded-full" src="${member.avatar_path}" alt="">
+                             ${member.user.id != user_id ? 'onclick="setConversation(this); document.getElementById(\'member-modal\').remove();"' : ''}>
+                            <img class="w-10 h-10 rounded-full" src="${member.user.avatar_path}" alt="">
                             <div class="ml-3 flex-grow">
-                                <div class="font-medium">${member.first_name} ${member.last_name}</div>
-                                ${member.id == user_id ? '<div class="text-xs text-gray-500">You</div>' : ''}
-                                ${member.admin ? '<div class="text-xs text-blue-500">Admin</div>' : ''}
+                                <div class="font-medium">${member.user.first_name} ${member.user.last_name}</div>
+                                ${member.user.id == user_id ? '<div class="text-xs text-gray-500">You</div>' : ''}
                             </div>
                         </div>
-                        ${isCurrentUserAdmin && member.id != user_id ? `
+                        ${isCurrentUserAdmin && member.user.id != user_id ? `
                             <button class="hidden group-hover:block text-red-500 hover:text-red-700 p-2" 
-                                    onclick="removeMember(${member.id}, '${member.first_name} ${member.last_name}')">
+                                    onclick="removeMember(${member.user.id}, '${member.user.first_name} ${member.user.last_name}')">
                                 <i class="fas fa-user-minus"></i>
                             </button>
                         ` : ''}
@@ -718,6 +721,7 @@ function toggleModal(option) {
             mediaContainer.classList.toggle("hidden");
             break;
         case 'startOneToOneChat':
+            console.log("test");
             if (chatDropdown.classList.contains('hidden')) {
                 chatDropdown.classList.remove('hidden');
             } else {
@@ -1013,6 +1017,7 @@ async function startNewConversation(element) {
 
 let searchTimeout; // Global variable to track the timeout
 
+
 function searchUserByEmail(event) {
     clearTimeout(searchTimeout); // Clear the previous timeout
     searchTimeout = setTimeout(() => {
@@ -1098,8 +1103,9 @@ function searchUserByEmail(event) {
                 searchResults.classList.remove('hidden');
                 searchResults.innerHTML = '<div class="p-3 text-center text-red-500">Error searching for users</div>';
             });
-    }, 50); // Delay API call by 50ms
+    }, 200); // Delay API call by 50ms
 }
+
 
 function toggleUserSelection(user, isSelected) {
     if (isSelected) {
@@ -1207,7 +1213,7 @@ function createGroup() {
         body: JSON.stringify({
             type: "Group",
             is_Active: true,
-            conversation_avatar: null,
+            conversation_avatar: '/assets/img/venue/venue-03.jpg',
             conversation_name: groupName
         })
     })
@@ -1270,11 +1276,12 @@ function createGroup() {
 updateCreateButtonState();
 
 function removeMember(userId, userName) {
+    console.log(userId + userName);
     if (!isCurrentUserAdmin) {
         alert("Only admin can remove members from the group.");
         return;
     }
-    
+
     if (confirm(`Are you sure you want to remove ${userName} from the group?`)) {
         leaveGroup(userId);
         conversationMember = conversationMember.filter(member => member.id !== userId);
@@ -1343,7 +1350,7 @@ function searchUsersForGroup(event) {
                 searchResults.classList.remove('hidden');
                 searchResults.innerHTML = '<div class="p-3 text-center text-red-500">Error searching for users</div>';
             });
-    }, 300);
+    }, 200);
 }
 
 function toggleGroupMemberSelection(user, isSelected) {
@@ -1360,11 +1367,11 @@ function toggleGroupMemberSelection(user, isSelected) {
 function updateSelectedGroupMembers() {
     const container = document.getElementById('selectedGroupMembers');
     const addButton = document.getElementById('addMembersBtn');
-    
+
     if (!container) return;
-    
+
     container.innerHTML = '';
-    
+
     listUserAdd.forEach(user => {
         const tag = document.createElement('div');
         tag.className = 'flex items-center bg-blue-50 rounded-full px-3 py-1 text-sm';
@@ -1397,7 +1404,7 @@ async function addMembersToGroup() {
     if (listUserAdd.length === 0) return;
 
     try {
-        const addPromises = listUserAdd.map(user => 
+        const addPromises = listUserAdd.map(user =>
             fetch('/api/conversation-user/add-user', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -1413,16 +1420,16 @@ async function addMembersToGroup() {
 
         // Update local member list
         conversationMember = [...conversationMember, ...listUserAdd];
-        
+
         // Close add members modal
         document.getElementById('add-members-modal').remove();
-        
+
         // Refresh members modal
         toggleModal('showMembers');
 
         // Show success message
         alert(`Successfully added ${listUserAdd.length} member${listUserAdd.length > 1 ? 's' : ''} to the group`);
-        
+
         // Reset selected users
         listUserAdd = [];
     } catch (error) {
@@ -1433,19 +1440,115 @@ async function addMembersToGroup() {
 
 // Add search function
 function searchConversations(event) {
-    const searchTerm = event.target.value.toLowerCase().trim();
-    
-    if (searchTerm === '') {
-        renderHtmlConversation(originalConversationList);
-        return;
-    }
+    clearTimeout(searchTimeout); // Cancel any previous timeout
 
-    const filteredConversations = originalConversationList.filter(conversation => {
-        const nameMatch = conversation.conversationName.toLowerCase().includes(searchTerm);
-        const messageMatch = conversation.last_message && 
-                           conversation.last_message.toLowerCase().includes(searchTerm);
-        return nameMatch || messageMatch;
-    });
+    searchTimeout = setTimeout(() => {
+        const searchTerm = event.target.value.toLowerCase();
+        const conversationList = document.getElementById("conversationList");
+        const searchResults = document.getElementById("searchResults");
+        const backButton = document.getElementById("backButton");
 
-    renderHtmlConversation(filteredConversations);
+        if (searchTerm.trim() === "") {
+            conversationList.classList.remove("hidden");
+            searchResults.classList.add("hidden");
+            backButton.classList.add("hidden");
+            renderHtmlConversation(originalConversationList);
+            return;
+        }
+
+        conversationList.classList.add("hidden");
+        searchResults.classList.remove("hidden");
+        backButton.classList.remove("hidden");
+
+        const filteredConversations = originalConversationList.filter(conversation => {
+            const conversationName = conversation.conversationName.toLowerCase();
+            return conversationName.includes(searchTerm);
+        });
+
+        searchResults.innerHTML = "";
+
+        if (filteredConversations.length > 0) {
+            searchResults.innerHTML += `
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-gray-500 mb-2">Conversations</h3>
+                    ${filteredConversations.map(conversation => `
+                        <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" 
+                             data-id="${conversation.id}" 
+                             data-conversationName="${conversation.conversationName.replace(/<[^>]*>/g, '')}" 
+                             data-conversation-type="${conversation.type}" 
+                             data-conversationAvatar="${conversation.conversationAvatar}" 
+                             onclick="setConversation(this)">
+                            <img alt="User avatar" 
+                                 id="conversation-avatar" 
+                                 class="rounded-full" 
+                                 height="40" 
+                                 src="${conversation.conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" 
+                                 width="40"/>
+                            <div>
+                                <div class="font-bold">${conversation.conversationName}</div>
+                                <div class="text-gray-500 text-sm">${conversation.last_message || "No messages yet"}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        fetch(`/api/user/search/users?email=${searchTerm}`)
+            .then(response => response.json())
+            .then(users => {
+                if (users && users.length > 0) {
+                    searchResults.innerHTML += `
+                        <div class="mt-4">
+                            <h3 class="text-sm font-semibold text-gray-500 mb-2">Users</h3>
+                            ${users.map(user => `
+                                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" 
+                                     data-track-user-id="${user.id}" 
+                                     data-conversationName="${user.first_name} ${user.last_name}" 
+                                     data-conversationAvatar="${user.avatar_path}" 
+                                     data-conversation-type="OneToOne" 
+                                     onclick="setConversation(this)">
+                                    <img alt="User avatar" 
+                                         class="rounded-full" 
+                                         height="40" 
+                                         src="${user.avatar_path || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" 
+                                         width="40"/>
+                                    <div>
+                                        <div class="font-bold">${user.first_name} ${user.last_name}</div>
+                                        <div class="text-gray-500 text-sm">${user.email}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                if (filteredConversations.length === 0 && (!users || users.length === 0)) {
+                    searchResults.innerHTML = "<p class='text-gray-500 text-center'>No results found</p>";
+                }
+            })
+            .catch(error => {
+                console.error('Error searching for users:', error);
+                if (filteredConversations.length === 0) {
+                    searchResults.innerHTML = "<p class='text-gray-500 text-center'>No results found</p>";
+                }
+            });
+    }, 200); // Delay of 200ms
 }
+
+// Thêm sự kiện click cho nút quay lại
+document.getElementById("backButton").addEventListener("click", function() {
+    const conversationList = document.getElementById("conversationList");
+    const searchResults = document.getElementById("searchResults");
+    const backButton = document.getElementById("backButton");
+    const searchInput = document.querySelector("input[type='text']");
+
+    // Xóa nội dung tìm kiếm
+    searchInput.value = "";
+
+    // Hiển thị lại danh sách hội thoại ban đầu
+    conversationList.classList.remove("hidden");
+    searchResults.classList.add("hidden");
+    backButton.classList.add("hidden");
+    renderHtmlConversation(originalConversationList);
+});
