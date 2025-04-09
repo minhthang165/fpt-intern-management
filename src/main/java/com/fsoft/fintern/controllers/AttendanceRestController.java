@@ -14,66 +14,62 @@ import org.apache.coyote.BadRequestException;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Pageable;
 import java.util.List;
 
 @RestController
 @RequestMapping("api/attendance")
 public class AttendanceRestController {
-   private final AttendanceService attendanceService;
-    private final AttendanceRepository attendanceRepository;
+    private final AttendanceService attendanceService;
+
 
     @Autowired
-    public AttendanceRestController(AttendanceService attendanceService, AttendanceRepository attendanceRepository) {
-       this.attendanceService = attendanceService;
-        this.attendanceRepository = attendanceRepository;
+    public AttendanceRestController(AttendanceService attendanceService) {
+        this.attendanceService = attendanceService;
     }
 
-   @GetMapping("/")
-   @Operation(description = "View all Attendance")
-   public ResponseEntity<List<AttendanceDTO>> findAll() throws BadRequestException {
-       return this.attendanceService.findAll();
-   }
+    @GetMapping("/")
+    @Operation(description = "View all Attendance")
+    public ResponseEntity<List<Attendance>> findAll(AttendanceDTO attendanceDTO) throws BadRequestException {
+        return this.attendanceService.findAll(attendanceDTO);
+    }
 
-   @PostMapping("/create")
+    @PostMapping("/create")
     @Operation(description = "Create a new Attendance")
     public ResponseEntity<Attendance> create(@Valid AttendanceDTO attendanceDTO) throws BadRequestException {
-       return this.attendanceService.createAttendance(attendanceDTO);
-   }
+        return this.attendanceService.createAttendance(attendanceDTO);
+    }
 
     @GetMapping("/{id}")
     @Operation(description = "Get Attendance by ID")
-    public ResponseEntity<AttendanceDTO> findById(@PathVariable int id) throws BadRequestException {
+    public ResponseEntity<Attendance> findById(@PathVariable int id) throws BadRequestException {
         return this.attendanceService.findById(id);
     }
 
 
     @PatchMapping("/updatePresent/{id}")
     @Operation(description = "Update Attendance to Present by Id")
-    public ResponseEntity<AttendanceDTO> updateToPresent(@PathVariable int id, @RequestBody AttendanceDTO attendanceDTO) throws BadRequestException {
+    public ResponseEntity<Attendance> updateToPresent(@PathVariable int id, @RequestBody AttendanceDTO attendanceDTO) throws BadRequestException {
         return this.attendanceService.updateAttendancetoPresent(id, attendanceDTO);
     }
 
 
     @PatchMapping("/updateAbsent/{id}")
     @Operation(description = "Update Attendance to Absent by Id")
-    public ResponseEntity<AttendanceDTO> updateToAbsent(@PathVariable int id, @RequestBody AttendanceDTO attendanceDTO) throws BadRequestException {
+    public ResponseEntity<Attendance> updateToAbsent(@PathVariable int id, @RequestBody AttendanceDTO attendanceDTO) throws BadRequestException {
         return this.attendanceService.updateAttendanceToAbsent(id, attendanceDTO);
     }
 
     @GetMapping("/class/{id}")
     @Operation(summary = "Find Intern Attendance by classId")
-    public ResponseEntity<List<AttendanceDTO>> getAttendanceByClassId(@PathVariable("id") Integer classId) throws BadRequestException {
-        List<AttendanceDTO> result = attendanceService.getAttendanceByClassId(classId);
-        if (result.isEmpty()) {
-            throw new BadRequestException(ErrorDictionaryConstraints.CLASS_NOT_EXISTS_ID.getMessage());
-        }
-        return ResponseEntity.ok(result);
+    public ResponseEntity<List<Attendance>> getAttendanceByClassId(@PathVariable("id") Integer classId) throws BadRequestException {
+        return this.attendanceService.findAttendanceByClassId(classId);
     }
 
 }

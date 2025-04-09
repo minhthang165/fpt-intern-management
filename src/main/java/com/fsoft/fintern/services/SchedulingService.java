@@ -82,10 +82,43 @@ public class SchedulingService {
     public List<SchedulingDTO> importSchedulingData(MultipartFile file) throws IOException {
         List<SchedulingDTO> results = new ArrayList<>();
 
-
         mentorMap.clear();
 
         try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+            // First, read mentor information from Mentors sheet
+            Sheet mentorSheet = workbook.getSheet("Mentors");
+            if (mentorSheet == null) {
+                throw new IOException("Invalid template: 'Mentors' sheet not found");
+            }
+
+            // Skip header row
+            for (int i = 1; i <= mentorSheet.getLastRowNum(); i++) {
+                Row row = mentorSheet.getRow(i);
+                if (row == null) continue;
+
+                String mentorIdStr = getCellValueAsString(row.getCell(0));
+                String name = getCellValueAsString(row.getCell(1));
+                String specialization = getCellValueAsString(row.getCell(2));
+                String mentorType = getCellValueAsString(row.getCell(3));
+                String maxHoursStr = getCellValueAsString(row.getCell(4));
+                String minHoursStr = getCellValueAsString(row.getCell(5));
+
+                // Skip empty rows
+                if (mentorIdStr.isEmpty()) continue;
+
+                try {
+                    Integer mentorId = Integer.parseInt(mentorIdStr);
+                    Integer maxHours = maxHoursStr.isEmpty() ? 40 : Integer.parseInt(maxHoursStr);
+                    Integer minHours = minHoursStr.isEmpty() ? 25 : Integer.parseInt(minHoursStr);
+
+                    MentorInfo mentorInfo = new MentorInfo(mentorId, name, specialization, mentorType, maxHours, minHours, 0);
+                    mentorMap.put(mentorId, mentorInfo);
+                } catch (NumberFormatException e) {
+                    throw new IOException("Invalid number format in Mentors sheet: " + e.getMessage());
+                }
+            }
+
+            // Then read class information from Classes sheet
             Sheet sheet = workbook.getSheet("Classes");
             if (sheet == null) {
                 throw new IOException("Invalid template: 'Classes' sheet not found");
@@ -101,6 +134,8 @@ public class SchedulingService {
                 String classTypeStr = getCellValueAsString(row.getCell(2));
                 String languageTypeStr = getCellValueAsString(row.getCell(3));
                 String roomIdStr = getCellValueAsString(row.getCell(4));
+                String codeMentorIdStr = getCellValueAsString(row.getCell(5));
+                String languageMentorIdStr = getCellValueAsString(row.getCell(6));
 
                 // Skip empty rows
                 if (classId.isEmpty() && className.isEmpty()) continue;
@@ -108,6 +143,8 @@ public class SchedulingService {
                 ClassType classType = null;
                 LanguageType languageType = null;
                 Integer roomId = null;
+                Integer codeMentorId = null;
+                Integer languageMentorId = null;
 
                 // Validate and parse class type
                 if (!classTypeStr.isEmpty()) {
@@ -132,7 +169,6 @@ public class SchedulingService {
                     if (classType != ClassType.CODE_ONLY) {
                         throw new IOException("Language type is required for " + classType + " classes. Class: " + className);
                     }
-                    // For CODE_ONLY classes, languageType remains null
                 }
 
                 // Parse room ID if provided
@@ -144,39 +180,63 @@ public class SchedulingService {
                     }
                 }
 
-                SchedulingDTO dto = new SchedulingDTO(classId, className, classType, languageType, roomId);
-                results.add(dto);
-            }
-
-            // Read mentor information from Mentors sheet
-            Sheet mentorSheet = workbook.getSheet("Mentors");
-            if (mentorSheet != null) {
-                // Skip header row
-                for (int i = 1; i <= mentorSheet.getLastRowNum(); i++) {
-                    Row row = mentorSheet.getRow(i);
-                    if (row == null) continue;
-
-                    String mentorIdStr = getCellValueAsString(row.getCell(0));
-                    String name = getCellValueAsString(row.getCell(1));
-                    String specialization = getCellValueAsString(row.getCell(2));
-                    String mentorType = getCellValueAsString(row.getCell(3));
-                    String maxHoursStr = getCellValueAsString(row.getCell(4));
-                    String minHoursStr = getCellValueAsString(row.getCell(5));
-
-                    // Skip empty rows
-                    if (mentorIdStr.isEmpty()) continue;
-
+                // Parse code mentor ID if provided
+                if (!codeMentorIdStr.isEmpty()) {
                     try {
-                        Integer mentorId = Integer.parseInt(mentorIdStr);
-                        Integer maxHours = maxHoursStr.isEmpty() ? 40 : Integer.parseInt(maxHoursStr);
-                        Integer minHours = minHoursStr.isEmpty() ? 25 : Integer.parseInt(minHoursStr);
-
-                        MentorInfo mentorInfo = new MentorInfo(mentorId, name, specialization, mentorType, maxHours, minHours, 0);
-                        mentorMap.put(mentorId, mentorInfo);
+                        codeMentorId = Integer.parseInt(codeMentorIdStr);
+                        // Validate code mentor exists and is a CodeMentor
+                        MentorInfo mentorInfo = mentorMap.get(codeMentorId);
+                        if (mentorInfo == null) {
+                            throw new IOException("Code mentor with ID " + codeMentorId + " not found in Mentors sheet");
+                        }
+                        if (!mentorInfo.type.equals("CodeMentor")) {
+                            throw new IOException("Mentor with ID " + codeMentorId + " is not a CodeMentor");
+                        }
                     } catch (NumberFormatException e) {
-                        throw new IOException("Invalid number format in Mentors sheet: " + e.getMessage());
+                        throw new IOException("Invalid code mentor ID: " + codeMentorIdStr);
                     }
                 }
+
+                // Parse language mentor ID if provided
+                if (!languageMentorIdStr.isEmpty()) {
+                    try {
+                        languageMentorId = Integer.parseInt(languageMentorIdStr);
+                        // Validate language mentor exists and is a LanguageMentor
+                        MentorInfo mentorInfo = mentorMap.get(languageMentorId);
+                        if (mentorInfo == null) {
+                            throw new IOException("Language mentor with ID " + languageMentorId + " not found in Mentors sheet");
+                        }
+                        if (!mentorInfo.type.equals("LanguageMentor")) {
+                            throw new IOException("Mentor with ID " + languageMentorId + " is not a LanguageMentor");
+                        }
+                    } catch (NumberFormatException e) {
+                        throw new IOException("Invalid language mentor ID: " + languageMentorIdStr);
+                    }
+                }
+
+                // Validate mentor assignments based on class type
+                if (classType == ClassType.CODE_ONLY) {
+                    if (codeMentorId == null) {
+                        throw new IOException("Code mentor is required for CODE_ONLY class: " + className);
+                    }
+                    if (languageMentorId != null) {
+                        throw new IOException("Language mentor should not be assigned for CODE_ONLY class: " + className);
+                    }
+                } else if (classType == ClassType.LANGUAGE_ONLY) {
+                    if (languageMentorId == null) {
+                        throw new IOException("Language mentor is required for LANGUAGE_ONLY class: " + className);
+                    }
+                    if (codeMentorId != null) {
+                        throw new IOException("Code mentor should not be assigned for LANGUAGE_ONLY class: " + className);
+                    }
+                } else if (classType == ClassType.COMBINED) {
+                    if (codeMentorId == null || languageMentorId == null) {
+                        throw new IOException("Both code mentor and language mentor are required for COMBINED class: " + className);
+                    }
+                }
+
+                SchedulingDTO dto = new SchedulingDTO(classId, className, classType, languageType, roomId, codeMentorId, languageMentorId);
+                results.add(dto);
             }
         }
 
@@ -342,7 +402,7 @@ public class SchedulingService {
             // Tăng số lần sử dụng phòng
             roomUsageCount.put(selectedRoom.getId(), roomUsageCount.getOrDefault(selectedRoom.getId(), 0) + 1);
 
-            // Tạo lịch học
+            // Tạo lịch học với languageMentorId
             ScheduleDTO scheduleDTO = createScheduleDTO(
                     classData.getClassName(),
                     languageSubject.getSubjectName(),
@@ -351,7 +411,8 @@ public class SchedulingService {
                     LANGUAGE_START,
                     LANGUAGE_END,
                     DEFAULT_START_DATE,
-                    DEFAULT_END_DATE
+                    DEFAULT_END_DATE,
+                    classData.getLanguageMentorId() // Sử dụng languageMentorId cho LANGUAGE_ONLY
             );
 
             classSchedules.add(scheduleDTO);
@@ -436,7 +497,7 @@ public class SchedulingService {
                 // Tăng số lần sử dụng phòng
                 roomUsageCount.put(selectedRoom.getId(), roomUsageCount.getOrDefault(selectedRoom.getId(), 0) + 1);
 
-                // Tạo lịch học
+                // Tạo lịch học với codeMentorId
                 ScheduleDTO scheduleDTO = createScheduleDTO(
                         classData.getClassName(),
                         codeSubject.getSubjectName(),
@@ -445,7 +506,8 @@ public class SchedulingService {
                         MORNING_START,
                         MORNING_END,
                         DEFAULT_START_DATE,
-                        DEFAULT_END_DATE
+                        DEFAULT_END_DATE,
+                        classData.getCodeMentorId() // Sử dụng codeMentorId cho CODE_ONLY
                 );
 
                 classSchedules.add(scheduleDTO);
@@ -459,7 +521,7 @@ public class SchedulingService {
                 // Tăng số lần sử dụng phòng
                 roomUsageCount.put(selectedRoom.getId(), roomUsageCount.getOrDefault(selectedRoom.getId(), 0) + 1);
 
-                // Tạo lịch học
+                // Tạo lịch học với codeMentorId
                 ScheduleDTO scheduleDTO = createScheduleDTO(
                         classData.getClassName(),
                         codeSubject.getSubjectName(),
@@ -468,7 +530,8 @@ public class SchedulingService {
                         AFTERNOON_START,
                         AFTERNOON_END,
                         DEFAULT_START_DATE,
-                        DEFAULT_END_DATE
+                        DEFAULT_END_DATE,
+                        classData.getCodeMentorId() // Sử dụng codeMentorId cho CODE_ONLY
                 );
 
                 classSchedules.add(scheduleDTO);
@@ -560,7 +623,8 @@ public class SchedulingService {
                         MORNING_START,
                         MORNING_END,
                         DEFAULT_START_DATE,
-                        DEFAULT_END_DATE
+                        DEFAULT_END_DATE,
+                        classData.getCodeMentorId()
                 );
                 classSchedules.add(codeScheduleDTO);
 
@@ -574,7 +638,8 @@ public class SchedulingService {
                         AFTERNOON_START_LANGUAGE,
                         AFTERNOON_END,
                         DEFAULT_START_DATE,
-                        DEFAULT_END_DATE
+                        DEFAULT_END_DATE,
+                        classData.getLanguageMentorId()
                 );
                 classSchedules.add(langScheduleDTO);
             } else {
@@ -588,7 +653,8 @@ public class SchedulingService {
                         NOON_START,
                         NOON_END,
                         DEFAULT_START_DATE,
-                        DEFAULT_END_DATE
+                        DEFAULT_END_DATE,
+                        classData.getLanguageMentorId()
                 );
                 classSchedules.add(langScheduleDTO);
 
@@ -602,7 +668,8 @@ public class SchedulingService {
                         AFTERNOON_START,
                         AFTERNOON_END,
                         DEFAULT_START_DATE,
-                        DEFAULT_END_DATE
+                        DEFAULT_END_DATE,
+                        classData.getCodeMentorId()
                 );
                 classSchedules.add(codeScheduleDTO);
             }
@@ -619,7 +686,7 @@ public class SchedulingService {
         } else {
             Subject newSubject = new Subject();
             newSubject.setSubjectName(subjectName);
-            newSubject.setDescription("Auto-generated subject for " + subjectName);
+            newSubject.setDescription(subjectName);
             return subjectRepository.save(newSubject);
         }
     }
@@ -659,7 +726,7 @@ public class SchedulingService {
 
     private ScheduleDTO createScheduleDTO(String className, String subjectName, String roomName,
                                           String dayOfWeek, LocalTime startTime, LocalTime endTime,
-                                          LocalDate startDate, LocalDate endDate) {
+                                          LocalDate startDate, LocalDate endDate, Integer assignedMentorId) {
         ScheduleDTO dto = new ScheduleDTO();
         dto.setClassName(className);
         dto.setSubjectName(subjectName);
@@ -670,52 +737,9 @@ public class SchedulingService {
         dto.setStartDate(startDate);
         dto.setEndDate(endDate);
 
-        // Assign mentor based on the subject type
-        Integer assignedMentorId = null;
-
-        if (!mentorMap.isEmpty()) {
-            // For Code subjects, find a CodeMentor
-            if (subjectName.contains("Code")) {
-                assignedMentorId = findAndAssignMentor(mentorMap, "CODE", "CodeMentor", calculateHours(startTime, endTime));
-            }
-            // For Japanese subjects, find a Language mentor with JAPANESE specialization
-            else if (subjectName.contains("Japanese")) {
-                assignedMentorId = findAndAssignMentor(mentorMap, "JAPANESE", "LanguageMentor", calculateHours(startTime, endTime));
-            }
-            // For Korean subjects, find a Language mentor with KOREAN specialization
-            else if (subjectName.contains("Korean")) {
-                assignedMentorId = findAndAssignMentor(mentorMap, "KOREAN", "LanguageMentor", calculateHours(startTime, endTime));
-            }
-
-            // Nếu không tìm thấy mentor phù hợp, thử tìm bất kỳ mentor nào có thể dạy
-            if (assignedMentorId == null) {
-                assignedMentorId = findAnyMentorWithLowestHours(mentorMap);
-            }
-        }
-
-        // Nếu vẫn không tìm thấy mentor (hoặc không có mentor nào trong map), sử dụng ID mặc định
-        if (assignedMentorId == null) {
-            // Tìm mentor mặc định - ID thấp nhất trong database
-            try {
-                List<User> mentors = userRepository.findAll();
-                if (!mentors.isEmpty()) {
-                    // Lấy mentor đầu tiên tìm được
-                    assignedMentorId = mentors.get(0).getId();
-                    System.out.println("Sử dụng mentor mặc định ID=" + assignedMentorId + " cho lớp " + className + ", môn " + subjectName);
-                } else {
-                    // Nếu không có mentor nào, đặt mặc định là 1
-                    assignedMentorId = 1;
-                    System.out.println("Không tìm thấy mentor nào trong database. Sử dụng ID=1 cho lớp " + className);
-                }
-            } catch (Exception e) {
-                // Nếu có lỗi, sử dụng ID mặc định là 1
-                assignedMentorId = 1;
-                System.err.println("Lỗi khi tìm mentor mặc định: " + e.getMessage() + ". Sử dụng ID=1 cho lớp " + className);
-            }
-        }
-
+        // Use the assigned mentor ID
         dto.setMentorId(assignedMentorId);
-        System.out.println("Gán mentor ID=" + assignedMentorId + " cho lớp " + className + ", môn " + subjectName);
+
         return dto;
     }
 

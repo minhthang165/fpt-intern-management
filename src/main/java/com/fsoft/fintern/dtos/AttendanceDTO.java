@@ -11,11 +11,11 @@ public class AttendanceDTO {
     public AttendanceDTO() {
     }
 
-    public AttendanceDTO(Integer id, Integer userId, Integer scheduleId, AttendanceStatus status) {
+    public AttendanceDTO(Integer id, Integer userId, Integer scheduleId, String status) {
         this.id = id;
         this.userId = userId;
         this.scheduleId = scheduleId;
-        this.status = status;
+        this.status = AttendanceStatus.valueOf(status);
     }
 
 
