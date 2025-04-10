@@ -30,7 +30,7 @@
                                                         <img th:src="${user.avatar_path}" alt="imge not found">
                                                     </div>
                                                     <div class="user__content">
-                                                        <span th:text="${username}">User</span>
+                                                        <span th:text="${user.first_name + ' ' + user.last_name}" style="font-weight: bold; font-size: 15px"></span>
                                                     </div>
                                                 </div>
                                             </a>

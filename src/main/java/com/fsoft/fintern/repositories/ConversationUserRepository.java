@@ -23,4 +23,9 @@ public interface ConversationUserRepository extends JpaRepository<ConversationUs
 
     @Query("SELECT cu.user FROM ConversationUser cu WHERE cu.conversation.id = :conversationId AND cu.user.id != :userId")
     Optional<User> findOtherUserInOneToOneConversation(@Param("conversationId") int conversationId, @Param("userId") int userId);
+
+    @Query("SELECT c FROM Conversation c WHERE c.type = 'OneToOne' AND c.id IN " +
+           "(SELECT cu1.conversation.id FROM ConversationUser cu1 WHERE cu1.user.id = :userId1) AND c.id IN " +
+           "(SELECT cu2.conversation.id FROM ConversationUser cu2 WHERE cu2.user.id = :userId2)")
+    Optional<Conversation> findOneToOneConversationBetweenUsers(@Param("userId1") int userId1, @Param("userId2") int userId2);
 }

@@ -625,6 +625,7 @@
 </head>
 <body class="bg-white">
 <header th:replace="include/user-header :: header"></header>
+<input type="hidden" id="user_fullName" th:value="${user.first_name + ' ' + user.last_name}">
 <input type="hidden" id="user_avatar" th:value="${user.avatar_path}">
 <input type="hidden" id="user_id" th:value="${user.id}">
 

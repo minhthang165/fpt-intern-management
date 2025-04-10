@@ -81,7 +81,7 @@
                                         <img th:src="${user.avatar_path}" alt="User avatar" onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=random'">
                                     </div>
                                     <div class="user__content">
-                                        <span>Employee</span>
+                                        <span th:text="${user.first_name + ' ' + user.last_name}" style="font-weight: bold; font-size: 15px"></span>
                                     </div>
                                 </div>
                             </button>
