@@ -20,12 +20,16 @@ function addEvent(title, startDate, startHour, endDate, dayOfWeekOrEndHour, endH
         )
     ) {
         // Case: addEvent(title, startDate, startHour, endDate, dayOfWeek, endHour, color)
-        finalDayOfWeek = dayOfWeekOrEndHour
+        finalDayOfWeek = dayOfWeekOrEndHour.toUpperCase() // Ensure uppercase for consistency
         finalEndHour = endHour || (Number.parseInt(startHour) + 1).toString()
     } else {
         // Case: addEvent(title, startDate, startHour, endDate, endHour, color)
         finalEndHour = dayOfWeekOrEndHour || (Number.parseInt(startHour) + 1).toString()
         finalDayOfWeek = null
+        // Handle case where color is passed as 6th parameter
+        if (typeof endHour === "string" && endHour.startsWith("#")) {
+            color = endHour
+        }
     }
 
     const newEvent = {
@@ -42,6 +46,7 @@ function addEvent(title, startDate, startHour, endDate, dayOfWeekOrEndHour, endH
     console.log("Event added:", newEvent)
     events.push(newEvent)
     renderEvents()
+    return newEvent.id // Return ID for potential future reference
 }
 
 // Delete event
@@ -59,8 +64,8 @@ async function fetchAndRenderSchedules() {
         events = []
 
         // Get userId from hidden input
-        const userId = document.getElementById("userId").value
-        const userRole = document.getElementById("userRole").value
+        const userId = document.getElementById("userId")?.value
+        const userRole = document.getElementById("userRole")?.value
         console.log(`Fetching schedules for user: ${userId}, role: ${userRole}`)
 
         // API endpoint based on user role
@@ -137,6 +142,8 @@ async function fetchAndRenderSchedules() {
             const startTime = schedule.startTime
             const endTime = schedule.endTime
 
+            const scheduleId = schedule.id
+
             const title = `${className} - ${subjectName} - ${roomName}`
 
             let startHour = "0"
@@ -180,6 +187,7 @@ async function fetchAndRenderSchedules() {
                 endHour: endHour,
                 color: color,
                 dayOfWeek: dayOfWeek,
+                scheduleId: scheduleId,
                 details: {
                     className: className,
                     subjectName: subjectName,
@@ -206,64 +214,245 @@ async function fetchAndRenderSchedules() {
 }
 
 // Fetch Data from Attendance API
-async function fetchAttendance(classId) {
+async function fetchAttendance(classId, scheduleId) {
     try {
         if (!classId) throw new Error("Thiếu classId để fetch attendance");
 
-        console.log("📥 Đang gọi API attendance cho classId:", classId);
+        console.log("📥 Đang gọi API user/classroom cho classId:", classId);
 
-        const response = await fetch(`/api/attendance/class/${classId}`, {
+        const response = await fetch(`/api/user/classroom/${classId}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" }
         });
 
         if (!response.ok) {
-            throw new Error(`Không thể fetch attendance: ${response.status} ${response.statusText}`);
+            throw new Error(`Không thể fetch user list: ${response.status} ${response.statusText}`);
         }
 
-        const attendanceData = await response.json();
-        console.log("✅ Danh sách attendance:", attendanceData);
+        const userList = await response.json();
+        console.log("✅ Danh sách user:", userList);
 
-        window.currentClassId = classId; // lưu lại để reload sau update
+        window.currentClassId = classId;
+        window.currentScheduleId = scheduleId; // Store scheduleId for later use
+
+        const attendanceData = userList.map(user => {
+            const userItem = {
+                id: user.attendance_id || null,
+                userId: Number(user.userId || user.id),
+                scheduleId: Number(scheduleId) || 1073741824,
+                status: user.status || "UNKNOWN",
+                hasAttendance: !!user.attendance_id,
+                user: user // Store the full user object for rendering
+            };
+
+            console.log("🔍 Dữ liệu user trong attendanceData:", userItem);
+
+            return userItem;
+        });
+
         renderAttendance(attendanceData);
     } catch (error) {
-        console.error("❌ Lỗi khi fetch attendance:", error.message);
+        console.error("❌ Lỗi khi fetch user list:", error.message);
+        // Show error message in attendance container
+        const container = document.getElementById("attendanceContainer");
+        if (container) {
+            container.innerHTML = `<div class="alert alert-danger">❌ Lỗi: ${error.message}</div>`;
+        }
     }
 }
-function updateStatus(attendanceId, newStatus) {
-    const url = newStatus === 'PRESENT'
-        ? `/api/attendance/updatePresent/${attendanceId}`
-        : `/api/attendance/updateAbsent/${attendanceId}`;
 
-    const payload = {
-        id: attendanceId,
+// Create a new attendance record
+function createAttendance(newStatus, scheduleId, userId) {
+    const safeUserId = Number(userId);
+    const safeScheduleId = Number(scheduleId);
+
+    if (!safeUserId || !safeScheduleId) {
+        console.error("❌ Thiếu userId hoặc scheduleId!", { userId, scheduleId });
+        alert("❌ Không thể tạo điểm danh vì thiếu thông tin người dùng hoặc lịch học.");
+        return;
+    }
+
+    const url = "/api/attendance/create";
+    const body = {
+        userId: safeUserId,
+        scheduleId: safeScheduleId,
         status: newStatus
     };
+
+    console.log("🔍 Gọi API tạo điểm danh:", {
+        url: url,
+        method: "POST",
+        status: newStatus,
+        body: body
+    });
+
+    fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify(body)
+    })
+        .then(response => {
+            console.log("🔍 Phản hồi từ server:", {
+                status: response.status,
+                statusText: response.statusText
+            });
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`Tạo điểm danh thất bại! Status: ${response.status}, Message: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("✅ Dữ liệu trả về:", data);
+            alert("✅ Tạo trạng thái điểm danh thành công!");
+            if (window.currentClassId) {
+                fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
+            }
+        })
+        .catch(err => {
+            console.error("❌ Lỗi khi tạo điểm danh:", err.message);
+            alert("❌ Có lỗi xảy ra khi tạo trạng thái. Vui lòng thử lại!");
+            if (window.currentClassId) {
+                fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
+            }
+        });
+}
+
+// Update an existing attendance record
+function updateAttendance(attendanceId, newStatus, scheduleId, userId) {
+    const safeUserId = Number(userId);
+    const safeScheduleId = Number(scheduleId);
+
+    if (!safeUserId || !safeScheduleId) {
+        console.error("❌ Thiếu userId hoặc scheduleId!", { userId, scheduleId });
+        alert("❌ Không thể cập nhật vì thiếu thông tin người dùng hoặc lịch học.");
+        return;
+    }
+
+    let url;
+    if (newStatus === 'PRESENT') {
+        url = `/api/attendance/updatePresent/user/${safeUserId}/${safeScheduleId}`;
+    } else {
+        url = `/api/attendance/updateAbsent/user/${safeUserId}/${safeScheduleId}`;
+    }
+
+    console.log("🔍 Gọi API cập nhật điểm danh:", {
+        url: url,
+        method: "PATCH",
+        status: newStatus
+    });
 
     fetch(url, {
         method: "PATCH",
         headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
     })
         .then(response => {
-            if (!response.ok) throw new Error("Cập nhật thất bại!");
+            console.log("🔍 Phản hồi từ server:", {
+                status: response.status,
+                statusText: response.statusText
+            });
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`Cập nhật thất bại! Status: ${response.status}, Message: ${text}`);
+                });
+            }
             return response.json();
         })
-        .then(() => {
+        .then(data => {
+            console.log("✅ Dữ liệu trả về:", data);
             alert("✅ Cập nhật trạng thái thành công!");
             if (window.currentClassId) {
-                fetchAttendance(window.currentClassId);
+                fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
             }
         })
         .catch(err => {
             console.error("❌ Lỗi khi cập nhật:", err.message);
             alert("❌ Có lỗi xảy ra khi cập nhật trạng thái. Vui lòng thử lại!");
+            if (window.currentClassId) {
+                fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
+            }
         });
 }
+
+// Modified handleAttendanceUpdate to use new functions
+function handleAttendanceUpdate(id, newStatus, currentStatus, hasAttendance, scheduleId, userId) {
+    const safeScheduleId = Number(scheduleId);
+    const safeUserId = Number(userId);
+
+    if (!safeScheduleId || !safeUserId) {
+        alert("❌ Không đủ dữ liệu để cập nhật điểm danh.");
+        return;
+    }
+
+    // Check if status is unchanged for existing attendance
+    if (hasAttendance && newStatus === currentStatus) {
+        const errorElement = document.getElementById('error-' + (id || userId));
+        if (errorElement) {
+            errorElement.textContent = "Sinh viên đã được đánh dấu " + (newStatus === "PRESENT" ? "có mặt" : "vắng mặt") + " rồi!";
+            errorElement.style.display = "block";
+            setTimeout(() => { errorElement.style.display = "none"; }, 3000);
+        }
+        return;
+    }
+
+    // Update UI before sending request
+    const row = document.getElementById('attendance-row-' + (id || userId));
+    if (row) {
+        const statusBadge = row.querySelector('.badge');
+        let borderColor, statusText, statusClass;
+
+        if (newStatus === "PRESENT") {
+            borderColor = "#4caf50"; statusText = "Có mặt"; statusClass = "badge bg-success";
+        } else {
+            borderColor = "#f44336"; statusText = "Vắng mặt"; statusClass = "badge bg-danger";
+        }
+
+        row.style.backgroundColor = "#ffffff";
+        row.style.borderLeft = '4px solid ' + borderColor;
+        if (statusBadge) {
+            statusBadge.className = statusClass;
+            statusBadge.textContent = statusText;
+        }
+
+        const presentBtn = row.querySelector('button[title="Có mặt"]');
+        const absentBtn = row.querySelector('button[title="Vắng mặt"]');
+        if (presentBtn) {
+            presentBtn.style.backgroundColor = newStatus === "PRESENT" ? "#28a745" : "#ffffff";
+            presentBtn.style.color = newStatus === "PRESENT" ? "white" : "#28a745";
+        }
+        if (absentBtn) {
+            absentBtn.style.backgroundColor = newStatus === "ABSENT" ? "#dc3545" : "#ffffff";
+            absentBtn.style.color = newStatus === "ABSENT" ? "white" : "#dc3545";
+        }
+
+        const errorElement = document.getElementById('error-' + (id || userId));
+        if (errorElement) {
+            errorElement.style.display = "none";
+        }
+    }
+
+    // Decide whether to create or update
+    if (hasAttendance && id) {
+        updateAttendance(id, newStatus, safeScheduleId, safeUserId);
+    } else {
+        createAttendance(newStatus, safeScheduleId, safeUserId);
+    }
+}
+
 function renderAttendance(data) {
     const container = document.getElementById("attendanceContainer");
+    if (!container) {
+        console.error("Không tìm thấy container để hiển thị attendance");
+        return;
+    }
+
     container.innerHTML = "";
 
     if (!data || data.length === 0) {
@@ -271,38 +460,20 @@ function renderAttendance(data) {
         return;
     }
 
-    // Tạo div container thay vì table
     const attendanceList = document.createElement("div");
     attendanceList.className = "attendance-list";
+    attendanceList.style.cssText = `display: flex; flex-direction: column; gap: 8px;`;
 
-    // CSS inline cho attendance-list
-    attendanceList.style.cssText = `
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    `;
-
-    // Header
     const header = document.createElement("div");
     header.className = "attendance-header";
-    header.style.cssText = `
-        display: grid;
-        grid-template-columns: 120px 1fr 120px;
-        background-color: #fff8e1;
-        border-radius: 8px;
-        padding: 10px;
-        font-weight: 500;
-    `;
-
+    header.style.cssText = `display: grid; grid-template-columns: 120px 1fr 120px; background-color: #fff8e1; border-radius: 8px; padding: 10px; font-weight: 500;`;
     header.innerHTML = `
         <div class="text-center">Avatar</div>
         <div>Thông tin</div>
         <div class="text-center">Trạng thái</div>
     `;
-
     attendanceList.appendChild(header);
 
-    // Render each attendance item
     data.forEach(item => {
         const user = item.user || {};
         const fullName = `${user.first_name || ""} ${user.last_name || ""}`;
@@ -310,38 +481,37 @@ function renderAttendance(data) {
         const status = item.status || "UNKNOWN";
         const avatarPath = user.avatar_path || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         const attendanceId = item.id;
+        const hasAttendance = item.hasAttendance;
+        const scheduleId = item.scheduleId; // Dùng scheduleId
+        const userId = item.userId;
 
-        // Xác định màu sắc dựa trên trạng thái
         let bgColor = "#ffffff";
         let statusBadgeClass = "badge bg-secondary";
         let statusText = "Chưa điểm danh";
         let borderColor = "#f0f0f0";
 
         if (status === "PRESENT") {
-            bgColor = "#ffffff"; // Màu trắng
+            bgColor = "#ffffff";
             statusBadgeClass = "badge bg-success";
             statusText = "Có mặt";
             borderColor = "#4caf50";
         } else if (status === "ABSENT") {
-            bgColor = "#ffffff"; // Màu trắng
+            bgColor = "#ffffff";
             statusBadgeClass = "badge bg-danger";
             statusText = "Vắng mặt";
             borderColor = "#f44336";
         }
 
         const attendanceItem = document.createElement("div");
-        attendanceItem.id = `attendance-row-${attendanceId}`;
+        attendanceItem.id = `attendance-row-${attendanceId || userId}`; // Use userId as fallback
         attendanceItem.className = "attendance-item";
         attendanceItem.style.cssText = `
-            display: grid;
-            grid-template-columns: 120px 1fr 120px;
-            background-color: ${bgColor};
-            border-radius: 8px;
-            padding: 12px;
-            align-items: center;
-            border-left: 4px solid ${borderColor};
+            display: grid; grid-template-columns: 120px 1fr 120px; 
+            background-color: ${bgColor}; border-radius: 8px; padding: 12px; 
+            align-items: center; border-left: 4px solid ${borderColor};
         `;
 
+        // IMPORTANT CHANGE: Use direct function calls instead of inline onclick
         attendanceItem.innerHTML = `
             <div class="text-center">
                 <img src="${avatarPath}" alt="Avatar" class="rounded-circle" 
@@ -355,93 +525,51 @@ function renderAttendance(data) {
                 <div class="d-flex flex-column align-items-center gap-2">
                     <span class="${statusBadgeClass}" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">${statusText}</span>
                     <div class="d-flex gap-2">
-                        <button onclick="handleAttendanceUpdate(${attendanceId}, 'PRESENT', '${status}')" 
-                                class="btn btn-sm rounded-circle d-flex justify-content-center align-items-center" 
+                        <button class="present-btn btn btn-sm rounded-circle d-flex justify-content-center align-items-center" 
                                 style="width: 32px; height: 32px; background-color: ${status === 'PRESENT' ? '#28a745' : '#ffffff'}; border: 1px solid #28a745; color: ${status === 'PRESENT' ? 'white' : '#28a745'};"
                                 title="Có mặt">
                             <i class="bi bi-check-lg"></i>
                         </button>
-                        <button onclick="handleAttendanceUpdate(${attendanceId}, 'ABSENT', '${status}')" 
-                                class="btn btn-sm rounded-circle d-flex justify-content-center align-items-center" 
+                        <button class="absent-btn btn btn-sm rounded-circle d-flex justify-content-center align-items-center" 
                                 style="width: 32px; height: 32px; background-color: ${status === 'ABSENT' ? '#dc3545' : '#ffffff'}; border: 1px solid #dc3545; color: ${status === 'ABSENT' ? 'white' : '#dc3545'};"
                                 title="Vắng mặt">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
-                    <div class="error-message text-danger small mt-1" id="error-${attendanceId}" style="display: none;"></div>
+                    <div class="error-message text-danger small mt-1" id="error-${attendanceId || userId}" style="display: none;"></div>
                 </div>
             </div>
         `;
+
+        // Add event listeners directly to the buttons after they're in the DOM
+        const presentBtn = attendanceItem.querySelector('.present-btn');
+        const absentBtn = attendanceItem.querySelector('.absent-btn');
+
+        if (presentBtn) {
+            presentBtn.addEventListener('click', function() {
+                handleAttendanceUpdate(attendanceId || null, 'PRESENT', status, hasAttendance, scheduleId, userId);
+            });
+        }
+
+        if (absentBtn) {
+            absentBtn.addEventListener('click', function() {
+                handleAttendanceUpdate(attendanceId || null, 'ABSENT', status, hasAttendance, scheduleId, userId);
+            });
+        }
 
         attendanceList.appendChild(attendanceItem);
     });
 
     container.appendChild(attendanceList);
-
-    // Thêm script xử lý cập nhật trạng thái
-    const script = document.createElement("script");
-    script.innerHTML =
-      function handleAttendanceUpdate(id, newStatus, currentStatus) {
-        // Nếu trạng thái mới giống trạng thái hiện tại, hiển thị thông báo lỗi
-        if (newStatus === currentStatus) {
-          const errorElement = document.getElementById('error-' + id);
-          errorElement.textContent = "Sinh viên đã được đánh dấu " + (newStatus === "PRESENT" ? "có mặt" : "vắng mặt") + " rồi!";
-          errorElement.style.display = "block";
-          
-          // Ẩn thông báo lỗi sau 3 giây
-          setTimeout(() => {
-            errorElement.style.display = "none";
-          }, 3000);
-          
-          return;
-        }
-        
-        // Cập nhật giao diện
-        const row = document.getElementById('attendance-row-' + id);
-        const statusBadge = row.querySelector('.badge');
-        
-        // Xác định màu sắc và văn bản mới
-        let borderColor, statusText, statusClass;
-        
-        if (newStatus === "PRESENT") {
-          borderColor = "#4caf50";
-          statusText = "Có mặt";
-          statusClass = "badge bg-success";
-        } else {
-          borderColor = "#f44336";
-          statusText = "Vắng mặt";
-          statusClass = "badge bg-danger";
-        }
-        
-        // Cập nhật viền (giữ màu nền trắng)
-        row.style.backgroundColor = "#ffffff";
-        row.style.borderLeft = '4px solid ' + borderColor;
-        
-        // Cập nhật badge trạng thái
-        statusBadge.className = statusClass;
-        statusBadge.textContent = statusText;
-        
-        // Cập nhật màu nút
-        const presentBtn = row.querySelector('button[title="Có mặt"]');
-        const absentBtn = row.querySelector('button[title="Vắng mặt"]');
-        
-        presentBtn.style.backgroundColor = newStatus === "PRESENT" ? "#28a745" : "#ffffff";
-        presentBtn.style.color = newStatus === "PRESENT" ? "white" : "#28a745";
-        
-        absentBtn.style.backgroundColor = newStatus === "ABSENT" ? "#dc3545" : "#ffffff";
-        absentBtn.style.color = newStatus === "ABSENT" ? "white" : "#dc3545";
-        
-        // Ẩn thông báo lỗi nếu có
-        document.getElementById('error-' + id).style.display = "none";
-        
-        // Gọi hàm cập nhật API
-        updateStatus(id, newStatus);
-      }
-    ;
-    document.body.appendChild(script);
 }
+
+
+
 function showEventDetails(event) {
-    if (document.querySelector("#event-modal")) return;
+    if (document.querySelector("#event-modal")) {
+        document.querySelector("#event-modal").remove();
+        document.querySelector(".modal-backdrop")?.remove();
+    }
 
     const modal = document.createElement("div");
     modal.id = "event-modal";
@@ -495,7 +623,6 @@ function showEventDetails(event) {
             </div>
           </div>
 
-          <!-- Vùng hiển thị Attendance -->
           <div id="attendanceContainer" class="mt-4">
             <div class="d-flex align-items-center mb-3">
               <h3 class="h5 mb-0 me-2">Danh sách điểm danh</h3>
@@ -513,18 +640,14 @@ function showEventDetails(event) {
     `;
 
     document.body.appendChild(modal);
-
-    // Add Bootstrap modal backdrop
     const backdrop = document.createElement("div");
     backdrop.className = "modal-backdrop fade show";
     document.body.appendChild(backdrop);
 
-    // Prevent body scrolling
     document.body.classList.add("modal-open");
     document.body.style.overflow = "hidden";
     document.body.style.paddingRight = "17px";
 
-    // Close modal functions
     const closeModal = () => {
         modal.remove();
         backdrop.remove();
@@ -538,9 +661,9 @@ function showEventDetails(event) {
         if (e.target === modal) closeModal();
     });
 
-    // Gọi API Attendance nếu có classId
+    // Gọi API Attendance với classId và scheduleId
     if (event.details && event.details.classId) {
-        fetchAttendance(event.details.classId);
+        fetchAttendance(event.details.classId, event.scheduleId || 1073741824);
     }
 }
 
@@ -571,7 +694,11 @@ function renderEvents() {
     }
 
     // Get month and year from title
-    const currentMonthText = document.getElementById("current-month").textContent
+    const currentMonthText = document.getElementById("current-month")?.textContent
+    if (!currentMonthText) {
+        console.error("Could not find current-month element")
+        return
+    }
     console.log("Current month:", currentMonthText)
 
     // Handle case of displaying 2 months (e.g., "March - April 2025")
@@ -844,25 +971,42 @@ function renderEvents() {
     }
 }
 
-
-
 // Định dạng ngày
 function formatDate(dateString) {
+    if (!dateString) return "N/A";
+
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; // Return original if invalid
+
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
 }
+
 function formatTime(timeString) {
-    const date = new Date(`1970-01-01T${timeString}`);
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
+    if (!timeString) return "N/A";
+
+    try {
+        const date = new Date(`1970-01-01T${timeString}`);
+        if (isNaN(date.getTime())) return timeString; // Return original if invalid
+
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    } catch (error) {
+        console.error("Error formatting time:", error);
+        return timeString; // Return original on error
+    }
 }
 
 function addEventStyles() {
+    // Remove existing style if it exists
+    const existingStyle = document.getElementById('calendar-event-styles');
+    if (existingStyle) existingStyle.remove();
+
     const style = document.createElement('style');
+    style.id = 'calendar-event-styles';
     style.textContent = `
         .calendar-event {
             position: absolute;
@@ -890,15 +1034,17 @@ function addEventStyles() {
     `;
     document.head.appendChild(style);
 }
+
 // Sửa lại hàm getMonthNumber để trả về index (0-11)
 function getMonthNumber(monthName) {
+    if (!monthName) return -1;
+
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
     return months.findIndex(m => m.toLowerCase() === monthName.toLowerCase());
 }
-
 
 // Hàm cập nhật các ngày trong tuần
 function updateMonthDisplay(startDate) {
@@ -918,16 +1064,22 @@ function updateMonthDisplay(startDate) {
         const mondayMonthName = getMonthName(mondayMonth) || 'January';
         const fridayMonthName = getMonthName(fridayMonth) || 'January';
 
+        const currentMonthElement = document.getElementById('current-month');
+        if (!currentMonthElement) {
+            console.error("Không tìm thấy element 'current-month'");
+            return;
+        }
+
         if (mondayMonth === fridayMonth) {
-            document.getElementById('current-month').textContent = `${mondayMonthName} ${monday.getFullYear()}`;
+            currentMonthElement.textContent = `${mondayMonthName} ${monday.getFullYear()}`;
         } else {
             const mondayYear = monday.getFullYear();
             const fridayYear = friday.getFullYear();
 
             if (mondayYear === fridayYear) {
-                document.getElementById('current-month').textContent = `${mondayMonthName} - ${fridayMonthName} ${mondayYear}`;
+                currentMonthElement.textContent = `${mondayMonthName} - ${fridayMonthName} ${mondayYear}`;
             } else {
-                document.getElementById('current-month').textContent = `${mondayMonthName} ${mondayYear} - ${fridayMonthName} ${fridayYear}`;
+                currentMonthElement.textContent = `${mondayMonthName} ${mondayYear} - ${fridayMonthName} ${fridayYear}`;
             }
         }
     } catch (error) {
@@ -946,6 +1098,11 @@ function updateWeekDays(startDate) {
         const dayElements = document.querySelectorAll('.calendar-header-cell:nth-child(n+2):nth-child(-n+6) .day-number');
         const dayNameElements = document.querySelectorAll('.calendar-header-cell:nth-child(n+2):nth-child(-n+6) .day-name');
         const dayHeaderCells = document.querySelectorAll('.calendar-header-cell:nth-child(n+2):nth-child(-n+6)');
+
+        if (!dayElements.length || !dayNameElements.length || !dayHeaderCells.length) {
+            console.error("Không tìm thấy các phần tử ngày trong tuần");
+            return;
+        }
 
         // Lấy ngày hôm nay theo localDate
         const today = new Date();
@@ -986,26 +1143,53 @@ function updateWeekDays(startDate) {
         // Không fallback về ngày hiện tại, giữ nguyên trạng thái
     }
 }
+
 // Lấy tên tháng từ số tháng
 function getMonthName(monthNumber) {
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
+
+    if (monthNumber < 0 || monthNumber > 11) {
+        console.error("Invalid month number:", monthNumber);
+        return months[0]; // Return January as default
+    }
+
     return months[monthNumber];
 }
 
 // Tạo sự kiện mới
 function showNewEventModal() {
     // Lấy ngày hiện tại trên lịch
-    const currentMonthText = document.getElementById('current-month').textContent;
+    const currentMonthText = document.getElementById('current-month')?.textContent;
+    if (!currentMonthText) {
+        console.error("Không tìm thấy element 'current-month'");
+        return;
+    }
+
     // Xử lý trường hợp có thể có 2 tháng (March 2025 - April 2025)
     const monthYear = currentMonthText.split(' - ')[0].split(' ');
     const month = getMonthNumber(monthYear[0]);
     const year = parseInt(monthYear[1]);
 
+    if (isNaN(month) || isNaN(year)) {
+        console.error("Không thể xác định tháng/năm từ:", currentMonthText);
+        return;
+    }
+
     // Ngày đầu tiên hiển thị trên lịch
-    const firstDay = parseInt(document.querySelector('.calendar-header-cell:nth-child(2) .day-number').textContent.trim());
+    const firstDayElement = document.querySelector('.calendar-header-cell:nth-child(2) .day-number');
+    if (!firstDayElement) {
+        console.error("Không tìm thấy ngày đầu tiên trên lịch");
+        return;
+    }
+
+    const firstDay = parseInt(firstDayElement.textContent.trim());
+    if (isNaN(firstDay)) {
+        console.error("Ngày đầu tiên không hợp lệ:", firstDayElement.textContent);
+        return;
+    }
 
     // Tạo đối tượng ngày
     const startDate = new Date(year, month, firstDay);
@@ -1030,6 +1214,10 @@ function showNewEventModal() {
     for (let i = 0; i < 24; i++) {
         hoursOptions += `<option value="${i}">${i}:00</option>`;
     }
+
+    // Remove existing modal if any
+    const existingModal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-50');
+    if (existingModal) existingModal.remove();
 
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
@@ -1096,6 +1284,11 @@ function showNewEventModal() {
         const endHour = document.getElementById('event-end').value;
         const color = document.getElementById('event-color').value;
 
+        if (parseInt(endHour) <= parseInt(startHour)) {
+            alert("End time must be after start time");
+            return;
+        }
+
         addEvent(title, day, startHour, day, endHour, color);
         modal.remove();
     });
@@ -1128,12 +1321,14 @@ function initDragToCreate() {
             const colIndex = cellIndex % 6;
 
             if (colIndex > 0) { // Bỏ qua cột đầu tiên (cột giờ)
-                const dayElement = document.querySelectorAll('.calendar-header-cell:nth-child(n+2):nth-child(-n+6) .day-number')[colIndex - 1];
-                const day = dayElement.textContent.trim();
-                const hour = rowIndex; // Không cần trừ 1 vì giờ đã nằm trong container riêng
+                const dayElements = document.querySelectorAll('.calendar-header-cell:nth-child(n+2):nth-child(-n+6) .day-number');
+                if (dayElements[colIndex - 1]) {
+                    const day = dayElements[colIndex - 1].textContent.trim();
+                    const hour = rowIndex; // Không cần trừ 1 vì giờ đã nằm trong container riêng
 
-                cell.setAttribute('data-day', day);
-                cell.setAttribute('data-hour', hour);
+                    cell.setAttribute('data-day', day);
+                    cell.setAttribute('data-hour', hour);
+                }
             }
         }
     });
@@ -1167,6 +1362,16 @@ function initDragToCreate() {
         if (!isDragging) return;
 
         const cell = e.target.closest('.time-cell') || startCell;
+
+        // Nếu có cell được highlight, mở modal tạo event nhanh
+        if (currentHighlight.length > 0) {
+            const day = startCell.getAttribute('data-day');
+            const hour = parseInt(startCell.getAttribute('data-hour'));
+
+            if (day && !isNaN(hour)) {
+                openQuickEventModal(day, hour);
+            }
+        }
 
         // Reset
         isDragging = false;
@@ -1217,6 +1422,11 @@ function initDragToCreate() {
         const monthYear = currentMonth.split(' ');
         const month = getMonthNumber(monthYear[0]);
         const year = parseInt(monthYear[1]);
+
+        if (isNaN(month) || isNaN(year)) {
+            console.error("Không thể xác định tháng/năm từ:", currentMonth);
+            return;
+        }
 
         // Tạo đối tượng ngày
         const date = new Date(year, month, parseInt(day));
@@ -1275,7 +1485,12 @@ function initDragToCreate() {
 
 // Thêm CSS cho highlight
 function addCustomStyles() {
+    // Remove existing style if it exists
+    const existingStyle = document.getElementById('calendar-custom-styles');
+    if (existingStyle) existingStyle.remove();
+
     const style = document.createElement('style');
+    style.id = 'calendar-custom-styles';
     style.textContent = `
                 .time-cell {
                     cursor: pointer;
@@ -1307,6 +1522,76 @@ function addCustomStyles() {
                 .calendar-body::-webkit-scrollbar-thumb:hover {
                     background-color: #94a3b8;
                 }
+                .month-picker {
+                    position: absolute;
+                    background: white;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    z-index: 50;
+                    width: 280px;
+                }
+                .month-picker-nav {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 8px 12px;
+                    border-bottom: 1px solid #e5e7eb;
+                }
+                .month-picker-title {
+                    font-weight: 500;
+                }
+                .month-nav-btn {
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    color: #6b7280;
+                    padding: 4px;
+                    border-radius: 4px;
+                }
+                .month-nav-btn:hover {
+                    background-color: #f3f4f6;
+                }
+                .month-picker-header {
+                    display: grid;
+                    grid-template-columns: repeat(7, 1fr);
+                    text-align: center;
+                    font-size: 0.75rem;
+                    color: #6b7280;
+                    padding: 8px 0;
+                }
+                .month-picker-grid {
+                    display: grid;
+                    grid-template-columns: repeat(7, 1fr);
+                    gap: 2px;
+                    padding: 4px;
+                }
+                .month-picker-cell {
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    border-radius: 4px;
+                    font-size: 0.875rem;
+                }
+                .month-picker-cell:hover {
+                    background-color: #f3f4f6;
+                }
+                .month-picker-cell.other-month {
+                    color: #9ca3af;
+                }
+                .month-picker-cell.today {
+                    background-color: #4f46e5;
+                    color: white;
+                }
+                .active-day {
+                    background-color: #f0f9ff !important;
+                    border-bottom: 2px solid #3b82f6 !important;
+                }
+                .current-time-indicator {
+                    pointer-events: none;
+                }
             `;
     document.head.appendChild(style);
 }
@@ -1333,26 +1618,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Khởi tạo kéo thả
     initDragToCreate();
 
-
     // Fetch dữ liệu từ API và hiển thị
     fetchAndRenderSchedules();
+
     // Xử lý nút Today
-    document.querySelector('.btn-today').addEventListener('click', function() {
+    document.querySelector('.btn-today')?.addEventListener('click', function() {
         navigateToDate('today');
     });
 
     // Xử lý nút Previous
-    document.getElementById('prev-month').addEventListener('click', function() {
+    document.getElementById('prev-month')?.addEventListener('click', function() {
         navigateToDate('prev');
     });
 
     // Xử lý nút Next
-    document.getElementById('next-month').addEventListener('click', function() {
+    document.getElementById('next-month')?.addEventListener('click', function() {
         navigateToDate('next');
     });
 
     // Xử lý nút New meeting
-    document.querySelector('.btn-primary').addEventListener('click', function() {
+    document.querySelector('.btn-primary')?.addEventListener('click', function() {
         showNewEventModal();
     });
 
@@ -1433,6 +1718,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hàm cập nhật time indicator
     function updateTimeIndicator() {
         try {
+            // Find the calendar body first - if it doesn't exist, exit early
+            const calendarBody = document.querySelector('.calendar-body');
+            if (!calendarBody) {
+                console.log("Calendar body not found, skipping time indicator update");
+                return;
+            }
+
             const now = new Date();
             const hours = now.getHours();
             const minutes = now.getMinutes();
@@ -1445,7 +1737,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const dayNumber = parseInt(el.textContent);
                 if (dayNumber === now.getDate()) {
                     const headerCell = el.closest('.calendar-header-cell');
-                    if (headerCell.classList.contains('active-day')) {
+                    if (headerCell && headerCell.classList.contains('active-day')) {
                         todayColumnIndex = index + 1;
                     }
                 }
@@ -1489,13 +1781,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 timeLabel.style.padding = '2px 5px';
                 timeLabel.style.borderRadius = '5px';
 
-                // Thêm vào calendar body
-                const calendarBody = document.querySelector('.calendar-body');
-                if (calendarBody) {
-                    calendarBody.style.position = 'relative';
-                    calendarBody.appendChild(indicator);
-                    indicator.appendChild(timeLabel);
-                }
+                // Set position on calendar body and append indicator
+                calendarBody.style.position = 'relative';
+                calendarBody.appendChild(indicator);
+                indicator.appendChild(timeLabel);
             }
         } catch (error) {
             console.error("Lỗi khi cập nhật time indicator:", error);
@@ -1843,8 +2132,21 @@ function showMonthPicker() {
             document.removeEventListener('click', closeMonthPicker);
         }
     });
-
-
 }
+
 // Thêm event listener cho current-month
-document.getElementById('current-month').addEventListener('click', showMonthPicker);
+document.getElementById('current-month')?.addEventListener('click', showMonthPicker);
+
+// Export các hàm cần thiết để sử dụng bên ngoài
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        addEvent,
+        deleteEvent,
+        fetchAndRenderSchedules,
+        renderEvents,
+        showEventDetails,
+        navigateToDate
+    };
+}
+
+console.log("✅ Schedule functionality initialized successfully");

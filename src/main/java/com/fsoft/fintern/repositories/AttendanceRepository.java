@@ -12,7 +12,11 @@ import java.util.Optional;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Integer> {
         Optional<Attendance> findAttendanceById(Integer attendanceId);
-
-        @Query("SELECT a FROM Attendance a WHERE a.user.classroom.id = :classId AND a.isActive = true")
-        List<Attendance> findAttendanceByClassId(@Param("classId") Integer classId);
+        Optional<Attendance> findByUserIdAndScheduleId(Integer userId, Integer scheduleId);
+        @Query("SELECT a FROM Attendance a " +
+                "LEFT JOIN a.user u " +
+                "JOIN u.classroom c " +
+                "JOIN Schedule s on s.classField.id = c.id " +
+                "WHERE c.id = :classId AND s.id = :scheduleId")
+        List<Attendance> findAttendanceByClassIdAndScheduleId(@Param("classId") Integer classId, @Param("scheduleId") Integer scheduleId);
 }

@@ -44,11 +44,6 @@ public class AttendanceService {
     }
 
     public ResponseEntity<Attendance> createAttendance(AttendanceDTO attendanceDTO) throws BadRequestException {
-        Attendance existed_attendance = this.attendance_Repository.findById(attendanceDTO.getId()).orElse(null);
-        if (existed_attendance != null) {
-            throw new BadRequestException(ErrorDictionaryConstraints.ATTENDANCE_IS_EMPTY.getMessage());
-        }
-
         User user = this.userRepository.findById(attendanceDTO.getUserId())
                 .orElseThrow(() -> new BadRequestException(ErrorDictionaryConstraints.USERS_ALREADY_EXISTS.getMessage()));
         if (user.getRole() != Role.INTERN) {
@@ -84,40 +79,34 @@ public class AttendanceService {
     }
 
 
-    public ResponseEntity<Attendance> updateAttendancetoPresent(int id, AttendanceDTO attendanceDTO) throws BadRequestException {
-        Attendance attendance = this.attendance_Repository.findById(id).orElseThrow(() ->
+
+
+    public ResponseEntity<Attendance> updateAttendancetoPresent(int userId, int scheduleId) throws BadRequestException {
+
+        Attendance attendance = this.attendance_Repository.findByUserIdAndScheduleId(userId, scheduleId).orElseThrow(() ->
                 new BadRequestException(ErrorDictionaryConstraints.ATTENDANCE_IS_EMPTY.getMessage())
         );
-
-        if (attendanceDTO.getUserId() != null) {
-            User user = this.userRepository.findById(attendanceDTO.getUserId()).orElseThrow(() ->
-                    new BadRequestException(ErrorDictionaryConstraints.ATTENDANCE_IS_EMPTY.getMessage())
-            );}
-        AttendanceDTO responseDTO = new AttendanceDTO();
-        BeanUtils.copyProperties(attendance, responseDTO, BeanUtilsHelper.getNullPropertyNames(attendance));
         attendance.setStatus(AttendanceStatus.PRESENT);
+
         this.attendance_Repository.save(attendance);
+
         return new ResponseEntity<>(attendance, HttpStatus.OK);
     }
 
 
 
-
-    public ResponseEntity<Attendance> updateAttendanceToAbsent(int id, AttendanceDTO attendanceDTO) throws BadRequestException {
-        Attendance attendance = this.attendance_Repository.findById(id).orElseThrow(() ->
+    public ResponseEntity<Attendance> updateAttendanceToAbsent(int userId, int scheduleId) throws BadRequestException {
+        Attendance attendance = this.attendance_Repository.findByUserIdAndScheduleId(userId, scheduleId).orElseThrow(() ->
                 new BadRequestException(ErrorDictionaryConstraints.ATTENDANCE_IS_EMPTY.getMessage())
         );
+        attendance.setStatus(AttendanceStatus.ABSENT);
 
-        if (attendanceDTO.getUserId() != null) {
-            User user = this.userRepository.findById(attendanceDTO.getUserId()).orElseThrow(() ->
-                    new BadRequestException(ErrorDictionaryConstraints.ATTENDANCE_IS_EMPTY.getMessage())
-            );}
-            AttendanceDTO responseDTO = new AttendanceDTO();
-            BeanUtils.copyProperties(attendance, responseDTO, BeanUtilsHelper.getNullPropertyNames(attendance));
-            attendance.setStatus(AttendanceStatus.ABSENT);
-            this.attendance_Repository.save(attendance);
-            return new ResponseEntity<>(attendance, HttpStatus.OK);
+        this.attendance_Repository.save(attendance);
+
+        return new ResponseEntity<>(attendance, HttpStatus.OK);
     }
+
+
 
 
     public ResponseEntity<Attendance> delete(int id) throws BadRequestException {
@@ -141,8 +130,8 @@ public class AttendanceService {
         }
     }
 
-    public ResponseEntity<List<Attendance>> findAttendanceByClassId(int classId) throws BadRequestException {
-        List<Attendance> attendances = this.attendance_Repository.findAttendanceByClassId(classId);
+    public ResponseEntity<List<Attendance>> findAttendanceByClassId(int classId, int scheduleId) throws BadRequestException {
+        List<Attendance> attendances = this.attendance_Repository.findAttendanceByClassIdAndScheduleId(classId, scheduleId);
         if (!attendances.isEmpty()) {
             return new ResponseEntity<>(attendances, HttpStatus.OK);
         } else {

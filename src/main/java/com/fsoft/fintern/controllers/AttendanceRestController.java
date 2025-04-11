@@ -42,7 +42,7 @@ public class AttendanceRestController {
 
     @PostMapping("/create")
     @Operation(description = "Create a new Attendance")
-    public ResponseEntity<Attendance> create(@Valid AttendanceDTO attendanceDTO) throws BadRequestException {
+    public ResponseEntity<Attendance> create(@RequestBody AttendanceDTO attendanceDTO) throws BadRequestException {
         return this.attendanceService.createAttendance(attendanceDTO);
     }
 
@@ -53,23 +53,29 @@ public class AttendanceRestController {
     }
 
 
-    @PatchMapping("/updatePresent/{id}")
-    @Operation(description = "Update Attendance to Present by Id")
-    public ResponseEntity<Attendance> updateToPresent(@PathVariable int id, @RequestBody AttendanceDTO attendanceDTO) throws BadRequestException {
-        return this.attendanceService.updateAttendancetoPresent(id, attendanceDTO);
+    @PatchMapping("/updatePresent/user/{userId}/{scheduleId}")
+    @Operation(description = "Update Attendance to Present by User ID and Schedule ID")
+    public ResponseEntity<Attendance> updateToPresent(
+            @PathVariable int userId,
+            @PathVariable int scheduleId) throws BadRequestException {
+        return this.attendanceService.updateAttendancetoPresent(userId, scheduleId);
     }
 
 
-    @PatchMapping("/updateAbsent/{id}")
-    @Operation(description = "Update Attendance to Absent by Id")
-    public ResponseEntity<Attendance> updateToAbsent(@PathVariable int id, @RequestBody AttendanceDTO attendanceDTO) throws BadRequestException {
-        return this.attendanceService.updateAttendanceToAbsent(id, attendanceDTO);
+    @PatchMapping("/updateAbsent/user/{userId}/{scheduleId}")
+    @Operation(description = "Update Attendance to Absent by User ID and Schedule ID")
+    public ResponseEntity<Attendance> updateToAbsent(
+            @PathVariable int userId,
+            @PathVariable int scheduleId) throws BadRequestException {
+        return this.attendanceService.updateAttendanceToAbsent(userId, scheduleId);
     }
 
-    @GetMapping("/class/{id}")
+
+    @GetMapping("/class/{classId}/{scheduleId}")
     @Operation(summary = "Find Intern Attendance by classId")
-    public ResponseEntity<List<Attendance>> getAttendanceByClassId(@PathVariable("id") Integer classId) throws BadRequestException {
-        return this.attendanceService.findAttendanceByClassId(classId);
+    public ResponseEntity<List<Attendance>> getAttendanceByClassId(    @PathVariable int classId,
+                                                                       @PathVariable int scheduleId) throws BadRequestException {
+        return this.attendanceService.findAttendanceByClassId(classId, scheduleId);
     }
 
 }

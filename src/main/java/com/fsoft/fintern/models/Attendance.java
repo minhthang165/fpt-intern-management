@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
 public class Attendance extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "attendance_id", nullable = false)
+    @Column(name = "attendance_id", nullable = true)
     private Integer id;
 
     @NotNull
