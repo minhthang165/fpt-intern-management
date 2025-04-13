@@ -31,8 +31,8 @@ public enum ErrorDictionaryConstraints {
     COMPLETED_TASK_IS_NOT_FOUND_ID("Not find any Completed Task ID"),
 
     // ATTENDANCE
-    ATTENDANCE_IS_EMPTY("There is no attendance existed");
-
+    ATTENDANCE_IS_EMPTY("There is no attendance existed"),
+    SCHEDULE_NOT_EXISTS_ID("There is no Sechdule ID");
 
     private final String message;
 

@@ -73,9 +73,8 @@ public class AttendanceRestController {
 
     @GetMapping("/class/{classId}/{scheduleId}")
     @Operation(summary = "Find Intern Attendance by classId")
-    public ResponseEntity<List<Attendance>> getAttendanceByClassId(    @PathVariable int classId,
-                                                                       @PathVariable int scheduleId) throws BadRequestException {
-        return this.attendanceService.findAttendanceByClassId(classId, scheduleId);
+    public ResponseEntity<List<Object[]>> getAttendanceByClassId(@PathVariable int classId, @PathVariable int scheduleId) throws BadRequestException {
+        return this.attendanceService.findUsersAttendanceByClassIdAndScheduleId(classId, scheduleId);
     }
 
 }

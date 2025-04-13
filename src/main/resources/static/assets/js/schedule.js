@@ -218,42 +218,45 @@ async function fetchAttendance(classId, scheduleId) {
     try {
         if (!classId) throw new Error("Thiếu classId để fetch attendance");
 
-        console.log("📥 Đang gọi API user/classroom cho classId:", classId);
+        console.log("📥 Đang gọi API getAttendanceByClassId:", classId, scheduleId);
 
-        const response = await fetch(`/api/user/classroom/${classId}`, {
+        const response = await fetch(`/api/attendance/class/${classId}/${scheduleId}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" }
         });
 
         if (!response.ok) {
-            throw new Error(`Không thể fetch user list: ${response.status} ${response.statusText}`);
+            throw new Error(`Không thể fetch danh sách điểm danh: ${response.status} ${response.statusText}`);
         }
 
         const userList = await response.json();
-        console.log("✅ Danh sách user:", userList);
+        console.log("✅ Dữ liệu trả về:", userList);
 
         window.currentClassId = classId;
-        window.currentScheduleId = scheduleId; // Store scheduleId for later use
+        window.currentScheduleId = scheduleId;
 
-        const attendanceData = userList.map(user => {
-            const userItem = {
-                id: user.attendance_id || null,
-                userId: Number(user.userId || user.id),
-                scheduleId: Number(scheduleId) || 1073741824,
-                status: user.status || "UNKNOWN",
-                hasAttendance: !!user.attendance_id,
-                user: user // Store the full user object for rendering
+        const attendanceData = userList.map((item, index) => {
+            const [userId, avatar, firstName, lastName, username, status, attendanceId] = item;
+            return {
+                id: attendanceId ?? null,
+                userId: Number(userId),
+                scheduleId: Number(scheduleId),
+                status: status || "UNKNOWN",
+                hasAttendance: !!status,
+                user: {
+                    id: Number(userId),
+                    avatar: avatar || "assets/img/users/default-avatar.png",
+                    firstName: firstName || "",
+                    lastName: lastName || "",
+                    username: username || ""
+                }
             };
 
-            console.log("🔍 Dữ liệu user trong attendanceData:", userItem);
-
-            return userItem;
         });
 
         renderAttendance(attendanceData);
     } catch (error) {
-        console.error("❌ Lỗi khi fetch user list:", error.message);
-        // Show error message in attendance container
+        console.error("❌ Lỗi khi fetch attendance:", error.message);
         const container = document.getElementById("attendanceContainer");
         if (container) {
             container.innerHTML = `<div class="alert alert-danger">❌ Lỗi: ${error.message}</div>`;
@@ -476,13 +479,13 @@ function renderAttendance(data) {
 
     data.forEach(item => {
         const user = item.user || {};
-        const fullName = `${user.first_name || ""} ${user.last_name || ""}`;
-        const username = user.userName || "N/A";
+        const fullName = `${user.firstName || ""} ${user.lastName || ""}`;
+        const username = user.username || "N/A";
         const status = item.status || "UNKNOWN";
         const avatarPath = user.avatar_path || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         const attendanceId = item.id;
         const hasAttendance = item.hasAttendance;
-        const scheduleId = item.scheduleId; // Dùng scheduleId
+        const scheduleId = item.scheduleId;
         const userId = item.userId;
 
         let bgColor = "#ffffff";
@@ -491,27 +494,24 @@ function renderAttendance(data) {
         let borderColor = "#f0f0f0";
 
         if (status === "PRESENT") {
-            bgColor = "#ffffff";
             statusBadgeClass = "badge bg-success";
             statusText = "Có mặt";
             borderColor = "#4caf50";
         } else if (status === "ABSENT") {
-            bgColor = "#ffffff";
             statusBadgeClass = "badge bg-danger";
             statusText = "Vắng mặt";
             borderColor = "#f44336";
         }
 
         const attendanceItem = document.createElement("div");
-        attendanceItem.id = `attendance-row-${attendanceId || userId}`; // Use userId as fallback
+        attendanceItem.id = `attendance-row-${attendanceId || userId}`;
         attendanceItem.className = "attendance-item";
         attendanceItem.style.cssText = `
-            display: grid; grid-template-columns: 120px 1fr 120px; 
-            background-color: ${bgColor}; border-radius: 8px; padding: 12px; 
+            display: grid; grid-template-columns: 120px 1fr 120px;
+            background-color: ${bgColor}; border-radius: 8px; padding: 12px;
             align-items: center; border-left: 4px solid ${borderColor};
         `;
 
-        // IMPORTANT CHANGE: Use direct function calls instead of inline onclick
         attendanceItem.innerHTML = `
             <div class="text-center">
                 <img src="${avatarPath}" alt="Avatar" class="rounded-circle" 
@@ -541,18 +541,17 @@ function renderAttendance(data) {
             </div>
         `;
 
-        // Add event listeners directly to the buttons after they're in the DOM
         const presentBtn = attendanceItem.querySelector('.present-btn');
         const absentBtn = attendanceItem.querySelector('.absent-btn');
 
         if (presentBtn) {
-            presentBtn.addEventListener('click', function() {
+            presentBtn.addEventListener('click', function () {
                 handleAttendanceUpdate(attendanceId || null, 'PRESENT', status, hasAttendance, scheduleId, userId);
             });
         }
 
         if (absentBtn) {
-            absentBtn.addEventListener('click', function() {
+            absentBtn.addEventListener('click', function () {
                 handleAttendanceUpdate(attendanceId || null, 'ABSENT', status, hasAttendance, scheduleId, userId);
             });
         }
@@ -562,7 +561,6 @@ function renderAttendance(data) {
 
     container.appendChild(attendanceList);
 }
-
 
 
 function showEventDetails(event) {

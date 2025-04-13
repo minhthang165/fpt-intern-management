@@ -130,14 +130,26 @@ public class AttendanceService {
         }
     }
 
-    public ResponseEntity<List<Attendance>> findAttendanceByClassId(int classId, int scheduleId) throws BadRequestException {
-        List<Attendance> attendances = this.attendance_Repository.findAttendanceByClassIdAndScheduleId(classId, scheduleId);
-        if (!attendances.isEmpty()) {
-            return new ResponseEntity<>(attendances, HttpStatus.OK);
-        } else {
+    public ResponseEntity<List<Object[]>> findUsersAttendanceByClassIdAndScheduleId(int classId, int scheduleId) throws BadRequestException {
+
+        if (!classroomRepository.existsById(classId)) {
             throw new BadRequestException(ErrorDictionaryConstraints.CLASS_NOT_EXISTS_ID.getMessage());
         }
+
+        // Check if schedule exists
+        if (!scheduleRepository.existsById(scheduleId)) {
+            throw new BadRequestException(ErrorDictionaryConstraints.SCHEDULE_NOT_EXISTS_ID.getMessage());
+        }
+
+        List<Object[]> results = this.attendance_Repository.findUsersAttendanceByClassIdAndScheduleId(classId, scheduleId);
+
+        if (results.isEmpty()) {
+            throw new BadRequestException("No users found in this class");
+        }
+
+        return new ResponseEntity<>(results, HttpStatus.OK);
     }
+
 }
 
 

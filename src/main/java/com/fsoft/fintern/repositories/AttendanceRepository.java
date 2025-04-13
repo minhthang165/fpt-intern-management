@@ -13,10 +13,9 @@ import java.util.Optional;
 public interface AttendanceRepository extends JpaRepository<Attendance, Integer> {
         Optional<Attendance> findAttendanceById(Integer attendanceId);
         Optional<Attendance> findByUserIdAndScheduleId(Integer userId, Integer scheduleId);
-        @Query("SELECT a FROM Attendance a " +
-                "LEFT JOIN a.user u " +
-                "JOIN u.classroom c " +
-                "JOIN Schedule s on s.classField.id = c.id " +
-                "WHERE c.id = :classId AND s.id = :scheduleId")
-        List<Attendance> findAttendanceByClassIdAndScheduleId(@Param("classId") Integer classId, @Param("scheduleId") Integer scheduleId);
+        @Query("SELECT u.id, u.avatar_path, u.first_name, u.last_name, u.userName, a.status, a.id " +
+                "FROM User u " +
+                "LEFT JOIN Attendance a ON u.id = a.user.id AND a.schedule.id = :scheduleId " +
+                "WHERE u.classroom.id = :classId ")
+        List<Object[]> findUsersAttendanceByClassIdAndScheduleId(@Param("classId") Integer classId, @Param("scheduleId") Integer scheduleId);
 }
