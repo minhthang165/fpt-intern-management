@@ -85,16 +85,26 @@ public class ExcelTemplateGenerator {
 
         Cell cellSpecialization = headerRow.createCell(2);
         cellSpecialization.setCellValue("Specialization");
+        
+        Cell cellMentorType = headerRow.createCell(3);
+        cellMentorType.setCellValue("Type");
 
-        Cell cellMaxHoursPerWeek = headerRow.createCell(3);
+        Cell cellMaxHoursPerWeek = headerRow.createCell(4);
         cellMaxHoursPerWeek.setCellValue("MaxHoursPerWeek");
+        
+        Cell cellMinHoursPerWeek = headerRow.createCell(5);
+        cellMinHoursPerWeek.setCellValue("MinHoursPerWeek");
 
         // Add dropdown list for Specialization
         createDropdownList(workbook, sheet, 1, 100, 2, 2,
                 new String[]{"CODE", "JAPANESE", "KOREAN"});
 
+        // Add dropdown list for Mentor Type
+        createDropdownList(workbook, sheet, 1, 100, 3, 3,
+                new String[]{"CodeMentor", "LanguageMentor"});
+
         // Auto-size columns
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 6; i++) {
             sheet.autoSizeColumn(i);
         }
     }
