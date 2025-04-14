@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(String email);
     Page<User> findByRole(Role role, Pageable pageable);
     Optional<List<User>> findByEmailContainingIgnoreCase(String email);
+
+    Optional<List<User>> findUserByClassroom_Id(Integer classId);
 }

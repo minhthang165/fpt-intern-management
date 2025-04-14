@@ -39,30 +39,27 @@ public class ScheduleService {
             return new ResponseEntity<>(schedules, HttpStatus.OK);
         }
     }
-    
+
     // Tìm lịch học theo userId (người dùng thuộc lớp)
     public List<Schedule> findSchedulesByUserId(Integer userId) {
-        // Lấy tất cả lịch học
         List<Schedule> allSchedules = this.scheduleRepository.findAll();
-        
-        // Lọc lịch học theo userId (người dùng thuộc lớp)
-        List<Schedule> userSchedules = allSchedules.stream()
-            .filter(schedule -> {
-                // Kiểm tra xem lớp học có tồn tại không
-                if (schedule.getClassField() != null) {
-                    // Kiểm tra xem người dùng có phải là giảng viên của lớp không
-                    if (schedule.getClassField().getManager() != null && 
-                        schedule.getClassField().getManager().getId().equals(userId)) {
-                        return true;
-                    }
 
-                }
-                return false;
-            })
-            .collect(Collectors.toList());
-        return userSchedules;
+        // Lọc lịch học theo mentorid
+        List<Schedule> classSchedules = allSchedules.stream()
+                .filter(schedule -> {
+                    // Kiểm tra xem classField có tồn tại không
+                    if (schedule.getMentor() != null) {
+                        // Kiểm tra xem classId có khớp không
+                        if (schedule.getMentor().getId().equals(userId)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
+        return classSchedules;
     }
-    
+
     public ResponseEntity<Page<Schedule>> findAllWithPagination(Pageable pageable) throws BadRequestException {
         Page<Schedule> schedules = this.scheduleRepository.findAll(pageable);
         if (schedules.isEmpty()) {

@@ -7,6 +7,7 @@ import com.fsoft.fintern.dtos.CreateUserDTO;
 import com.fsoft.fintern.dtos.UpdateUserDTO;
 import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.Classroom;
+import com.fsoft.fintern.models.Task;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.repositories.ClassroomRepository;
 import com.fsoft.fintern.repositories.UserRepository;
@@ -208,4 +209,10 @@ public class UserService {
         redisTemplate.delete(key);
         return "User " + userId + " has been unbanned.";
     }
-}
+
+    public ResponseEntity<List<User>> findUserByClassroom_Id(Integer classId) {
+        List<User> users = null;
+        users = this.userRepository.findUserByClassroom_Id(classId).orElse(null);
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+    }

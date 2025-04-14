@@ -272,13 +272,10 @@
                         </div>
                     </div>
                 </div>
-
-
             </div>
         </template>
 
-        <template id="chatTemplate">
-        </template>
+        <template id="chatTemplate"></template>
 
         <!-- Modal for adding a new task -->
         <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
@@ -960,11 +957,10 @@
         const startTime = document.getElementById("startTime").value;
         const endTime = document.getElementById("endTime").value;
 
-        // 🔥 Lấy danh sách classId đã được chọn từ checkbox
+
         const selectedClassIds = Array.from(document.querySelectorAll("#classCheckboxList input:checked"))
             .map(input => input.value);
 
-        // ✅ Kiểm tra dữ liệu
         if (!taskName || !startTime || !endTime || selectedClassIds.length === 0) {
             alert("Vui lòng điền đầy đủ thông tin và chọn ít nhất một lớp!");
             return;
@@ -1047,8 +1043,9 @@
             // Gọi lại hàm fetchTasks để tải lại danh sách task mới
             taskData.classIds.forEach(classId => {
                 fetchTasks(classId);  // Tải lại danh sách tasks cho mỗi lớp đã chọn
-            });
 
+            });
+            await fetchClassrooms(taskData.creator);
             alert("Tất cả các task đã được tạo thành công!");
 
         } catch (error) {

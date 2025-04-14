@@ -28,8 +28,11 @@ public enum ErrorDictionaryConstraints {
     IS_ACTIVE_FALSE("This object is not active"),
     TASK_IS_COMPLETED("This Task already Completed"),
     COMPLETED_TASK_IS_NOT_FOUND("Not find any Completed Task"),
-    COMPLETED_TASK_IS_NOT_FOUND_ID("Not find any Completed Task ID");
+    COMPLETED_TASK_IS_NOT_FOUND_ID("Not find any Completed Task ID"),
 
+    // ATTENDANCE
+    ATTENDANCE_IS_EMPTY("There is no attendance existed"),
+    SCHEDULE_NOT_EXISTS_ID("There is no Sechdule ID");
 
     private final String message;
 
