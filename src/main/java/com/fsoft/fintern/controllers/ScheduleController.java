@@ -17,7 +17,11 @@ public class ScheduleController {
         // Lấy userID từ session và đưa vào model
         model.addAttribute("userId", user.getId());
         model.addAttribute("userRole", user.getRole().toString());
-        
+
+        if(user.getRole() == Role.INTERN) {
+            model.addAttribute("classId", user.getClass_id());
+        }
+
         if (user.getRole() == Role.EMPLOYEE) {
             return "/employee/EmpSchedule";
         } else

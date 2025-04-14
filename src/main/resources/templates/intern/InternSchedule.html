@@ -2,6 +2,9 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="include/master-header :: head"></head>
 <body class="body-area">
+<input type="hidden" id="userId" th:value="${userId}">
+<input type="hidden" id="userRole" th:value="${userRole}">
+<input type="hidden" id="classId" th:value="${classId}">
 
 <th:block th:replace="~{include/intern-sidebar :: sidebar(~{::content})}">
     <!--header breadcrumb area-->

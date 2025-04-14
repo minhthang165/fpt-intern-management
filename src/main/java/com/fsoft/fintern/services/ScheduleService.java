@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,6 +59,23 @@ public class ScheduleService {
                 })
                 .collect(Collectors.toList());
         return classSchedules;
+    }
+
+    // Tìm lịch học theo ngày
+    public List<Schedule> findSchedulesByDate(LocalDate date) {
+        List<Schedule> allSchedules = this.scheduleRepository.findAll();
+
+        // Lọc lịch học theo ngày (lịch học có startDate <= date <= endDate)
+        List<Schedule> schedulesByDate = allSchedules.stream()
+                .filter(schedule -> {
+                    LocalDate startDate = schedule.getStartDate();
+                    LocalDate endDate = schedule.getEndDate();
+                    return (startDate == null || !date.isBefore(startDate)) &&
+                            (endDate == null || !date.isAfter(endDate));
+                })
+                .collect(Collectors.toList());
+
+        return schedulesByDate;
     }
 
     public ResponseEntity<Page<Schedule>> findAllWithPagination(Pageable pageable) throws BadRequestException {
