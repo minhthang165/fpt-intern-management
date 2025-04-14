@@ -20,16 +20,12 @@ function addEvent(title, startDate, startHour, endDate, dayOfWeekOrEndHour, endH
         )
     ) {
         // Case: addEvent(title, startDate, startHour, endDate, dayOfWeek, endHour, color)
-        finalDayOfWeek = dayOfWeekOrEndHour.toUpperCase() // Ensure uppercase for consistency
+        finalDayOfWeek = dayOfWeekOrEndHour
         finalEndHour = endHour || (Number.parseInt(startHour) + 1).toString()
     } else {
         // Case: addEvent(title, startDate, startHour, endDate, endHour, color)
         finalEndHour = dayOfWeekOrEndHour || (Number.parseInt(startHour) + 1).toString()
         finalDayOfWeek = null
-        // Handle case where color is passed as 6th parameter
-        if (typeof endHour === "string" && endHour.startsWith("#")) {
-            color = endHour
-        }
     }
 
     const newEvent = {
@@ -46,7 +42,6 @@ function addEvent(title, startDate, startHour, endDate, dayOfWeekOrEndHour, endH
     console.log("Event added:", newEvent)
     events.push(newEvent)
     renderEvents()
-    return newEvent.id // Return ID for potential future reference
 }
 
 // Delete event
@@ -64,17 +59,23 @@ async function fetchAndRenderSchedules() {
         events = []
 
         // Get userId from hidden input
-        const userId = document.getElementById("userId")?.value
-        const userRole = document.getElementById("userRole")?.value
+        const userId = document.getElementById("userId").value
+        const userRole = document.getElementById("userRole").value
         console.log(`Fetching schedules for user: ${userId}, role: ${userRole}`)
 
         // API endpoint based on user role
         let endpoint = "/api/scheduling/all"
 
         // If userId exists and not ADMIN, filter by userId
-        if (userId && userRole !== "ADMIN") {
+        if (userId && userRole === "EMPLOYEE") {
             endpoint = `/api/scheduling/user/${userId}`
         }
+        else if(userId && userRole === "INTERN")
+        {
+            const classId = document.getElementById("classId").value
+            endpoint = `/api/scheduling/class/${classId}`
+        }
+
 
         // Call API to get schedule
         const response = await fetch(endpoint, {
@@ -141,9 +142,7 @@ async function fetchAndRenderSchedules() {
 
             const startTime = schedule.startTime
             const endTime = schedule.endTime
-
             const scheduleId = schedule.id
-
             const title = `${className} - ${subjectName} - ${roomName}`
 
             let startHour = "0"
@@ -562,12 +561,8 @@ function renderAttendance(data) {
     container.appendChild(attendanceList);
 }
 
-
 function showEventDetails(event) {
-    if (document.querySelector("#event-modal")) {
-        document.querySelector("#event-modal").remove();
-        document.querySelector(".modal-backdrop")?.remove();
-    }
+    if (document.querySelector("#event-modal")) return;
 
     const modal = document.createElement("div");
     modal.id = "event-modal";
@@ -621,6 +616,7 @@ function showEventDetails(event) {
             </div>
           </div>
 
+          <!-- Vùng hiển thị Attendance -->
           <div id="attendanceContainer" class="mt-4">
             <div class="d-flex align-items-center mb-3">
               <h3 class="h5 mb-0 me-2">Danh sách điểm danh</h3>
@@ -638,14 +634,18 @@ function showEventDetails(event) {
     `;
 
     document.body.appendChild(modal);
+
+    // Add Bootstrap modal backdrop
     const backdrop = document.createElement("div");
     backdrop.className = "modal-backdrop fade show";
     document.body.appendChild(backdrop);
 
+    // Prevent body scrolling
     document.body.classList.add("modal-open");
     document.body.style.overflow = "hidden";
     document.body.style.paddingRight = "17px";
 
+    // Close modal functions
     const closeModal = () => {
         modal.remove();
         backdrop.remove();
@@ -659,10 +659,9 @@ function showEventDetails(event) {
         if (e.target === modal) closeModal();
     });
 
-    // Gọi API Attendance với classId và scheduleId
+    // Gọi API Attendance nếu có classId
     if (event.details && event.details.classId) {
-        fetchAttendance(event.details.classId, event.scheduleId || 1073741824);
-    }
+        fetchAttendance(event.details.classId, event.scheduleId) ;}
 }
 
 // Display all events on calendar - version with continuous blocks
@@ -692,11 +691,7 @@ function renderEvents() {
     }
 
     // Get month and year from title
-    const currentMonthText = document.getElementById("current-month")?.textContent
-    if (!currentMonthText) {
-        console.error("Could not find current-month element")
-        return
-    }
+    const currentMonthText = document.getElementById("current-month").textContent
     console.log("Current month:", currentMonthText)
 
     // Handle case of displaying 2 months (e.g., "March - April 2025")
@@ -969,42 +964,25 @@ function renderEvents() {
     }
 }
 
+
+
 // Định dạng ngày
 function formatDate(dateString) {
-    if (!dateString) return "N/A";
-
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; // Return original if invalid
-
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
 }
-
 function formatTime(timeString) {
-    if (!timeString) return "N/A";
-
-    try {
-        const date = new Date(`1970-01-01T${timeString}`);
-        if (isNaN(date.getTime())) return timeString; // Return original if invalid
-
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${hours}:${minutes}`;
-    } catch (error) {
-        console.error("Error formatting time:", error);
-        return timeString; // Return original on error
-    }
+    const date = new Date(`1970-01-01T${timeString}`);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
 }
 
 function addEventStyles() {
-    // Remove existing style if it exists
-    const existingStyle = document.getElementById('calendar-event-styles');
-    if (existingStyle) existingStyle.remove();
-
     const style = document.createElement('style');
-    style.id = 'calendar-event-styles';
     style.textContent = `
         .calendar-event {
             position: absolute;
@@ -1032,17 +1010,15 @@ function addEventStyles() {
     `;
     document.head.appendChild(style);
 }
-
 // Sửa lại hàm getMonthNumber để trả về index (0-11)
 function getMonthNumber(monthName) {
-    if (!monthName) return -1;
-
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
     return months.findIndex(m => m.toLowerCase() === monthName.toLowerCase());
 }
+
 
 // Hàm cập nhật các ngày trong tuần
 function updateMonthDisplay(startDate) {
@@ -1062,22 +1038,16 @@ function updateMonthDisplay(startDate) {
         const mondayMonthName = getMonthName(mondayMonth) || 'January';
         const fridayMonthName = getMonthName(fridayMonth) || 'January';
 
-        const currentMonthElement = document.getElementById('current-month');
-        if (!currentMonthElement) {
-            console.error("Không tìm thấy element 'current-month'");
-            return;
-        }
-
         if (mondayMonth === fridayMonth) {
-            currentMonthElement.textContent = `${mondayMonthName} ${monday.getFullYear()}`;
+            document.getElementById('current-month').textContent = `${mondayMonthName} ${monday.getFullYear()}`;
         } else {
             const mondayYear = monday.getFullYear();
             const fridayYear = friday.getFullYear();
 
             if (mondayYear === fridayYear) {
-                currentMonthElement.textContent = `${mondayMonthName} - ${fridayMonthName} ${mondayYear}`;
+                document.getElementById('current-month').textContent = `${mondayMonthName} - ${fridayMonthName} ${mondayYear}`;
             } else {
-                currentMonthElement.textContent = `${mondayMonthName} ${mondayYear} - ${fridayMonthName} ${fridayYear}`;
+                document.getElementById('current-month').textContent = `${mondayMonthName} ${mondayYear} - ${fridayMonthName} ${fridayYear}`;
             }
         }
     } catch (error) {
@@ -1096,11 +1066,6 @@ function updateWeekDays(startDate) {
         const dayElements = document.querySelectorAll('.calendar-header-cell:nth-child(n+2):nth-child(-n+6) .day-number');
         const dayNameElements = document.querySelectorAll('.calendar-header-cell:nth-child(n+2):nth-child(-n+6) .day-name');
         const dayHeaderCells = document.querySelectorAll('.calendar-header-cell:nth-child(n+2):nth-child(-n+6)');
-
-        if (!dayElements.length || !dayNameElements.length || !dayHeaderCells.length) {
-            console.error("Không tìm thấy các phần tử ngày trong tuần");
-            return;
-        }
 
         // Lấy ngày hôm nay theo localDate
         const today = new Date();
@@ -1141,53 +1106,26 @@ function updateWeekDays(startDate) {
         // Không fallback về ngày hiện tại, giữ nguyên trạng thái
     }
 }
-
 // Lấy tên tháng từ số tháng
 function getMonthName(monthNumber) {
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
-
-    if (monthNumber < 0 || monthNumber > 11) {
-        console.error("Invalid month number:", monthNumber);
-        return months[0]; // Return January as default
-    }
-
     return months[monthNumber];
 }
 
 // Tạo sự kiện mới
 function showNewEventModal() {
     // Lấy ngày hiện tại trên lịch
-    const currentMonthText = document.getElementById('current-month')?.textContent;
-    if (!currentMonthText) {
-        console.error("Không tìm thấy element 'current-month'");
-        return;
-    }
-
+    const currentMonthText = document.getElementById('current-month').textContent;
     // Xử lý trường hợp có thể có 2 tháng (March 2025 - April 2025)
     const monthYear = currentMonthText.split(' - ')[0].split(' ');
     const month = getMonthNumber(monthYear[0]);
     const year = parseInt(monthYear[1]);
 
-    if (isNaN(month) || isNaN(year)) {
-        console.error("Không thể xác định tháng/năm từ:", currentMonthText);
-        return;
-    }
-
     // Ngày đầu tiên hiển thị trên lịch
-    const firstDayElement = document.querySelector('.calendar-header-cell:nth-child(2) .day-number');
-    if (!firstDayElement) {
-        console.error("Không tìm thấy ngày đầu tiên trên lịch");
-        return;
-    }
-
-    const firstDay = parseInt(firstDayElement.textContent.trim());
-    if (isNaN(firstDay)) {
-        console.error("Ngày đầu tiên không hợp lệ:", firstDayElement.textContent);
-        return;
-    }
+    const firstDay = parseInt(document.querySelector('.calendar-header-cell:nth-child(2) .day-number').textContent.trim());
 
     // Tạo đối tượng ngày
     const startDate = new Date(year, month, firstDay);
@@ -1212,10 +1150,6 @@ function showNewEventModal() {
     for (let i = 0; i < 24; i++) {
         hoursOptions += `<option value="${i}">${i}:00</option>`;
     }
-
-    // Remove existing modal if any
-    const existingModal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-50');
-    if (existingModal) existingModal.remove();
 
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
@@ -1282,11 +1216,6 @@ function showNewEventModal() {
         const endHour = document.getElementById('event-end').value;
         const color = document.getElementById('event-color').value;
 
-        if (parseInt(endHour) <= parseInt(startHour)) {
-            alert("End time must be after start time");
-            return;
-        }
-
         addEvent(title, day, startHour, day, endHour, color);
         modal.remove();
     });
@@ -1319,14 +1248,12 @@ function initDragToCreate() {
             const colIndex = cellIndex % 6;
 
             if (colIndex > 0) { // Bỏ qua cột đầu tiên (cột giờ)
-                const dayElements = document.querySelectorAll('.calendar-header-cell:nth-child(n+2):nth-child(-n+6) .day-number');
-                if (dayElements[colIndex - 1]) {
-                    const day = dayElements[colIndex - 1].textContent.trim();
-                    const hour = rowIndex; // Không cần trừ 1 vì giờ đã nằm trong container riêng
+                const dayElement = document.querySelectorAll('.calendar-header-cell:nth-child(n+2):nth-child(-n+6) .day-number')[colIndex - 1];
+                const day = dayElement.textContent.trim();
+                const hour = rowIndex; // Không cần trừ 1 vì giờ đã nằm trong container riêng
 
-                    cell.setAttribute('data-day', day);
-                    cell.setAttribute('data-hour', hour);
-                }
+                cell.setAttribute('data-day', day);
+                cell.setAttribute('data-hour', hour);
             }
         }
     });
@@ -1360,16 +1287,6 @@ function initDragToCreate() {
         if (!isDragging) return;
 
         const cell = e.target.closest('.time-cell') || startCell;
-
-        // Nếu có cell được highlight, mở modal tạo event nhanh
-        if (currentHighlight.length > 0) {
-            const day = startCell.getAttribute('data-day');
-            const hour = parseInt(startCell.getAttribute('data-hour'));
-
-            if (day && !isNaN(hour)) {
-                openQuickEventModal(day, hour);
-            }
-        }
 
         // Reset
         isDragging = false;
@@ -1420,11 +1337,6 @@ function initDragToCreate() {
         const monthYear = currentMonth.split(' ');
         const month = getMonthNumber(monthYear[0]);
         const year = parseInt(monthYear[1]);
-
-        if (isNaN(month) || isNaN(year)) {
-            console.error("Không thể xác định tháng/năm từ:", currentMonth);
-            return;
-        }
 
         // Tạo đối tượng ngày
         const date = new Date(year, month, parseInt(day));
@@ -1483,12 +1395,7 @@ function initDragToCreate() {
 
 // Thêm CSS cho highlight
 function addCustomStyles() {
-    // Remove existing style if it exists
-    const existingStyle = document.getElementById('calendar-custom-styles');
-    if (existingStyle) existingStyle.remove();
-
     const style = document.createElement('style');
-    style.id = 'calendar-custom-styles';
     style.textContent = `
                 .time-cell {
                     cursor: pointer;
@@ -1520,76 +1427,6 @@ function addCustomStyles() {
                 .calendar-body::-webkit-scrollbar-thumb:hover {
                     background-color: #94a3b8;
                 }
-                .month-picker {
-                    position: absolute;
-                    background: white;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-                    z-index: 50;
-                    width: 280px;
-                }
-                .month-picker-nav {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 8px 12px;
-                    border-bottom: 1px solid #e5e7eb;
-                }
-                .month-picker-title {
-                    font-weight: 500;
-                }
-                .month-nav-btn {
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    color: #6b7280;
-                    padding: 4px;
-                    border-radius: 4px;
-                }
-                .month-nav-btn:hover {
-                    background-color: #f3f4f6;
-                }
-                .month-picker-header {
-                    display: grid;
-                    grid-template-columns: repeat(7, 1fr);
-                    text-align: center;
-                    font-size: 0.75rem;
-                    color: #6b7280;
-                    padding: 8px 0;
-                }
-                .month-picker-grid {
-                    display: grid;
-                    grid-template-columns: repeat(7, 1fr);
-                    gap: 2px;
-                    padding: 4px;
-                }
-                .month-picker-cell {
-                    height: 32px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    border-radius: 4px;
-                    font-size: 0.875rem;
-                }
-                .month-picker-cell:hover {
-                    background-color: #f3f4f6;
-                }
-                .month-picker-cell.other-month {
-                    color: #9ca3af;
-                }
-                .month-picker-cell.today {
-                    background-color: #4f46e5;
-                    color: white;
-                }
-                .active-day {
-                    background-color: #f0f9ff !important;
-                    border-bottom: 2px solid #3b82f6 !important;
-                }
-                .current-time-indicator {
-                    pointer-events: none;
-                }
             `;
     document.head.appendChild(style);
 }
@@ -1616,26 +1453,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Khởi tạo kéo thả
     initDragToCreate();
 
+
     // Fetch dữ liệu từ API và hiển thị
     fetchAndRenderSchedules();
-
     // Xử lý nút Today
-    document.querySelector('.btn-today')?.addEventListener('click', function() {
+    document.querySelector('.btn-today').addEventListener('click', function() {
         navigateToDate('today');
     });
 
     // Xử lý nút Previous
-    document.getElementById('prev-month')?.addEventListener('click', function() {
+    document.getElementById('prev-month').addEventListener('click', function() {
         navigateToDate('prev');
     });
 
     // Xử lý nút Next
-    document.getElementById('next-month')?.addEventListener('click', function() {
+    document.getElementById('next-month').addEventListener('click', function() {
         navigateToDate('next');
     });
 
     // Xử lý nút New meeting
-    document.querySelector('.btn-primary')?.addEventListener('click', function() {
+    document.querySelector('.btn-primary').addEventListener('click', function() {
         showNewEventModal();
     });
 
@@ -1716,13 +1553,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hàm cập nhật time indicator
     function updateTimeIndicator() {
         try {
-            // Find the calendar body first - if it doesn't exist, exit early
-            const calendarBody = document.querySelector('.calendar-body');
-            if (!calendarBody) {
-                console.log("Calendar body not found, skipping time indicator update");
-                return;
-            }
-
             const now = new Date();
             const hours = now.getHours();
             const minutes = now.getMinutes();
@@ -1735,7 +1565,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const dayNumber = parseInt(el.textContent);
                 if (dayNumber === now.getDate()) {
                     const headerCell = el.closest('.calendar-header-cell');
-                    if (headerCell && headerCell.classList.contains('active-day')) {
+                    if (headerCell.classList.contains('active-day')) {
                         todayColumnIndex = index + 1;
                     }
                 }
@@ -1779,10 +1609,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 timeLabel.style.padding = '2px 5px';
                 timeLabel.style.borderRadius = '5px';
 
-                // Set position on calendar body and append indicator
-                calendarBody.style.position = 'relative';
-                calendarBody.appendChild(indicator);
-                indicator.appendChild(timeLabel);
+                // Thêm vào calendar body
+                const calendarBody = document.querySelector('.calendar-body');
+                if (calendarBody) {
+                    calendarBody.style.position = 'relative';
+                    calendarBody.appendChild(indicator);
+                    indicator.appendChild(timeLabel);
+                }
             }
         } catch (error) {
             console.error("Lỗi khi cập nhật time indicator:", error);
@@ -2130,21 +1963,8 @@ function showMonthPicker() {
             document.removeEventListener('click', closeMonthPicker);
         }
     });
-}
 
+
+}
 // Thêm event listener cho current-month
-document.getElementById('current-month')?.addEventListener('click', showMonthPicker);
-
-// Export các hàm cần thiết để sử dụng bên ngoài
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        addEvent,
-        deleteEvent,
-        fetchAndRenderSchedules,
-        renderEvents,
-        showEventDetails,
-        navigateToDate
-    };
-}
-
-console.log("✅ Schedule functionality initialized successfully");
+document.getElementById('current-month').addEventListener('click', showMonthPicker);
