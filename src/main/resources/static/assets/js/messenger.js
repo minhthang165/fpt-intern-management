@@ -1,4 +1,4 @@
-var stompClient = null;
+var user_fullName = document.getElementById("user_fullName").value;
 var user_id = document.getElementById("user_id").value;
 var user_avatar = document.getElementById("user_avatar").value;
 var messages;
@@ -19,14 +19,14 @@ var selectedRecipientId = null;
 var conversation_list = [];
 let originalConversationList = []; // Lưu trữ danh sách conversation gốc
 var isCurrentUserAdmin = false; // Thêm biến global mới
-const userId = document.getElementById("user_id").value;
-window.userId = userId; // Gắn vào window
-localStorage.setItem("userId", userId);
+window.userId = user_id; // Gắn vào window
+localStorage.setItem("userId", user_id);
 console.log("✅ User ID:", window.userId);
 
 document.addEventListener("DOMContentLoaded", async function () {
     await loadConversation(user_id);
     connectWebSocket();
+    adjustHeight();
     var chatDropdown = document.getElementById('chatDropdown');
     var userList = document.getElementById('userList');
     var userSearchInput = document.getElementById('userSearchInput');
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     });
     document.addEventListener('click', function (event) {
-        const isClickInside = chatDropdown.contains(event.target) || event.target.closest('.bg-blue-500');
+        const isClickInside = chatDropdown.contains(event.target) || event.target.closest('.text-black');
         if (!isClickInside) {
             chatDropdown.classList.add('hidden');
         }
@@ -51,13 +51,19 @@ document.addEventListener("DOMContentLoaded", async function () {
 //---------------------------------------- WEBSOCKET SETUP ----------------------------------------------
 
 function connectWebSocket() {
-    let socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
-
-    stompClient.connect({}, function () {
+    if (stompClient && stompClient.connected) {
         stompClient.subscribe('/topic/messenger', handleWebsocketPayload);
-    });
+    } else {
+        // If not connected yet, wait until it's connected
+        const waitForConnect = setInterval(() => {
+            if (stompClient && stompClient.connected) {
+                stompClient.subscribe('/topic/messenger', handleWebsocketPayload);
+                clearInterval(waitForConnect);
+            }
+        }, 100); // Check every 100ms
+    }
 }
+
 //---------------------------------------- Call SETUP ----------------------------------------------
 
 window.makeCall = () => {
@@ -204,7 +210,7 @@ function setConversation(element) {
                 <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" width="40"/>
                 <div>
                     <div class="font-bold conversation-name">${conversationName}</div>
-                    <div class="text-green-500 text-sm">Đang hoạt động</div>
+                    <div class="text-green-500 text-sm">Online</div>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
@@ -241,11 +247,21 @@ function setConversation(element) {
 
     document.getElementById("chat-container").innerHTML += rightSide;
 
+    // Add event listener for Enter key on message input
+    document.getElementById("message").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            if (conversationId) {
+                sendMessage();
+            } else {
+                startNewConversation(document.querySelector(".fa-paper-plane").parentElement);
+            }
+        }
+    });
+
     if (conversationId) {
         loadMessages(conversationId);
-        loadMember(conversationId,converstionType).then(members => {
-            conversationMember = members;
-        });
+        loadMember(conversationId,converstionType);
     }
 
     const callButton = document.querySelector(".btn_call");
@@ -316,7 +332,7 @@ function renderFile(typeFile) {
     if (fileList.length == 0) {
         file.innerHTML = "";
         file.classList.remove("active");
-    } else {
+} else {
         file.innerHTML = listFileHTML;
         file.classList.add("active");
     }
@@ -326,52 +342,189 @@ function renderFile(typeFile) {
 
 
 function scrollToLatestMessage() {
-    requestAnimationFrame(() => {
-        const chatContainer = document.getElementById("chat");
-        if (!chatContainer) return;
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+    const chatContainer = document.getElementById("chat");
+    if (!chatContainer) return;
+    chatContainer.scrollTo({
+        top: chatContainer.scrollHeight,
+        behavior: "smooth"
     });
 }
 
 function handleWebsocketPayload(payload) {
     var message = JSON.parse(payload.body);
-    
-    // Kiểm tra xem tin nhắn có thuộc về cuộc trò chuyện hiện tại không
-    if (message.conversation.id !== conversationId) {
-        // Nếu đây là tin nhắn đầu tiên từ một cuộc trò chuyện mới
-        if (!conversation_list.some(conv => conv.id === message.conversation.id)) {
-            handleNewConversation(message);
-        }
+
+    // Xử lý theo loại sự kiện
+    switch(message.type) {
+        case "REMOVE_USER":
+            // Xử lý khi người dùng bị đá khỏi cuộc trò chuyện
+            if (message.userId == user_id) {
+                // Nếu chính người dùng hiện tại bị đá
+                removeConversationFromList(message.conversationId);
+
+                // Nếu đang xem cuộc trò chuyện đó, xóa nội dung
+                if (conversationId === message.conversationId) {
+                    document.getElementById("chat-container").innerHTML = '<div class="text-center p-4">Bạn đã bị xóa khỏi cuộc trò chuyện này</div>';
+                    conversationId = null;
+                }
+            }
+            break;
+
+        case "ADD_USER":
+            // Xử lý khi người dùng được thêm vào cuộc trò chuyện
+            if (message.userId == user_id) {
+                // Thêm cuộc trò chuyện mới vào danh sách
+                addNewConversationToList(message.conversation);
+            }
+            break;
+
+        default:
+            // Xử lý tin nhắn thông thường
+            if (!message.conversation) return;
+
+            // Kiểm tra xem tin nhắn có thuộc về cuộc trò chuyện hiện tại không
+            if (message.conversation.id !== conversationId) {
+                // Nếu đây là tin nhắn đầu tiên từ một cuộc trò chuyện mới
+                if (!conversation_list.some(conv => conv.id === message.conversation.id)) {
+                    handleNewConversation(message);
+                } else {
+                    // Nếu cuộc trò chuyện đã tồn tại, di chuyển nó lên đầu danh sách
+                    const conversationIndex = conversation_list.findIndex(conv => conv.id === message.conversation.id);
+                    if (conversationIndex !== -1) {
+                        const conversation = conversation_list[conversationIndex];
+                        conversation_list.splice(conversationIndex, 1);
+                        conversation_list.unshift(conversation);
+                        
+                        // Cập nhật UI
+                        renderHtmlConversation(conversation_list);
+                        
+                        // Làm nổi bật tên cuộc trò chuyện
+                        const conversationElement = document.querySelector(`[data-id="${message.conversation.id}"] .font-bold`);
+                        if (conversationElement) {
+                            conversationElement.classList.add('text-blue-600');
+                            // Tự động bỏ nổi bật sau 3 giây
+                            setTimeout(() => {
+                                conversationElement.classList.remove('text-blue-600');
+                            }, 3000);
+                        }
+                    }
+                }
+                return;
+            }
+
+            // Nếu là cuộc trò chuyện hiện tại, hiển thị tin nhắn
+            displayMessage(message);
+    }
+}
+
+// Thêm hàm để xóa cuộc trò chuyện khỏi danh sách
+function removeConversationFromList(conversationIdToRemove) {
+    // Lọc ra cuộc trò chuyện cần xóa
+    conversation_list = conversation_list.filter(conv => conv.id !== conversationIdToRemove);
+    originalConversationList = originalConversationList.filter(conv => conv.id !== conversationIdToRemove);
+
+    // Cập nhật UI
+    renderHtmlConversation(conversation_list);
+}
+
+// Thêm hàm để thêm cuộc trò chuyện mới vào danh sách
+function addNewConversationToList(conversation) {
+    // Kiểm tra nếu cuộc trò chuyện đã tồn tại
+    if (conversation_list.some(conv => conv.id === conversation.id)) {
         return;
     }
-    
-    // Nếu là cuộc trò chuyện hiện tại, hiển thị tin nhắn
-    displayMessage(message);
+
+    // Tạo một đối tượng conversation mới
+    const newConversation = {
+        id: conversation.id,
+        conversationName: conversation.conversationName,
+        conversationAvatar: conversation.avatar_path || conversation.conversationAvatar,
+        last_message: "Bạn đã được thêm vào cuộc trò chuyện",
+        type: conversation.type
+    };
+
+    // Thêm vào đầu danh sách
+    conversation_list.unshift(newConversation);
+    originalConversationList.unshift(newConversation);
+
+    // Cập nhật UI
+    renderHtmlConversation(conversation_list);
 }
 
 function handleNewConversation(message) {
+    // Kiểm tra xem người dùng hiện tại có phải là người gửi hoặc người nhận tin nhắn
+    const isUserInvolved = message.createdBy == user_id || message.recipientId == user_id || 
+                           message.sender?.id == user_id || (
+                             message.conversation.type === "OneToOne" && 
+                             message.recipients?.some(recipient => recipient.id == user_id)
+                           );
+    
+    // Nếu người dùng hiện tại không liên quan đến cuộc trò chuyện này, bỏ qua
+    if (!isUserInvolved) {
+        console.log("❌ Người dùng hiện tại không liên quan đến cuộc trò chuyện, không hiển thị");
+        return;
+    }
+    
+    console.log("✅ Người dùng hiện tại tham gia cuộc trò chuyện, hiển thị cuộc trò chuyện mới");
+    
+    // Lấy tên cuộc trò chuyện từ message
+    let conversationName = message.conversation.conversationName;
+    let displayName = conversationName;
+    
+    // Xử lý tên cuộc trò chuyện dành cho OneToOne chat
+    if (message.conversation.type === "OneToOne" && conversationName.includes(" - ")) {
+        const nameParts = conversationName.split(" - ");
+        
+        // Nếu người dùng hiện tại là người gửi tin nhắn
+        if (message.createdBy == user_id) {
+            // Hiển thị tên người nhận (phần sau dấu "-")
+            displayName = nameParts[1];
+        } else {
+            // Nếu người dùng hiện tại là người nhận
+            // Hiển thị tên người gửi (phần trước dấu "-")
+            displayName = nameParts[0];
+        }
+    }
+
     // Tạo một đối tượng conversation mới
     const newConversation = {
         id: message.conversation.id,
-        conversationName: message.conversation.conversationName,
+        conversationName: displayName, // Sử dụng tên hiển thị đã được xử lý
         conversationAvatar: message.conversation.avatar_path,
         last_message: message.messageContent,
         type: message.conversation.type
     };
-    
+
     // Thêm vào đầu danh sách
     conversation_list.unshift(newConversation);
     originalConversationList.unshift(newConversation);
-    
+
     // Cập nhật UI
     renderHtmlConversation(conversation_list);
 }
 
 function displayMessage(message) {
     var currentChat = document.getElementById('chat');
-    var newChatMsg = customLoadMessage(message);
-    currentChat.innerHTML += newChatMsg;
-    scrollToLatestMessage();
+    if (!currentChat) return;
+
+    // Tạo phần tử tin nhắn mới
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = customLoadMessage(message);
+
+    // Lấy phần tử tin nhắn từ container tạm
+    var messageElement = tempDiv.firstChild;
+
+    // Thêm tin nhắn vào chat container bằng appendChild thay vì sử dụng innerHTML
+    currentChat.appendChild(messageElement);
+
+    // Nếu tin nhắn chứa hình ảnh, đợi hình ảnh tải xong trước khi cuộn
+    if (message.messageType && message.messageType.startsWith("image")) {
+        const imgElements = messageElement.querySelectorAll('img');
+        Promise.all([...imgElements].map(img =>
+            img.complete ? Promise.resolve() : new Promise(resolve => img.onload = img.onerror = resolve)
+        )).then(() => scrollToLatestMessage());
+    } else {
+        scrollToLatestMessage();
+    }
 }
 
 function customLoadMessage(message) {
@@ -463,7 +616,6 @@ function waitForImagesToLoad(container) {
 }
 
 function sendMessage() {
-
     var inputText = document.getElementById("message").value;
     if (inputText !== '') {
         sendText();
@@ -484,7 +636,9 @@ function buildMessageToDTO(messageContent, messageType) {
 }
 
 async function sendAttachments() {
-    for (file of fileList) {
+    tempFilelist = fileList;
+    fileList = [];
+    for (file of tempFilelist) {
         let formData = new FormData();
         formData.append('file', file);
         let fileData = await fetch("cloudinary/upload", {
@@ -502,11 +656,32 @@ async function sendAttachments() {
                     }
                 });
                 let responseData = await response.json();
+                document.querySelector(".list-file").innerHTML = '';
                 stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(responseData));
+                // Create notification object
+                let notification = {
+                    actorId: user_id,
+                    content: "You have new message from " + conversationName,
+                    type: "MESSENGER",
+                    recipientIds: conversationMember.map(member => member.user.id).filter(id => id !== user_id),
+                    url: "/messenger"
+                }
+                //Websocket
+                stompClient.send("/app/notification.sendNotification", {}, JSON.stringify(notification));
+                await fetch("api/notification/create-notification", {
+                    method: "POST",
+                    body: JSON.stringify(notification),
+                    headers: {
+                        "Content-Type": "application/json; charset=UTF-8"
+                    }
+                })
             }).catch(error => {
                 console.log(error);
             })
     }
+    // Xóa file đính kèm sau khi gửi
+    document.querySelector(".list-file").innerHTML = '';
+    document.querySelector(".list-file").classList.remove("active");
 }
 
 async function sendText() {
@@ -530,9 +705,24 @@ async function sendText() {
 
         let responseData = await response.json();
         console.log("Response Data:", responseData);  // Log full response data
-
+        // Create notification object
+        let notification = {
+            actorId: user_id,
+            content: "You have new message from " + conversationName,
+            type: "MESSENGER",
+            recipientIds: conversationMember.map(member => member.user.id).filter(id => id !== user_id),
+            url: "/messenger"
+        }
         // Send the entire response data object to the WebSocket
         stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(responseData));
+        stompClient.send("/app/notification.sendNotification", {}, JSON.stringify(notification));
+        await fetch("api/notification/create-notification", {
+            method: "POST",
+            body: JSON.stringify(notification),
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8"
+            }
+        })
     } catch (error) {
         console.log(error);
     }
@@ -645,8 +835,6 @@ function toggleModal(option) {
                             </button>
                         </div>
                         
-                        <!-- Add member button - chỉ hiện khi là admin -->
-                        ${isCurrentUserAdmin ? `
                         <div class="p-4 border-b">
                             <button class="w-full flex items-center justify-center space-x-2 p-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600" 
                                     onclick="toggleModal('addMembers')">
@@ -654,7 +842,6 @@ function toggleModal(option) {
                                 <span>Add Members</span>
                             </button>
                         </div>
-                        ` : ''}
                         <div id="members-list" class="p-4 overflow-y-auto max-h-[60vh]">
                         </div>
                     </div>
@@ -665,24 +852,26 @@ function toggleModal(option) {
             let membersList = document.getElementById("members-list");
             membersList.innerHTML = "";
             conversationMember.forEach(member => {
+                if (member.user.id == user_id && member.admin == true) {
+                    isCurrentUserAdmin = true;
+                }
                 let memberItem = `
                     <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg group">
                         <div class="flex items-center flex-grow cursor-pointer"
-                             data-track-user-id="${member.id}" 
-                             data-conversationName="${member.first_name} ${member.last_name}" 
-                             data-conversationAvatar="${member.avatar_path}" 
+                             data-track-user-id="${member.user.id}" 
+                             data-conversationName="${member.user.first_name} ${member.user.last_name}" 
+                             data-conversationAvatar="${member.user.avatar_path}" 
                              data-conversation-type="OneToOne" 
-                             ${member.id != user_id ? 'onclick="setConversation(this); document.getElementById(\'member-modal\').remove();"' : ''}>
-                            <img class="w-10 h-10 rounded-full" src="${member.avatar_path}" alt="">
+                             ${member.user.id != user_id ? 'onclick="findOneToOneChatWithUser(' + member.user.id + '); document.getElementById(\'member-modal\').remove();"' : ''}>
+                            <img class="w-10 h-10 rounded-full" src="${member.user.avatar_path}" alt="">
                             <div class="ml-3 flex-grow">
-                                <div class="font-medium">${member.first_name} ${member.last_name}</div>
-                                ${member.id == user_id ? '<div class="text-xs text-gray-500">You</div>' : ''}
-                                ${member.admin ? '<div class="text-xs text-blue-500">Admin</div>' : ''}
+                                <div class="font-medium">${member.user.first_name} ${member.user.last_name}</div>
+                                ${member.user.id == user_id ? '<div class="text-xs text-gray-500">You</div>' : ''}
                             </div>
                         </div>
-                        ${isCurrentUserAdmin && member.id != user_id ? `
+                        ${isCurrentUserAdmin && member.user.id != user_id ? `
                             <button class="hidden group-hover:block text-red-500 hover:text-red-700 p-2" 
-                                    onclick="removeMember(${member.id}, '${member.first_name} ${member.last_name}')">
+                                    onclick="removeMember(${member.user.id}, '${member.user.first_name} ${member.user.last_name}')">
                                 <i class="fas fa-user-minus"></i>
                             </button>
                         ` : ''}
@@ -718,6 +907,7 @@ function toggleModal(option) {
             mediaContainer.classList.toggle("hidden");
             break;
         case 'startOneToOneChat':
+            console.log("test");
             if (chatDropdown.classList.contains('hidden')) {
                 chatDropdown.classList.remove('hidden');
             } else {
@@ -783,7 +973,7 @@ function toggleModal(option) {
                 `;
                 document.body.appendChild(addMembersModal);
             }
-            
+
             // Reset selected users list
             listUserAdd = [];
             updateSelectedGroupMembers();
@@ -923,19 +1113,32 @@ function leaveGroup(userId) {
     fetch(`/api/conversation-user/${conversationId}/users/${userId}`, {
         method: 'DELETE'
     })
-        .then(response => {
-            if (response.ok) {
-                // Find and remove the conversation from the list in the UI
-                let chatListContainer = document.querySelector(".space-y-4");
-                let conversationElement = chatListContainer.querySelector(`[data-id="${conversationId}"]`);
-                if (conversationElement) {
-                    conversationElement.remove(); // Remove the conversation element
+    .then(response => {
+        if (response.ok) {
+            // Nếu người dùng hiện tại rời nhóm
+            if (userId == user_id) {
+                // Gửi thông báo qua WebSocket
+                if (stompClient) {
+                    const payload = {
+                        type: "REMOVE_USER",
+                        conversationId: conversationId,
+                        userId: userId
+                    };
+                    stompClient.send("/app/chat.userRemoved", {}, JSON.stringify(payload));
                 }
-                document.getElementById("messengerBox").innerHTML = '';
-            } else {
-                console.error("Failed to leave the group");
+
+                // Xóa cuộc trò chuyện khỏi danh sách
+                removeConversationFromList(conversationId);
+
+                // Xóa giao diện trò chuyện
+                document.getElementById("conversation-info-box").classList.add('hidden');
+                document.getElementById("chat-container").innerHTML = '';
+                conversationId = null;
             }
-        })
+        } else {
+            console.error("Failed to leave the group");
+        }
+    });
 }
 
 async function startNewConversation(element) {
@@ -943,8 +1146,29 @@ async function startNewConversation(element) {
     //FIRST MESSAGE, SET THE SENT BUTTON CALL CREATE NEW CONVERSATION AND ADD CONVERSATION USER
     //ELSE SENT LIKE NORMAL CONVERSATION
     let chatListContainer = document.querySelector(".space-y-4");
+
+    let selectedUser = null;
+    if (selectedRecipientId) {
+        try {
+            let response = await fetch(`/api/user/${selectedRecipientId}`);
+            if (response.ok) {
+                selectedUser = await response.json();
+                console.log("✅ Selected recipient:", selectedUser);
+            }
+        } catch (error) {
+            console.error("❌ Lỗi khi tải thông tin người nhận:", error);
+        }
+    }
+
+    // Tạo tên cuộc trò chuyện theo định dạng "người gửi - người nhận"
+    let chatName = conversationName;
+    let recipientName = `${selectedUser.first_name} ${selectedUser.last_name}`;
+    if (converstionType === "OneToOne") {
+        chatName = user_fullName + ` - ${selectedUser.first_name} ${selectedUser.last_name}`;
+    }
+
     let tempConversation = {
-        conversation_name: conversationName,
+        conversation_name: chatName,
         conversation_avatar: conversationAvatar,
         type: converstionType
     };
@@ -993,10 +1217,15 @@ async function startNewConversation(element) {
     ;
 
     let conversationHTML = `    
-                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" data-id="${conversationData.id}" data-conversationName="${conversationData.conversationName}" data-conversationAvatar="${conversationData.conversationAvatar}" onclick="setConversation(this)">
+                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" 
+                     data-id="${conversationData.id}" 
+                     data-conversationName="${recipientName}" 
+                     data-conversationAvatar="${conversationData.conversationAvatar}" 
+                     data-conversation-type="${converstionType}"
+                     onclick="setConversation(this)">
                     <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationData.conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" width="40"/>
                     <div>
-                        <div class="font-bold">${conversationData.conversationName}</div>
+                        <div class="font-bold">${recipientName}</div>
                         <div class="text-gray-500 text-sm">${conversationData.last_message || "No messages yet"}</div>
                     </div>
                 </div>
@@ -1012,6 +1241,7 @@ async function startNewConversation(element) {
 }
 
 let searchTimeout; // Global variable to track the timeout
+
 
 function searchUserByEmail(event) {
     clearTimeout(searchTimeout); // Clear the previous timeout
@@ -1098,8 +1328,9 @@ function searchUserByEmail(event) {
                 searchResults.classList.remove('hidden');
                 searchResults.innerHTML = '<div class="p-3 text-center text-red-500">Error searching for users</div>';
             });
-    }, 50); // Delay API call by 50ms
+    }, 200); // Delay API call by 50ms
 }
+
 
 function toggleUserSelection(user, isSelected) {
     if (isSelected) {
@@ -1207,7 +1438,7 @@ function createGroup() {
         body: JSON.stringify({
             type: "Group",
             is_Active: true,
-            conversation_avatar: null,
+            conversation_avatar: '/assets/img/venue/venue-03.jpg',
             conversation_name: groupName
         })
     })
@@ -1256,29 +1487,50 @@ function createGroup() {
         })
 
         .then(() => {
-            alert('Group created successfully!');
             document.getElementById('groupNameInput').value = '';
             listUserAdd = [];
             updateSelectedUsersDisplay();
         })
         .catch(error => {
             console.error('Error creating group:', error);
-            alert('Error creating group. Please try again.');
         });
 }
 
 updateCreateButtonState();
 
 function removeMember(userId, userName) {
+    console.log(userId + userName);
     if (!isCurrentUserAdmin) {
         alert("Only admin can remove members from the group.");
         return;
     }
-    
+
     if (confirm(`Are you sure you want to remove ${userName} from the group?`)) {
-        leaveGroup(userId);
-        conversationMember = conversationMember.filter(member => member.id !== userId);
-        toggleModal('showMembers');
+        // Gọi API để xóa người dùng
+        fetch(`/api/conversation-user/${conversationId}/users/${userId}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                // Cập nhật danh sách thành viên cục bộ
+                conversationMember = conversationMember.filter(member => member.user.id != userId);
+
+                // Gửi thông báo qua WebSocket
+                if (stompClient) {
+                    const payload = {
+                        type: "REMOVE_USER",
+                        conversationId: conversationId,
+                        userId: userId
+                    };
+                    stompClient.send("/app/chat.userRemoved", {}, JSON.stringify(payload));
+                }
+
+                // Làm mới modal thành viên
+                toggleModal('showMembers');
+            } else {
+                console.error("Failed to remove the user from group");
+            }
+        });
     }
 }
 
@@ -1335,15 +1587,16 @@ function searchUsersForGroup(event) {
                     });
                 } else {
                     searchResults.classList.remove('hidden');
-                    searchResults.innerHTML = '<div class="p-3 text-center text-gray-500">No users found</div>';
+                    searchResults.innerHTML = '<div class="p-3 text-center text-gray-500">No results found</div>';
                 }
             })
             .catch(error => {
                 console.error('Error searching for users:', error);
-                searchResults.classList.remove('hidden');
-                searchResults.innerHTML = '<div class="p-3 text-center text-red-500">Error searching for users</div>';
+                if (filteredConversations.length === 0) {
+                    searchResults.innerHTML = "<p class='text-gray-500 text-center'>No results found</p>";
+                }
             });
-    }, 300);
+    }, 200);
 }
 
 function toggleGroupMemberSelection(user, isSelected) {
@@ -1360,11 +1613,11 @@ function toggleGroupMemberSelection(user, isSelected) {
 function updateSelectedGroupMembers() {
     const container = document.getElementById('selectedGroupMembers');
     const addButton = document.getElementById('addMembersBtn');
-    
+
     if (!container) return;
-    
+
     container.innerHTML = '';
-    
+
     listUserAdd.forEach(user => {
         const tag = document.createElement('div');
         tag.className = 'flex items-center bg-blue-50 rounded-full px-3 py-1 text-sm';
@@ -1397,8 +1650,9 @@ async function addMembersToGroup() {
     if (listUserAdd.length === 0) return;
 
     try {
-        const addPromises = listUserAdd.map(user => 
-            fetch('/api/conversation-user/add-user', {
+        // Thêm người dùng vào nhóm
+        for (const user of listUserAdd) {
+            const response = await fetch('/api/conversation-user/add-user', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -1406,24 +1660,56 @@ async function addMembersToGroup() {
                     user_id: user.id,
                     admin: false
                 })
-            }).then(res => res.json())
-        );
+            });
 
-        await Promise.all(addPromises);
+            if (!response.ok) {
+                throw new Error(`Failed to add user ${user.id}`);
+            }
 
-        // Update local member list
-        conversationMember = [...conversationMember, ...listUserAdd];
-        
-        // Close add members modal
+            const result = await response.json();
+
+            // Gửi thông báo qua WebSocket
+            if (stompClient) {
+                // Lấy thông tin cuộc trò chuyện hiện tại
+                const conversationInfo = conversation_list.find(conv => conv.id === conversationId);
+
+                const payload = {
+                    type: "ADD_USER",
+                    userId: user.id,
+                    conversation: {
+                        id: conversationId,
+                        conversationName: conversationInfo.conversationName,
+                        avatar_path: conversationInfo.conversationAvatar,
+                        type: conversationInfo.type
+                    }
+                };
+                stompClient.send("/app/chat.userAdded", {}, JSON.stringify(payload));
+            }
+        }
+
+        // Cập nhật danh sách thành viên cục bộ
+        const updatedMembers = [...conversationMember];
+        listUserAdd.forEach(user => {
+            // Chuyển đổi cấu trúc để phù hợp với dữ liệu conversationMember
+            updatedMembers.push({
+                user: {
+                    id: user.id,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    avatar_path: user.avatar_path
+                },
+                admin: false
+            });
+        });
+        conversationMember = updatedMembers;
+
+        // Đóng modal thêm thành viên
         document.getElementById('add-members-modal').remove();
-        
-        // Refresh members modal
+
+        // Làm mới modal thành viên
         toggleModal('showMembers');
 
-        // Show success message
-        alert(`Successfully added ${listUserAdd.length} member${listUserAdd.length > 1 ? 's' : ''} to the group`);
-        
-        // Reset selected users
+        // Đặt lại danh sách người dùng đã chọn
         listUserAdd = [];
     } catch (error) {
         console.error('Error adding members:', error);
@@ -1433,19 +1719,337 @@ async function addMembersToGroup() {
 
 // Add search function
 function searchConversations(event) {
-    const searchTerm = event.target.value.toLowerCase().trim();
-    
-    if (searchTerm === '') {
-        renderHtmlConversation(originalConversationList);
-        return;
-    }
+    clearTimeout(searchTimeout); // Cancel any previous timeout
 
-    const filteredConversations = originalConversationList.filter(conversation => {
-        const nameMatch = conversation.conversationName.toLowerCase().includes(searchTerm);
-        const messageMatch = conversation.last_message && 
-                           conversation.last_message.toLowerCase().includes(searchTerm);
-        return nameMatch || messageMatch;
-    });
+    searchTimeout = setTimeout(() => {
+        const searchTerm = event.target.value.toLowerCase();
+        const conversationList = document.getElementById("conversationList");
+        const searchResults = document.getElementById("searchResults");
+        const backButton = document.getElementById("backButton");
 
-    renderHtmlConversation(filteredConversations);
+        if (searchTerm.trim() === "") {
+            conversationList.classList.remove("hidden");
+            searchResults.classList.add("hidden");
+            backButton.classList.add("hidden");
+            renderHtmlConversation(originalConversationList);
+            return;
+        }
+
+        conversationList.classList.add("hidden");
+        searchResults.classList.remove("hidden");
+        backButton.classList.remove("hidden");
+
+        const filteredConversations = originalConversationList.filter(conversation => {
+            const conversationName = conversation.conversationName.toLowerCase();
+            return conversationName.includes(searchTerm);
+        });
+
+        searchResults.innerHTML = "";
+
+        if (filteredConversations.length > 0) {
+            searchResults.innerHTML += `
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-gray-500 mb-2">Conversations</h3>
+                    ${filteredConversations.map(conversation => `
+                        <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" 
+                             data-id="${conversation.id}" 
+                             data-conversationName="${conversation.conversationName.replace(/<[^>]*>/g, '')}" 
+                             data-conversation-type="${conversation.type}" 
+                             data-conversationAvatar="${conversation.conversationAvatar}" 
+                             onclick="setConversation(this)">
+                            <img alt="User avatar" 
+                                 id="conversation-avatar" 
+                                 class="rounded-full h-[40px]" 
+                                 src="${conversation.conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}"/>
+                            <div>
+                                <div class="font-bold">${conversation.conversationName}</div>
+                                <div class="text-gray-500 text-sm">${conversation.last_message || "No messages yet"}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        fetch(`/api/user/search/users?email=${searchTerm}`)
+            .then(response => response.json())
+            .then(users => {
+                if (users && users.length > 0) {
+                    searchResults.innerHTML += `
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-semibold text-gray-500 mb-2">Users</h3>
+                            ${users.map(user => `
+                                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" 
+                                     data-track-user-id="${user.id}" 
+                                     data-conversationName="${user.first_name} ${user.last_name}" 
+                                     data-conversationAvatar="${user.avatar_path}" 
+                                     data-conversation-type="OneToOne" 
+                                     onclick="setConversation(this)">
+                                    <img src="${user.avatar_path}" alt="Avatar" class="h-[40px] object-cover">
+                                    <div>
+                                        <div class="font-bold">${user.first_name} ${user.last_name}</div>
+                                        <div class="text-gray-500 text-sm">${user.email}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                if (filteredConversations.length === 0 && (!users || users.length === 0)) {
+                    searchResults.innerHTML = "<p class='text-gray-500 text-center'>No results found</p>";
+                }
+            })
+            .catch(error => {
+                console.error('Error searching for users:', error);
+                if (filteredConversations.length === 0) {
+                    searchResults.innerHTML = "<p class='text-gray-500 text-center'>No results found</p>";
+                }
+            });
+    }, 200); // Delay of 200ms
 }
+
+// Thêm sự kiện click cho nút quay lại
+document.getElementById("backButton").addEventListener("click", function() {
+    const conversationList = document.getElementById("conversationList");
+    const searchResults = document.getElementById("searchResults");
+    const backButton = document.getElementById("backButton");
+    const searchInput = document.querySelector("input[type='text']");
+
+    // Xóa nội dung tìm kiếm
+    searchInput.value = "";
+
+    // Hiển thị lại danh sách hội thoại ban đầu
+    conversationList.classList.remove("hidden");
+    searchResults.classList.add("hidden");
+    backButton.classList.add("hidden");
+    renderHtmlConversation(originalConversationList);
+});
+
+async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
+    try {
+        // Trước tiên, tìm kiếm xem đã có cuộc trò chuyện one-to-one giữa hai người dùng chưa
+        const response = await fetch(`/api/conversation/find-one-to-one/${currentUserId}/${recipientId}`);
+        
+        if (response.ok) {
+            const conversationData = await response.json();
+            
+            // Nếu đã tìm thấy cuộc trò chuyện
+            if (conversationData && conversationData.id) {
+                console.log("✅ Đã tìm thấy cuộc trò chuyện:", conversationData);
+                return conversationData;
+            }
+        }
+        
+        // Nếu chưa có cuộc trò chuyện, tạo mới
+        // Tải thông tin người nhận
+        const recipientResponse = await fetch(`/api/user/${recipientId}`);
+        if (!recipientResponse.ok) throw new Error("Không thể tải thông tin người nhận");
+        
+        const recipientUser = await recipientResponse.json();
+        const chatName = user_fullName + ` - ${recipientUser.first_name} ${recipientUser.last_name}`;
+        
+        // Tạo cuộc trò chuyện mới
+        const createResponse = await fetch('/api/conversation/group/create', {
+            method: 'POST',
+            body: JSON.stringify({
+                conversation_name: chatName,
+                conversation_avatar: recipientUser.avatar_path,
+                type: "OneToOne"
+            }),
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8"
+            }
+        });
+        
+        if (!createResponse.ok) throw new Error("Không thể tạo cuộc trò chuyện mới");
+        
+        const newConversation = await createResponse.json();
+        
+        // Thêm người dùng hiện tại vào cuộc trò chuyện
+        await fetch('/api/conversation-user/add-user', {
+            method: 'POST',
+            body: JSON.stringify({
+                conversation_id: newConversation.id,
+                user_id: currentUserId,
+                admin: false
+            }),
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8"
+            }
+        });
+        
+        // Thêm người nhận vào cuộc trò chuyện
+        await fetch('/api/conversation-user/add-user', {
+            method: 'POST',
+            body: JSON.stringify({
+                conversation_id: newConversation.id,
+                user_id: recipientId,
+                admin: false
+            }),
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8"
+            }
+        });
+        
+        console.log("✅ Đã tạo cuộc trò chuyện mới:", newConversation);
+        return newConversation;
+    } catch (error) {
+        console.error("❌ Lỗi khi tìm/tạo cuộc trò chuyện:", error);
+        return null;
+    }
+}
+
+// Cập nhật hàm này để chỉ tìm kiếm cuộc trò chuyện hiện có, không tạo mới
+async function findOneToOneChatWithUser(recipientId) {
+    try {
+        document.getElementById("chat-container").innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Đang tải cuộc trò chuyện...</div>';
+        
+        // Chỉ tìm kiếm cuộc trò chuyện hiện có, không tạo mới
+        const response = await fetch(`/api/conversation/find-one-to-one/${user_id}/${recipientId}`);
+        let conversation = null;
+        
+        if (response.ok) {
+            conversation = await response.json();
+        }
+        
+        // Nếu tìm thấy cuộc trò chuyện
+        if (conversation && conversation.id) {
+            
+            // Kiểm tra xem cuộc trò chuyện có trong danh sách chưa
+            if (!conversation_list.some(conv => conv.id === conversation.id)) {
+                // Thêm vào danh sách nếu chưa có
+                let conversationHTML = `    
+                    <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" 
+                         data-id="${conversation.id}" 
+                         data-conversationName="${conversation.conversationName}" 
+                         data-conversationAvatar="${conversation.conversationAvatar}" 
+                         data-conversation-type="OneToOne"
+                         onclick="setConversation(this)">
+                        <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversation.conversationAvatar}" width="40"/>
+                        <div>
+                            <div class="font-bold">${conversation.conversationName}</div>
+                            <div class="text-gray-500 text-sm">No messages yet</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Thêm vào đầu danh sách HTML
+                let chatListContainer = document.querySelector(".space-y-4");
+                chatListContainer.innerHTML = conversationHTML + chatListContainer.innerHTML;
+                
+                // Thêm vào danh sách JavaScript
+                const newConversation = {
+                    id: conversation.id,
+                    conversationName: conversation.conversationName,
+                    conversationAvatar: conversation.conversationAvatar,
+                    last_message: "No messages yet",
+                    type: "OneToOne"
+                };
+                
+                conversation_list.unshift(newConversation);
+                originalConversationList.unshift(newConversation);
+            }
+            
+            // Tìm element để hiển thị cuộc trò chuyện
+            const conversationElement = document.querySelector(`[data-id="${conversation.id}"]`);
+            if (conversationElement) {
+                setConversation(conversationElement);
+            } else {
+                console.error("Cannot find html element");
+            }
+        } else {
+            // Nếu không tìm thấy cuộc trò chuyện, hiển thị chat box tạm
+            console.log("Cannot find conversation, open temp chat box")
+            
+            // Lấy thông tin người nhận
+            const recipientResponse = await fetch(`/api/user/${recipientId}`);
+            if (!recipientResponse.ok) {
+                throw new Error("Cannot load recipient's data");
+            }
+            
+            const recipientUser = await recipientResponse.json();
+            
+            // Set các biến global để sử dụng cho hàm startNewConversation
+            selectedRecipientId = recipientId;
+            conversationId = null; // Đặt là null để khi bấm gửi sẽ gọi startNewConversation
+            conversationName = recipientUser.first_name + " " + recipientUser.last_name;
+            conversationAvatar = recipientUser.avatar_path;
+            converstionType = "OneToOne";
+            
+            // Hiển thị chat box tạm
+            var rightSide = `
+                <!-- Conversation Header -->
+                <div class="flex items-center justify-between p-2 border-b">
+                    <div class="flex items-center space-x-2">
+                        <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationAvatar}" width="40"/>
+                        <div>
+                            <div class="font-bold conversation-name">${conversationName}</div>
+                            <div class="text-green-500 text-sm">Online</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <!-- Call Button -->
+                        <div class="p-2 rounded-full hover:bg-gray-100 cursor-pointer btn_call">
+                            <i class="fas fa-phone text-gray-600"></i>
+                        </div>
+                        <!-- Info Button -->
+                        <div class="p-2 rounded-full hover:bg-gray-100 cursor-pointer btn_conversation_information" onclick="toggleConversationInfo('${converstionType}')">
+                            <i class="fas fa-ellipsis-v text-gray-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Chat Messages -->
+                <div class="flex-grow space-y-4 overflow-y-auto p-4" id="chat" style="height: 400px;">
+                    <div class="text-center p-4 text-gray-500">Hãy gửi tin nhắn để bắt đầu cuộc trò chuyện</div>
+                </div>
+                <!-- Message Input -->
+                <div class="flex items-center space-x-2 p-3 border-t">
+                    <label for="media-upload" class="p-2 rounded-full hover:bg-gray-100 cursor-pointer">
+                        <i class="fas fa-paperclip text-gray-600 text-xl"></i>
+                        <input id="media-upload" accept="*/*" multiple type="file" style="display: none;">
+                    </label>
+                    <button class="p-2 rounded-full hover:bg-gray-100">
+                        <i class="fas fa-smile text-gray-600 text-xl"></i>
+                    </button>
+                    <div class="flex flex-col flex-grow relative">
+                        <ul class="w-100 flex bottom-full list-file space-x-2 absolute"></ul>
+                        <input class="flex-grow p-2 rounded-full bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" id="message" placeholder="Enter Here" type="text"/>
+                    </div>
+                    <button class="p-2 rounded-full hover:bg-gray-100" onclick="startNewConversation(this)">
+                        <i class="fas fa-paper-plane text-blue-500 text-xl"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById("chat-container").innerHTML = rightSide;
+            
+            // Add event listener for Enter key on message input
+            document.getElementById("message").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    startNewConversation(document.querySelector(".fa-paper-plane").parentElement);
+                }
+            });
+            
+            // Handle file upload
+            displayFiles();
+            
+            // Setup call button
+            const callButton = document.querySelector(".btn_call");
+            callButton.addEventListener("click", window.makeCall);
+        }
+    } catch (error) {
+        console.error("❌ Lỗi khi tìm cuộc trò chuyện:", error);
+        document.getElementById("chat-container").innerHTML = '<div class="text-center p-4 text-red-500">Lỗi khi tải cuộc trò chuyện.</div>';
+    }
+}
+
+function adjustHeight() {
+    const header = document.querySelector('header');
+    const content = document.getElementById('messengerBody');
+    const headerHeight = header.offsetHeight;
+    content.style.height = `calc(100vh - ${headerHeight}px)`;
+}
+window.addEventListener('load', adjustHeight);
+window.addEventListener('resize', adjustHeight);

@@ -30,7 +30,7 @@ public class ConversationUserRestController {
 
     @GetMapping("/get-users/{conversation_id}")
     @Operation(description = "Get all users in a conversation")
-    public ResponseEntity<List<User>> getAllUsersInConversation(@PathVariable int conversation_id) throws BadRequestException {
+    public ResponseEntity<List<ConversationUser>> getAllUsersInConversation(@PathVariable int conversation_id) throws BadRequestException {
         return this.conversationUserService.getAllUserFromConversation(conversation_id);
     }
 

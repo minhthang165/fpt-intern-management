@@ -640,7 +640,7 @@ body {
 
 .chat-container {
     padding: 15px;
-    height: calc(100% - 60px);
+    height: 80vh;
     overflow-y: auto;
 }
 
