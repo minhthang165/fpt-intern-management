@@ -38,8 +38,14 @@ public class ConversationRestController {
     }
 
     @PatchMapping("/group/update/{conversation_id}")
-    @Operation(description = "Update conversation")
-    public ResponseEntity<Conversation> updateGroup(@RequestBody ConversationDTO conversationDTO, @PathVariable int conversation_id) throws BadRequestException {
+    @Operation(description = "Update group")
+    public ResponseEntity<Conversation> updateGroup(@PathVariable int conversation_id, @RequestBody ConversationDTO conversationDTO) throws BadRequestException {
         return this.conversationService.updateConversation(conversation_id, conversationDTO);
+    }
+
+    @GetMapping("/find-one-to-one/{userId1}/{userId2}")
+    @Operation(description = "Find one-to-one conversation between two users")
+    public ResponseEntity<Conversation> findOneToOneConversation(@PathVariable int userId1, @PathVariable int userId2) {
+        return this.conversationService.findOneToOneConversation(userId1, userId2);
     }
 }

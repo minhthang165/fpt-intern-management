@@ -32,6 +32,7 @@ public class ExcelExportController {
     public ResponseEntity<byte[]> exportEmployeeToExcel() throws IOException {
         byte[] excelFile = excelTemplateGenerator.exportEmployeeUsers();
 
+
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=EMPLOYEE.xlsx");
 
@@ -51,6 +52,7 @@ public class ExcelExportController {
     @GetMapping("/guest")
     public ResponseEntity<byte[]> exportGuestToExcel() throws IOException {
         byte[] excelFile = excelTemplateGenerator.exportGuestUsers();
+
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=GUEST.xlsx");

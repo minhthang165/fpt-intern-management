@@ -9,14 +9,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("home")
 public class HomeController {
     @GetMapping("")
-    public String home(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) {
-        if (user_id != null) {
-            model.addAttribute("user_id", user_id);
+    public String home(@SessionAttribute("user") LoginUserDTO loginUserDTO, Model model) {
+        if (loginUserDTO != null) {
+            model.addAttribute("user", loginUserDTO);
             return "landing-page";
         }
         else {
-            model.addAttribute("user_id", loginUserDTO.getId());
-            return "landing-page";
+            return "redirect:/logout";
         }
     }
 }

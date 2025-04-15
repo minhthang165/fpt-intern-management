@@ -11,8 +11,8 @@ import org.springframework.ui.Model;
 @RequestMapping("edit")
 public class EditProfileController {
     @GetMapping("")
-    public String getInfo(@SessionAttribute("user") LoginUserDTO sessionUser, Model model) {
-        model.addAttribute("user_id", sessionUser.getId());
+    public String getInfo(@SessionAttribute("user") LoginUserDTO loginUserDTO, Model model) {
+        model.addAttribute("user", loginUserDTO);
         return "edit";
     }
 }

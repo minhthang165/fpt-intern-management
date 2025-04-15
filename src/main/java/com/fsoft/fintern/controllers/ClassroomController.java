@@ -37,7 +37,7 @@ public class ClassroomController {
     @GetMapping
     public String redirectManageClassPage(@SessionAttribute("user") LoginUserDTO user, Model model,
                                           @RequestParam(name= "role", required = false) String role, Pageable pageable) {
-
+        model.addAttribute("user", user);
         if (user.getRole() == Role.ADMIN) {
             try {
                 ResponseEntity<Page<User>> response = userService.findUserByRole(Role.EMPLOYEE, pageable);

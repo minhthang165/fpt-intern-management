@@ -1,28 +1,69 @@
     <!-- JS here -->
 <footer th:fragment="footer">
         <script>
-                const userPortfolio = document.getElementById("userportfolio")
-                const userDropdown = document.getElementById("userDropdown")
 
-                // Toggle user dropdown
-                userPortfolio.addEventListener("click", (e) => {
-                        e.stopPropagation()
-                        userDropdown.classList.toggle("active")
-                })
+                document.addEventListener('DOMContentLoaded', function() {
+                        const user_id_noti = document.getElementById("user_id_header").value;
+                        const userPortfolio = document.getElementById("userportfolio");
+                        const userDropdown = document.querySelector(".user-dropdown");
+                        if (userPortfolio && userDropdown) {
+                                userPortfolio.addEventListener("click", function (event) {
+                                        userDropdown.classList.toggle("show");
+                                });
 
-                // Close dropdown when clicking outside
-                document.addEventListener("click", (e) => {
-                        if (!userPortfolio.contains(e.target) && !userDropdown.contains(e.target)) {
-                                userDropdown.classList.remove("active")
+                                // Close dropdown when clicking outside
+                                document.addEventListener("click", function (event) {
+                                        if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
+                                                userDropdown.classList.remove("show");
+                                        }
+                                });
                         }
-                })
 
-                // Close dropdown when pressing Escape key
-                document.addEventListener("keydown", (e) => {
-                        if (e.key === "Escape") {
-                                userDropdown.classList.remove("active")
-                        }
-                })
+                        userPortfolio.addEventListener("click", (e) => {
+                                e.stopPropagation()
+                                userDropdown.classList.toggle("active")
+                        })
+
+                        // Close dropdown when clicking outside
+                        document.addEventListener("click", (e) => {
+                                if (!userPortfolio.contains(e.target) && !userDropdown.contains(e.target)) {
+                                        userDropdown.classList.remove("active")
+                                }
+                        })
+
+                        // Close dropdown when pressing Escape key
+                        document.addEventListener("keydown", (e) => {
+                                if (e.key === "Escape") {
+                                        userDropdown.classList.remove("active")
+                                }
+                        })
+
+                        // Đóng dropdown khi click ra ngoài
+                        document.addEventListener('click', function(e) {
+                                e.stopPropagation();
+
+                                // Close user dropdown if open
+                                userDropdown.classList.add('pointer-events-none', 'opacity-0', 'scale-95');
+                                userDropdown.classList.remove('opacity-100', 'scale-100');
+
+                                const isVisible = !notificationDropdown.classList.contains('pointer-events-none');
+
+                                if (isVisible) {
+                                        notificationDropdown.classList.add('pointer-events-none', 'opacity-0', 'scale-95');
+                                        notificationDropdown.classList.remove('opacity-100', 'scale-100');
+                                } else {
+                                        notificationDropdown.classList.remove('pointer-events-none', 'opacity-0', 'scale-95');
+                                        notificationDropdown.classList.add('opacity-100', 'scale-100');
+
+                                        // Add bell shake animation
+                                        notificationBell.classList.add('bell-shake');
+                                        setTimeout(() => {
+                                                notificationBell.classList.remove('bell-shake');
+                                        }, 600);
+                                }
+                        });
+                });
+
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="/assets/js/employee-classroom.js"></script>
@@ -45,4 +86,5 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
         <script src="/assets/js/CallNotification.js" ></script>
+        <script src="https://cdn.tailwindcss.com"></script>
 </footer>

@@ -81,7 +81,7 @@ public class AuthController {
         if(user.getRole() == Role.INTERN) {
             dto.setClass_id(user.getClassroom().getId());
     }
-
+        }
         return dto;
     }
 }

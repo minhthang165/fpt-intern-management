@@ -1593,7 +1593,7 @@
                     .then(response => {
                         if (!response.ok) {
                             return response.json().then(data => {
-                                if(data.success === false && data.message === "User has been approved") {
+                                if(data.success === false && data.message === "User has been approved into another class") {
                                     showToast(data.message, 'warning');
                                     throw new Error(data.message);
                                 }
@@ -1632,7 +1632,7 @@
             })
             .catch(error => {
                 console.error('Error in approval process:', error);
-                if(error.message !== "User has been approved") {
+                if(error.message !== "User has been approved into another class") {
                     showToast('Error: ' + error.message, 'error');
                 }
             });
@@ -1777,7 +1777,7 @@
 
     function sortTable(columnIndex) {
         let table = document.getElementById("table-content");
-        let rows = Array.from(table.rows).slice(1);
+        let rows = Array.from(table.rows).slice(0);
         let isAscending = table.getAttribute("data-sort") !== "asc";
 
         rows.sort((rowA, rowB) => {

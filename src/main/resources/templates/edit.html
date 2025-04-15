@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head th:replace="include/master-header :: head"></head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
@@ -324,7 +324,7 @@
     </style>
 </head>
 <body class="flex justify-center items-center min-h-screen p-4 relative">
-
+<input type="hidden" id="user_id" th:value="${user.id}">
 <div class="profile-container w-full max-w-4xl">
     <div class="profile-header">
         <div>
@@ -334,7 +334,6 @@
     </div>
 
     <div class="profile-content">
-        <input type="hidden" id="user_id" th:value="${user_id}">
 
         <!-- Container cho các nút Back và Logout -->
         <div class="flex justify-between items-center mb-4">
