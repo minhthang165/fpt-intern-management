@@ -41,6 +41,7 @@ public class ScheduleService {
         }
     }
 
+
     // Tìm lịch học theo userId (người dùng thuộc lớp)
     public List<Schedule> findSchedulesByUserId(Integer userId) {
         List<Schedule> allSchedules = this.scheduleRepository.findAll();
@@ -64,19 +65,20 @@ public class ScheduleService {
     // Tìm lịch học theo ngày
     public List<Schedule> findSchedulesByDate(LocalDate date) {
         List<Schedule> allSchedules = this.scheduleRepository.findAll();
-
+        
         // Lọc lịch học theo ngày (lịch học có startDate <= date <= endDate)
         List<Schedule> schedulesByDate = allSchedules.stream()
                 .filter(schedule -> {
                     LocalDate startDate = schedule.getStartDate();
                     LocalDate endDate = schedule.getEndDate();
-                    return (startDate == null || !date.isBefore(startDate)) &&
-                            (endDate == null || !date.isAfter(endDate));
+                    return (startDate == null || !date.isBefore(startDate)) && 
+                           (endDate == null || !date.isAfter(endDate));
                 })
                 .collect(Collectors.toList());
-
+        
         return schedulesByDate;
     }
+
 
     public ResponseEntity<Page<Schedule>> findAllWithPagination(Pageable pageable) throws BadRequestException {
         Page<Schedule> schedules = this.scheduleRepository.findAll(pageable);

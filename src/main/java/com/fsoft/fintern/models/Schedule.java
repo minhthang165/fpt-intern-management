@@ -72,8 +72,8 @@ public class Schedule extends BaseModel {
         return classField;
     }
 
-    public void setClassField(Classroom classField) {
-        this.classField = classField;
+    public void setClassField(Classroom classroom) {
+        this.classField = classroom;
     }
 
     public Subject getSubject() {
