@@ -42,7 +42,7 @@ public class SchedulingRestController {
     public ResponseEntity<List<Schedule>> getAllScheduleNoPagination() {
         return this.scheduleService.findAll();
     }
-    
+
     @GetMapping("/user/{userId}")
     @Operation(description = "Get schedules for a specific user")
     public ResponseEntity<List<Schedule>> getSchedulesByUserId(@PathVariable Integer userId) {
@@ -95,17 +95,17 @@ public class SchedulingRestController {
     @GetMapping("/template")
     @Operation(description = "Generates and returns an Excel template for class scheduling data")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Template generated successfully"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Template generated successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<byte[]> generateTemplate() throws IOException {
         byte[] excelContent = schedulingService.generateTemplate();
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDispositionFormData("attachment", "scheduling_template.xlsx");
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-        
+
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(excelContent);
@@ -121,4 +121,4 @@ public class SchedulingRestController {
         schedulingService.saveSchedule(schedule);
         return ResponseEntity.ok(schedule);
     }
-} 
+}

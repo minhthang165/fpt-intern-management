@@ -497,3 +497,63 @@ body {
 .month-picker-cell.other-month {
     color: #d1d5db;
 }
+
+ #event-modal {
+     position: fixed;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     align-items: center;
+     justify-content: center;
+     background-color: rgba(0, 0, 0, 0.4);
+     z-index: 9999;
+     padding: 1rem;
+ }
+
+ #event-modal .modal-content {
+     background-color: white;
+     padding: 3rem;
+     border-radius: 1rem;
+     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+     width: 100%;               /* chiếm toàn bộ chiều ngang */
+     max-width: none;           /* bỏ giới hạn */
+     height: 100vh;             /* toàn bộ chiều cao */
+     overflow-y: auto;
+     animation: fadeInUp 0.3s ease-out;
+ }
+
+
+
+ @keyframes fadeInUp {
+     from {
+         opacity: 0;
+         transform: translateY(40px);
+     }
+     to {
+         opacity: 1;
+         transform: translateY(0);
+     }
+ }
+
+
+ #close-modal-btn {
+     padding: 0.5rem 1.25rem;
+     background-color: #ffca45; /* tương đương blue-600 */
+     color: white;
+     font-weight: 600;
+     border-radius: 0.5rem;
+     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+     border: none;
+     cursor: pointer;
+     transition: all 0.2s ease;
+ }
+
+ #close-modal-btn:hover {
+     background-color: rgba(255, 122, 36, 0.79); /* tương đương blue-700 */
+ }
+
+ #close-modal-btn:focus {
+     outline: none;
+     box-shadow: 0 0 0 4px rgba(147, 197, 253, 0.5); /* tương đương ring-blue-400 */
+ }

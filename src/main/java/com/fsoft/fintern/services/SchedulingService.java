@@ -34,7 +34,6 @@ public class SchedulingService {
     private final ClassroomRepository classroomRepository;
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
-    
 
     private Map<Integer, MentorInfo> mentorMap = new HashMap<>();
 
@@ -94,7 +93,6 @@ public class SchedulingService {
         List<SchedulingDTO> results = new ArrayList<>();
         
         mentorMap.clear();
-        
         try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
             // First, read mentor information from Mentors sheet
             Sheet mentorSheet = workbook.getSheet("Mentors");
@@ -134,12 +132,12 @@ public class SchedulingService {
             if (sheet == null) {
                 throw new IOException("Invalid template: 'Classes' sheet not found");
             }
-            
+
             // Skip the header row
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
-                
+
                 String classId = getCellValueAsString(row.getCell(0));
                 String className = getCellValueAsString(row.getCell(1));
                 String classTypeStr = getCellValueAsString(row.getCell(2));
@@ -150,7 +148,7 @@ public class SchedulingService {
                 
                 // Skip empty rows
                 if (classId.isEmpty() && className.isEmpty()) continue;
-                
+
                 ClassType classType = null;
                 LanguageType languageType = null;
                 Integer roomId = null;
@@ -167,7 +165,7 @@ public class SchedulingService {
                 } else {
                     throw new IOException("Class type is required for class: " + className);
                 }
-                
+
                 // Handle language type based on class type
                 if (!languageTypeStr.isEmpty()) {
                     try {
@@ -181,7 +179,7 @@ public class SchedulingService {
                         throw new IOException("Language type is required for " + classType + " classes. Class: " + className);
                     }
                 }
-                
+
                 // Parse room ID if provided
                 if (!roomIdStr.isEmpty()) {
                     try {
@@ -250,26 +248,25 @@ public class SchedulingService {
                 results.add(dto);
             }
         }
-        
+
         return results;
     }
 
 
     public List<ScheduleDTO> generateSchedule(List<SchedulingDTO> data) {
         List<ScheduleDTO> result = new ArrayList<>();
-        
+
         // 1. Lấy danh sách phòng học từ database
         List<Room> availableRooms = roomRepository.findAll();
         if (availableRooms.isEmpty()) {
             throw new RuntimeException("No rooms available in database");
         }
-        
         // Lưu trữ số lần sử dụng của mỗi phòng để ưu tiên sử dụng ít phòng
         Map<Integer, Integer> roomUsageCount = new HashMap<>();
         for (Room room : availableRooms) {
             roomUsageCount.put(room.getId(), 0);
         }
-        
+
         // 2. Lấy hoặc tạo mới các subject nếu chưa có
         Subject codeSubject = getOrCreateSubject(CODE_SUBJECT);
         Subject japaneseSubject = getOrCreateSubject(JAPANESE_SUBJECT);
@@ -280,22 +277,23 @@ public class SchedulingService {
             int priorityB = getPriority(b.getClassType());
             return Integer.compare(priorityB, priorityA); // Giảm dần
         });
-        
+
         // 4. Tạo cấu trúc dữ liệu để theo dõi việc sử dụng phòng học
         // Map<DayOfWeek, Map<Room, Set<TimeSlot>>>
         Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule = initializeRoomSchedule();
-        
+
         // 5. Lặp qua từng lớp học để xếp lịch
         for (SchedulingDTO classData : data) {
-            List<ScheduleDTO> classSchedules = scheduleClass(classData, availableRooms, roomSchedule, 
-                codeSubject, japaneseSubject, koreanSubject, roomUsageCount);
-            
+            List<ScheduleDTO> classSchedules = scheduleClass(classData, availableRooms, roomSchedule,
+                    codeSubject, japaneseSubject, koreanSubject, roomUsageCount);
+
+
             result.addAll(classSchedules);
         }
-        
+
         return result;
     }
-    
+
     private int getPriority(ClassType classType) {
         switch (classType) {
             case COMBINED:
@@ -308,80 +306,77 @@ public class SchedulingService {
                 return 0;
         }
     }
-    
+
     private Map<String, Map<Integer, Set<TimeSlot>>> initializeRoomSchedule() {
         Map<String, Map<Integer, Set<TimeSlot>>> schedule = new HashMap<>();
-        
+
         // Khởi tạo lịch cho mỗi ngày trong tuần
         for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
             schedule.put(day, new HashMap<>());
         }
-        
+
         return schedule;
     }
-    
     private List<ScheduleDTO> scheduleClass(SchedulingDTO classData, List<Room> availableRooms,
                                             Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule,
                                             Subject codeSubject, Subject japaneseSubject, Subject koreanSubject,
                                             Map<Integer, Integer> roomUsageCount) {
         List<ScheduleDTO> classSchedules = new ArrayList<>();
-        
         switch (classData.getClassType()) {
             case LANGUAGE_ONLY:
                 // Đảm bảo languageType không null cho lớp LANGUAGE_ONLY
                 if (classData.getLanguageType() == null) {
                     throw new RuntimeException("Language type cannot be null for LANGUAGE_ONLY class: " + classData.getClassName());
                 }
-                
-                scheduleLanguageOnlyClass(classData, availableRooms, roomSchedule, 
-                    classData.getLanguageType() == LanguageType.JAPANESE ? japaneseSubject : koreanSubject, 
-                    classSchedules, roomUsageCount);
+
+                scheduleLanguageOnlyClass(classData, availableRooms, roomSchedule,
+                        classData.getLanguageType() == LanguageType.JAPANESE ? japaneseSubject : koreanSubject,
+                        classSchedules, roomUsageCount);
                 break;
-                
+
             case CODE_ONLY:
                 // Với lớp CODE_ONLY, languageType có thể null
                 scheduleCodeOnlyClass(classData, availableRooms, roomSchedule, codeSubject, classSchedules, roomUsageCount);
                 break;
-                
+
             case COMBINED:
                 // Đảm bảo languageType không null cho lớp COMBINED
                 if (classData.getLanguageType() == null) {
                     throw new RuntimeException("Language type cannot be null for COMBINED class: " + classData.getClassName());
                 }
-                
-                scheduleCombinedClass(classData, availableRooms, roomSchedule, codeSubject, 
-                    classData.getLanguageType() == LanguageType.JAPANESE ? japaneseSubject : koreanSubject, 
-                    classSchedules, roomUsageCount);
+                scheduleCombinedClass(classData, availableRooms, roomSchedule, codeSubject,
+                        classData.getLanguageType() == LanguageType.JAPANESE ? japaneseSubject : koreanSubject,
+                        classSchedules, roomUsageCount);
                 break;
         }
-        
+
         return classSchedules;
     }
-    
+
     private void scheduleLanguageOnlyClass(SchedulingDTO classData, List<Room> availableRooms,
-                                         Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule,
-                                         Subject languageSubject, List<ScheduleDTO> classSchedules,
-                                         Map<Integer, Integer> roomUsageCount) {
+                                           Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule,
+                                           Subject languageSubject, List<ScheduleDTO> classSchedules,
+                                           Map<Integer, Integer> roomUsageCount) {
         // Language-only classes fixed at 7:30-9:00
-        
+
         // Tìm phòng học khả dụng, ưu tiên dùng phòng mà người dùng đã chọn (nếu có)
         Room selectedRoom = null;
         if (classData.getRoomId() != null) {
             selectedRoom = availableRooms.stream()
-                .filter(r -> r.getId().equals(classData.getRoomId()))
-                .findFirst()
-                .orElse(null);
+                    .filter(r -> r.getId().equals(classData.getRoomId()))
+                    .findFirst()
+                    .orElse(null);
         }
-        
         // Nếu không có phòng được chọn, tìm phòng khả dụng theo độ ưu tiên sử dụng
         if (selectedRoom == null) {
             // Tạo danh sách các phòng sắp xếp theo số lần sử dụng (nhiều nhất lên đầu)
             List<Room> sortedRooms = new ArrayList<>(availableRooms);
             sortedRooms.sort((a, b) -> Integer.compare(
-                roomUsageCount.getOrDefault(b.getId(), 0),
-                roomUsageCount.getOrDefault(a.getId(), 0)
+
+                    roomUsageCount.getOrDefault(b.getId(), 0),
+                    roomUsageCount.getOrDefault(a.getId(), 0)
             ));
-            
+
             for (Room room : sortedRooms) {
                 boolean canUse = true;
                 // Kiểm tra phòng có sẵn cho tất cả các ngày từ thứ 2 đến thứ 6
@@ -397,12 +392,14 @@ public class SchedulingService {
                 }
             }
         }
-        
+
         if (selectedRoom == null) {
-            throw new RuntimeException("No available room for class: " + classData.getClassName() + 
-                " that can be used from Monday to Friday");
+
+            throw new RuntimeException("No available room for class: " + classData.getClassName() +
+                    " that can be used from Monday to Friday");
         }
-        
+
+
         // Xếp lịch vào tất cả các ngày từ thứ 2 đến thứ 6
         for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
             // Đánh dấu phòng đã được sử dụng
@@ -423,11 +420,11 @@ public class SchedulingService {
                 DEFAULT_END_DATE,
                 classData.getLanguageMentorId() // Sử dụng languageMentorId cho LANGUAGE_ONLY
             );
-            
+          
             classSchedules.add(scheduleDTO);
         }
     }
-    
+
     private void scheduleCodeOnlyClass(SchedulingDTO classData, List<Room> availableRooms,
                                      Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule,
                                      Subject codeSubject, List<ScheduleDTO> classSchedules,
@@ -438,20 +435,22 @@ public class SchedulingService {
         Room selectedRoom = null;
         if (classData.getRoomId() != null) {
             selectedRoom = availableRooms.stream()
-                .filter(r -> r.getId().equals(classData.getRoomId()))
-                .findFirst()
-                .orElse(null);
+                    .filter(r -> r.getId().equals(classData.getRoomId()))
+                    .findFirst()
+                    .orElse(null);
         }
-        
+
         // Nếu không có phòng được chọn, tìm phòng khả dụng theo độ ưu tiên sử dụng
         if (selectedRoom == null) {
             // Tạo danh sách các phòng sắp xếp theo số lần sử dụng (nhiều nhất lên đầu)
             List<Room> sortedRooms = new ArrayList<>(availableRooms);
             sortedRooms.sort((a, b) -> Integer.compare(
-                roomUsageCount.getOrDefault(b.getId(), 0),
-                roomUsageCount.getOrDefault(a.getId(), 0)
+
+                    roomUsageCount.getOrDefault(b.getId(), 0),
+                    roomUsageCount.getOrDefault(a.getId(), 0)
             ));
-            
+
+
             for (Room room : sortedRooms) {
                 boolean canUse = true;
                 // Kiểm tra phòng có sẵn cho tất cả các ngày từ thứ 2 đến thứ 6 (buổi sáng)
@@ -461,12 +460,12 @@ public class SchedulingService {
                         break;
                     }
                 }
-                
+
                 if (canUse) {
                     selectedRoom = room;
                     break;
                 }
-                
+
                 // Nếu không thể xếp buổi sáng, thử buổi chiều
                 canUse = true;
                 for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
@@ -475,19 +474,20 @@ public class SchedulingService {
                         break;
                     }
                 }
-                
+
                 if (canUse) {
                     selectedRoom = room;
                     break;
                 }
             }
         }
-        
+
         if (selectedRoom == null) {
-            throw new RuntimeException("No available room for class: " + classData.getClassName() + 
-                " that can be used from Monday to Friday");
+
+            throw new RuntimeException("No available room for class: " + classData.getClassName() +
+                    " that can be used from Monday to Friday");
         }
-        
+
         // Kiểm tra có thể xếp lịch buổi sáng cho tất cả các ngày không
         boolean canScheduleMorning = true;
         for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
@@ -496,7 +496,7 @@ public class SchedulingService {
                 break;
             }
         }
-        
+
         // Nếu có thể xếp buổi sáng, thì xếp tất cả các ngày buổi sáng
         if (canScheduleMorning) {
             for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
@@ -518,7 +518,7 @@ public class SchedulingService {
                     DEFAULT_END_DATE,
                     classData.getCodeMentorId() // Sử dụng codeMentorId cho CODE_ONLY
                 );
-                
+
                 classSchedules.add(scheduleDTO);
             }
         } else {
@@ -542,12 +542,13 @@ public class SchedulingService {
                     DEFAULT_END_DATE,
                     classData.getCodeMentorId() // Sử dụng codeMentorId cho CODE_ONLY
                 );
-                
+
+
                 classSchedules.add(scheduleDTO);
             }
         }
     }
-    
+
     private void scheduleCombinedClass(SchedulingDTO classData, List<Room> availableRooms,
                                      Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule,
                                      Subject codeSubject, Subject languageSubject, 
@@ -562,9 +563,9 @@ public class SchedulingService {
 
         if (classData.getRoomId() != null) {
             selectedRoom = availableRooms.stream()
-                .filter(r -> r.getId().equals(classData.getRoomId()))
-                .findFirst()
-                .orElse(null);
+                    .filter(r -> r.getId().equals(classData.getRoomId()))
+                    .findFirst()
+                    .orElse(null);
         }
 
         // Nếu không có phòng được chọn, tìm phòng khả dụng theo độ ưu tiên sử dụng
@@ -572,8 +573,9 @@ public class SchedulingService {
             // Tạo danh sách các phòng sắp xếp theo số lần sử dụng (nhiều nhất lên đầu)
             List<Room> sortedRooms = new ArrayList<>(availableRooms);
             sortedRooms.sort((a, b) -> Integer.compare(
-                roomUsageCount.getOrDefault(b.getId(), 0),
-                roomUsageCount.getOrDefault(a.getId(), 0)
+
+                    roomUsageCount.getOrDefault(b.getId(), 0),
+                    roomUsageCount.getOrDefault(a.getId(), 0)
             ));
 
             // Try to find a room for the combined class
@@ -703,6 +705,7 @@ public class SchedulingService {
                 useOption1 = canUseOption1;
             }
         }
+
 
         if (selectedRoom == null) {
             throw new RuntimeException("No available room for combined class: " + classData.getClassName() +
@@ -843,7 +846,7 @@ public class SchedulingService {
             roomUsageCount.put(selectedRoom.getId(), roomUsageCount.getOrDefault(selectedRoom.getId(), 0) + 2);
         }
     }
-    
+
     private Subject getOrCreateSubject(String subjectName) {
         Optional<Subject> existingSubject = subjectRepository.findBySubjectName(subjectName);
         if (existingSubject.isPresent()) {
@@ -855,17 +858,17 @@ public class SchedulingService {
             return subjectRepository.save(newSubject);
         }
     }
-    
+
     private boolean isRoomAvailable(Room room, String dayOfWeek, LocalTime startTime, LocalTime endTime,
-                               Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule) {
+                                    Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule) {
         Map<Integer, Set<TimeSlot>> daySchedule = roomSchedule.get(dayOfWeek);
-        
+
         // Nếu phòng chưa được sử dụng trong ngày này
         if (!daySchedule.containsKey(room.getId())) {
             daySchedule.put(room.getId(), new HashSet<>());
             return true;
         }
-        
+
         // Kiểm tra xem phòng có bị trùng giờ không
         Set<TimeSlot> timeSlots = daySchedule.get(room.getId());
         for (TimeSlot timeSlot : timeSlots) {
@@ -873,22 +876,23 @@ public class SchedulingService {
                 return false;
             }
         }
-        
+
         return true;
     }
-    
+
     private void markRoomAsOccupied(Room room, String dayOfWeek, LocalTime startTime, LocalTime endTime,
-                              Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule) {
+                                    Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule) {
         Map<Integer, Set<TimeSlot>> daySchedule = roomSchedule.get(dayOfWeek);
-        
+
         if (!daySchedule.containsKey(room.getId())) {
             daySchedule.put(room.getId(), new HashSet<>());
         }
-        
+
         Set<TimeSlot> timeSlots = daySchedule.get(room.getId());
         timeSlots.add(new TimeSlot(startTime, endTime));
     }
-    
+
+
     private ScheduleDTO createScheduleDTO(String className, String subjectName, String roomName,
                                           String dayOfWeek, LocalTime startTime, LocalTime endTime,
                                           LocalDate startDate, LocalDate endDate, Integer assignedMentorId) {
@@ -907,22 +911,25 @@ public class SchedulingService {
         
         return dto;
     }
-    
+
+
     // Helper method to calculate hours between two times
     private int calculateHours(LocalTime startTime, LocalTime endTime) {
         int startHour = startTime.getHour();
         int endHour = endTime.getHour();
         return endHour - startHour;
     }
-    
+
     // Helper method to find and assign a mentor with specific specialization and type
     private Integer findAndAssignMentor(Map<Integer, MentorInfo> mentorMap, String specialization, String type, int hours) {
         // Filter mentors by specialization and type
         List<MentorInfo> eligibleMentors = mentorMap.values().stream()
-            .filter(m -> specialization.equals(m.specialization) && type.equals(m.type))
-            .sorted(Comparator.comparingInt(m -> m.currentHours))
-            .toList();
-            
+
+                .filter(m -> specialization.equals(m.specialization) && type.equals(m.type))
+                .sorted(Comparator.comparingInt(m -> m.currentHours))
+                .toList();
+
+
         if (!eligibleMentors.isEmpty()) {
             // Get the mentor with the least current hours
             MentorInfo selectedMentor = eligibleMentors.get(0);
@@ -930,28 +937,33 @@ public class SchedulingService {
             selectedMentor.currentHours += hours;
             return selectedMentor.id;
         }
-        
+
+
         return null;
     }
-    
+
+
     // Helper method to find any mentor with the lowest current hours
     private Integer findAnyMentorWithLowestHours(Map<Integer, MentorInfo> mentorMap) {
         if (mentorMap.isEmpty()) {
             return null;
         }
-        
+
+
         MentorInfo selectedMentor = mentorMap.values().stream()
-            .min(Comparator.comparingInt(m -> m.currentHours))
-            .orElse(null);
-            
+                .min(Comparator.comparingInt(m -> m.currentHours))
+                .orElse(null);
+
+
         if (selectedMentor != null) {
             selectedMentor.currentHours += 1; // Increase by 1 hour minimum
             return selectedMentor.id;
         }
-        
+
         return null;
     }
-    
+
+
     public boolean saveSchedule(List<ScheduleDTO> schedules) {
         if (schedules == null || schedules.isEmpty()) {
             throw new IllegalArgumentException("Danh sách lịch học không được để trống");
@@ -959,10 +971,11 @@ public class SchedulingService {
 
         int successCount = 0;
         int totalCount = schedules.size();
-        
+
+
         for (int i = 0; i < schedules.size(); i++) {
             ScheduleDTO dto = schedules.get(i);
-            
+
             // Kiểm tra tên lớp
             if (dto.getClassName() == null || dto.getClassName().isEmpty()) {
                 throw new IllegalArgumentException("Tên lớp học không được để trống ở lịch thứ " + (i + 1));
@@ -984,39 +997,39 @@ public class SchedulingService {
                 throw new IllegalArgumentException("Không tìm thấy lớp học: " + dto.getClassName());
             }
             Classroom classroom = classroomOpt.get();
-            
+
             // Lấy thông tin môn học từ tên môn
             Optional<Subject> subjectOpt = subjectRepository.findBySubjectName(dto.getSubjectName());
             if (!subjectOpt.isPresent()) {
                 throw new IllegalArgumentException("Không tìm thấy môn học: " + dto.getSubjectName());
             }
             Subject subject = subjectOpt.get();
-            
+
             // Lấy thông tin phòng học từ tên phòng
             Optional<Room> roomOpt = roomRepository.findByRoomName(dto.getRoomName());
             if (!roomOpt.isPresent()) {
                 throw new IllegalArgumentException("Không tìm thấy phòng học: " + dto.getRoomName());
             }
             Room room = roomOpt.get();
-            
+
             // Kiểm tra thời gian học
             if (dto.getStartTime() == null) {
                 throw new IllegalArgumentException("Thời gian bắt đầu không được để trống ở lịch thứ " + (i + 1) + " cho lớp " + dto.getClassName());
             }
-            
+
             if (dto.getEndTime() == null) {
                 throw new IllegalArgumentException("Thời gian kết thúc không được để trống ở lịch thứ " + (i + 1) + " cho lớp " + dto.getClassName());
             }
-            
+
             if (dto.getStartTime().isAfter(dto.getEndTime())) {
                 throw new IllegalArgumentException("Thời gian bắt đầu phải trước thời gian kết thúc ở lịch thứ " + (i + 1) + " cho lớp " + dto.getClassName());
             }
-            
+
             // Kiểm tra ngày học
             if (dto.getDayOfWeek() == null || dto.getDayOfWeek().isEmpty()) {
                 throw new IllegalArgumentException("Ngày học không được để trống ở lịch thứ " + (i + 1) + " cho lớp " + dto.getClassName());
             }
-            
+
             // Tạo đối tượng Schedule và lưu vào database
             Schedule schedule = new Schedule();
             schedule.setClassField(classroom);
@@ -1027,7 +1040,7 @@ public class SchedulingService {
             schedule.setEndTime(dto.getEndTime());
             schedule.setStartDate(dto.getStartDate() != null ? dto.getStartDate() : DEFAULT_START_DATE);
             schedule.setEndDate(dto.getEndDate() != null ? dto.getEndDate() : DEFAULT_END_DATE);
-            
+
             // Set mentor if mentorId is provided
             String mentorStatus = "Không có mentor";
             if (dto.getMentorId() != null) {
@@ -1038,20 +1051,24 @@ public class SchedulingService {
                         schedule.setMentor(mentor);
                         mentorStatus = "Mentor ID: " + mentor.getId() + ", Tên: " + mentor.getUserName();
                     } else {
-                        System.err.println("CẢNH BÁO: Không tìm thấy mentor với ID: " + dto.getMentorId() + 
-                                         " cho lịch học lớp: " + dto.getClassName() + 
-                                         ", môn: " + dto.getSubjectName() + 
-                                         ", ngày: " + dto.getDayOfWeek());
+
+                        System.err.println("CẢNH BÁO: Không tìm thấy mentor với ID: " + dto.getMentorId() +
+                                " cho lịch học lớp: " + dto.getClassName() +
+                                ", môn: " + dto.getSubjectName() +
+                                ", ngày: " + dto.getDayOfWeek());
+
                     }
                 } catch (Exception e) {
                     System.err.println("Lỗi khi gán mentor ID " + dto.getMentorId() + ": " + e.getMessage());
                 }
             } else {
-                System.err.println("CẢNH BÁO: Không có MentorID cho lịch học lớp: " + dto.getClassName() + 
-                                 ", môn: " + dto.getSubjectName() + 
-                                 ", ngày: " + dto.getDayOfWeek());
+
+                System.err.println("CẢNH BÁO: Không có MentorID cho lịch học lớp: " + dto.getClassName() +
+                        ", môn: " + dto.getSubjectName() +
+                        ", ngày: " + dto.getDayOfWeek());
             }
-            
+
+
             try {
                 // Lưu schedule vào database
                 Schedule savedSchedule = scheduleRepository.save(schedule);
@@ -1072,33 +1089,35 @@ public class SchedulingService {
                 System.err.println("Lỗi khi lưu lịch học cho lớp " + dto.getClassName() + ": " + e.getMessage());
             }
         }
-        
+
+
         System.out.println("KẾT QUẢ LƯU LỊCH HỌC: " + successCount + "/" + totalCount + " lịch đã được lưu thành công");
-        
+
         // Xóa thông tin mentor sau khi lưu
         mentorMap.clear();
-        
+
+
         return successCount > 0;
     }
-    
+
     // Helper class để theo dõi thời gian sử dụng phòng học
     private static class TimeSlot {
         private LocalTime startTime;
         private LocalTime endTime;
-        
+
         public TimeSlot(LocalTime startTime, LocalTime endTime) {
             this.startTime = startTime;
             this.endTime = endTime;
         }
-        
+
         public boolean overlaps(LocalTime otherStart, LocalTime otherEnd) {
             return !(endTime.isBefore(otherStart) || startTime.isAfter(otherEnd));
         }
     }
-    
+
     private String getCellValueAsString(Cell cell) {
         if (cell == null) return "";
-        
+
         switch (cell.getCellType()) {
             case STRING:
                 return cell.getStringCellValue();
@@ -1126,9 +1145,11 @@ public class SchedulingService {
         private Integer maxHours;
         private Integer minHours;
         private Integer currentHours;
-        
-        public MentorInfo(Integer id, String name, String specialization, String type, 
-                         Integer maxHours, Integer minHours, Integer currentHours) {
+
+
+        public MentorInfo(Integer id, String name, String specialization, String type,
+                          Integer maxHours, Integer minHours, Integer currentHours) {
+
             this.id = id;
             this.name = name;
             this.specialization = specialization;
@@ -1138,4 +1159,4 @@ public class SchedulingService {
             this.currentHours = currentHours;
         }
     }
-} 
+

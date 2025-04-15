@@ -122,7 +122,7 @@
 
         .chat-container {
             padding: 15px;
-            height: calc(100% - 60px);
+            height: 80vh;
             overflow-y: auto;
         }
 
@@ -160,7 +160,7 @@
             color: #aaa;
             font-size: 18px;
         }
-</style>
+    </style>
 </head>
 <body class="body-area">
 <input type="hidden" id="user_id" th:value="${mentorId}">
@@ -350,7 +350,6 @@
         // Get mentor ID from the data attribute
         const classroomList = document.getElementById("classroomList");
         const mentorId = classroomList.getAttribute("data-mentor-id");
-        connectWebSocket();
         if (mentorId) {
             fetchClassrooms(mentorId);
         } else {
@@ -621,7 +620,7 @@
                     <div class="chat-header p-3 border-bottom">
                         <h5 class="mb-0">${className}</h5>
                     </div>
-                    
+
                     <!-- Chat Messages -->
                     <div class="chat-container" id="chat">
                         <div class="text-center p-4">
@@ -630,7 +629,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Chat Input -->
                     <div class="chat-input">
                         <div class="input-group">
@@ -649,23 +648,8 @@
 
             // Load existing messages
             await loadMessages(conversationId);
-
+            await loadMember(conversationId, 'Group')
             // Set up message input and send button
-            const messageInput = chatContainer.querySelector('#message');
-            const sendButton = chatContainer.querySelector('.btn-warning');
-
-            // Add event listeners
-            messageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-
-            sendButton.addEventListener('click', function() {
-                sendMessage();
-            });
-
         } catch (error) {
             console.error("Error loading classroom conversation:", error);
             document.getElementById("chatContainer").innerHTML = `

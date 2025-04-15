@@ -142,7 +142,7 @@ async function fetchAndRenderSchedules() {
 
             const startTime = schedule.startTime
             const endTime = schedule.endTime
-
+            const scheduleId = schedule.id
             const title = `${className} - ${subjectName} - ${roomName}`
 
             let startHour = "0"
@@ -186,6 +186,7 @@ async function fetchAndRenderSchedules() {
                 endHour: endHour,
                 color: color,
                 dayOfWeek: dayOfWeek,
+                scheduleId: scheduleId,
                 details: {
                     className: className,
                     subjectName: subjectName,
@@ -212,64 +213,248 @@ async function fetchAndRenderSchedules() {
 }
 
 // Fetch Data from Attendance API
-async function fetchAttendance(classId) {
+async function fetchAttendance(classId, scheduleId) {
     try {
         if (!classId) throw new Error("Thiếu classId để fetch attendance");
 
-        console.log("📥 Đang gọi API attendance cho classId:", classId);
+        console.log("📥 Đang gọi API getAttendanceByClassId:", classId, scheduleId);
 
-        const response = await fetch(`/api/attendance/class/${classId}`, {
+        const response = await fetch(`/api/attendance/class/${classId}/${scheduleId}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" }
         });
 
         if (!response.ok) {
-            throw new Error(`Không thể fetch attendance: ${response.status} ${response.statusText}`);
+            throw new Error(`Không thể fetch danh sách điểm danh: ${response.status} ${response.statusText}`);
         }
 
-        const attendanceData = await response.json();
-        console.log("✅ Danh sách attendance:", attendanceData);
+        const userList = await response.json();
+        console.log("✅ Dữ liệu trả về:", userList);
 
-        window.currentClassId = classId; // lưu lại để reload sau update
+        window.currentClassId = classId;
+        window.currentScheduleId = scheduleId;
+
+        const attendanceData = userList.map((item, index) => {
+            const [userId, avatar, firstName, lastName, username, status, attendanceId] = item;
+            return {
+                id: attendanceId ?? null,
+                userId: Number(userId),
+                scheduleId: Number(scheduleId),
+                status: status || "UNKNOWN",
+                hasAttendance: !!status,
+                user: {
+                    id: Number(userId),
+                    avatar: avatar || "assets/img/users/default-avatar.png",
+                    firstName: firstName || "",
+                    lastName: lastName || "",
+                    username: username || ""
+                }
+            };
+
+        });
+
         renderAttendance(attendanceData);
     } catch (error) {
         console.error("❌ Lỗi khi fetch attendance:", error.message);
+        const container = document.getElementById("attendanceContainer");
+        if (container) {
+            container.innerHTML = `<div class="alert alert-danger">❌ Lỗi: ${error.message}</div>`;
+        }
     }
 }
-function updateStatus(attendanceId, newStatus) {
-    const url = newStatus === 'PRESENT'
-        ? `/api/attendance/updatePresent/${attendanceId}`
-        : `/api/attendance/updateAbsent/${attendanceId}`;
 
-    const payload = {
-        id: attendanceId,
+// Create a new attendance record
+function createAttendance(newStatus, scheduleId, userId) {
+    const safeUserId = Number(userId);
+    const safeScheduleId = Number(scheduleId);
+
+    if (!safeUserId || !safeScheduleId) {
+        console.error("❌ Thiếu userId hoặc scheduleId!", { userId, scheduleId });
+        alert("❌ Không thể tạo điểm danh vì thiếu thông tin người dùng hoặc lịch học.");
+        return;
+    }
+
+    const url = "/api/attendance/create";
+    const body = {
+        userId: safeUserId,
+        scheduleId: safeScheduleId,
         status: newStatus
     };
+
+    console.log("🔍 Gọi API tạo điểm danh:", {
+        url: url,
+        method: "POST",
+        status: newStatus,
+        body: body
+    });
+
+    fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify(body)
+    })
+        .then(response => {
+            console.log("🔍 Phản hồi từ server:", {
+                status: response.status,
+                statusText: response.statusText
+            });
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`Tạo điểm danh thất bại! Status: ${response.status}, Message: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("✅ Dữ liệu trả về:", data);
+            alert("✅ Tạo trạng thái điểm danh thành công!");
+            if (window.currentClassId) {
+                fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
+            }
+        })
+        .catch(err => {
+            console.error("❌ Lỗi khi tạo điểm danh:", err.message);
+            alert("❌ Có lỗi xảy ra khi tạo trạng thái. Vui lòng thử lại!");
+            if (window.currentClassId) {
+                fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
+            }
+        });
+}
+
+// Update an existing attendance record
+function updateAttendance(attendanceId, newStatus, scheduleId, userId) {
+    const safeUserId = Number(userId);
+    const safeScheduleId = Number(scheduleId);
+
+    if (!safeUserId || !safeScheduleId) {
+        console.error("❌ Thiếu userId hoặc scheduleId!", { userId, scheduleId });
+        alert("❌ Không thể cập nhật vì thiếu thông tin người dùng hoặc lịch học.");
+        return;
+    }
+
+    let url;
+    if (newStatus === 'PRESENT') {
+        url = `/api/attendance/updatePresent/user/${safeUserId}/${safeScheduleId}`;
+    } else {
+        url = `/api/attendance/updateAbsent/user/${safeUserId}/${safeScheduleId}`;
+    }
+
+    console.log("🔍 Gọi API cập nhật điểm danh:", {
+        url: url,
+        method: "PATCH",
+        status: newStatus
+    });
 
     fetch(url, {
         method: "PATCH",
         headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
     })
         .then(response => {
-            if (!response.ok) throw new Error("Cập nhật thất bại!");
+            console.log("🔍 Phản hồi từ server:", {
+                status: response.status,
+                statusText: response.statusText
+            });
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`Cập nhật thất bại! Status: ${response.status}, Message: ${text}`);
+                });
+            }
             return response.json();
         })
-        .then(() => {
+        .then(data => {
+            console.log("✅ Dữ liệu trả về:", data);
             alert("✅ Cập nhật trạng thái thành công!");
             if (window.currentClassId) {
-                fetchAttendance(window.currentClassId);
+                fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
             }
         })
         .catch(err => {
             console.error("❌ Lỗi khi cập nhật:", err.message);
             alert("❌ Có lỗi xảy ra khi cập nhật trạng thái. Vui lòng thử lại!");
+            if (window.currentClassId) {
+                fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
+            }
         });
 }
+
+// Modified handleAttendanceUpdate to use new functions
+function handleAttendanceUpdate(id, newStatus, currentStatus, hasAttendance, scheduleId, userId) {
+    const safeScheduleId = Number(scheduleId);
+    const safeUserId = Number(userId);
+
+    if (!safeScheduleId || !safeUserId) {
+        alert("❌ Không đủ dữ liệu để cập nhật điểm danh.");
+        return;
+    }
+
+    // Check if status is unchanged for existing attendance
+    if (hasAttendance && newStatus === currentStatus) {
+        const errorElement = document.getElementById('error-' + (id || userId));
+        if (errorElement) {
+            errorElement.textContent = "Sinh viên đã được đánh dấu " + (newStatus === "PRESENT" ? "có mặt" : "vắng mặt") + " rồi!";
+            errorElement.style.display = "block";
+            setTimeout(() => { errorElement.style.display = "none"; }, 3000);
+        }
+        return;
+    }
+
+    // Update UI before sending request
+    const row = document.getElementById('attendance-row-' + (id || userId));
+    if (row) {
+        const statusBadge = row.querySelector('.badge');
+        let borderColor, statusText, statusClass;
+
+        if (newStatus === "PRESENT") {
+            borderColor = "#4caf50"; statusText = "Có mặt"; statusClass = "badge bg-success";
+        } else {
+            borderColor = "#f44336"; statusText = "Vắng mặt"; statusClass = "badge bg-danger";
+        }
+
+        row.style.backgroundColor = "#ffffff";
+        row.style.borderLeft = '4px solid ' + borderColor;
+        if (statusBadge) {
+            statusBadge.className = statusClass;
+            statusBadge.textContent = statusText;
+        }
+
+        const presentBtn = row.querySelector('button[title="Có mặt"]');
+        const absentBtn = row.querySelector('button[title="Vắng mặt"]');
+        if (presentBtn) {
+            presentBtn.style.backgroundColor = newStatus === "PRESENT" ? "#28a745" : "#ffffff";
+            presentBtn.style.color = newStatus === "PRESENT" ? "white" : "#28a745";
+        }
+        if (absentBtn) {
+            absentBtn.style.backgroundColor = newStatus === "ABSENT" ? "#dc3545" : "#ffffff";
+            absentBtn.style.color = newStatus === "ABSENT" ? "white" : "#dc3545";
+        }
+
+        const errorElement = document.getElementById('error-' + (id || userId));
+        if (errorElement) {
+            errorElement.style.display = "none";
+        }
+    }
+
+    // Decide whether to create or update
+    if (hasAttendance && id) {
+        updateAttendance(id, newStatus, safeScheduleId, safeUserId);
+    } else {
+        createAttendance(newStatus, safeScheduleId, safeUserId);
+    }
+}
+
 function renderAttendance(data) {
     const container = document.getElementById("attendanceContainer");
+    if (!container) {
+        console.error("Không tìm thấy container để hiển thị attendance");
+        return;
+    }
+
     container.innerHTML = "";
 
     if (!data || data.length === 0) {
@@ -277,75 +462,53 @@ function renderAttendance(data) {
         return;
     }
 
-    // Tạo div container thay vì table
     const attendanceList = document.createElement("div");
     attendanceList.className = "attendance-list";
+    attendanceList.style.cssText = `display: flex; flex-direction: column; gap: 8px;`;
 
-    // CSS inline cho attendance-list
-    attendanceList.style.cssText = `
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    `;
-
-    // Header
     const header = document.createElement("div");
     header.className = "attendance-header";
-    header.style.cssText = `
-        display: grid;
-        grid-template-columns: 120px 1fr 120px;
-        background-color: #fff8e1;
-        border-radius: 8px;
-        padding: 10px;
-        font-weight: 500;
-    `;
-
+    header.style.cssText = `display: grid; grid-template-columns: 120px 1fr 120px; background-color: #fff8e1; border-radius: 8px; padding: 10px; font-weight: 500;`;
     header.innerHTML = `
         <div class="text-center">Avatar</div>
         <div>Thông tin</div>
         <div class="text-center">Trạng thái</div>
     `;
-
     attendanceList.appendChild(header);
 
-    // Render each attendance item
     data.forEach(item => {
         const user = item.user || {};
-        const fullName = `${user.first_name || ""} ${user.last_name || ""}`;
-        const username = user.userName || "N/A";
+        const fullName = `${user.firstName || ""} ${user.lastName || ""}`;
+        const username = user.username || "N/A";
         const status = item.status || "UNKNOWN";
         const avatarPath = user.avatar_path || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         const attendanceId = item.id;
+        const hasAttendance = item.hasAttendance;
+        const scheduleId = item.scheduleId;
+        const userId = item.userId;
 
-        // Xác định màu sắc dựa trên trạng thái
         let bgColor = "#ffffff";
         let statusBadgeClass = "badge bg-secondary";
         let statusText = "Chưa điểm danh";
         let borderColor = "#f0f0f0";
 
         if (status === "PRESENT") {
-            bgColor = "#ffffff"; // Màu trắng
             statusBadgeClass = "badge bg-success";
             statusText = "Có mặt";
             borderColor = "#4caf50";
         } else if (status === "ABSENT") {
-            bgColor = "#ffffff"; // Màu trắng
             statusBadgeClass = "badge bg-danger";
             statusText = "Vắng mặt";
             borderColor = "#f44336";
         }
 
         const attendanceItem = document.createElement("div");
-        attendanceItem.id = `attendance-row-${attendanceId}`;
+        attendanceItem.id = `attendance-row-${attendanceId || userId}`;
         attendanceItem.className = "attendance-item";
         attendanceItem.style.cssText = `
-            display: grid;
-            grid-template-columns: 120px 1fr 120px;
-            background-color: ${bgColor};
-            border-radius: 8px;
-            padding: 12px;
-            align-items: center;
-            border-left: 4px solid ${borderColor};
+            display: grid; grid-template-columns: 120px 1fr 120px;
+            background-color: ${bgColor}; border-radius: 8px; padding: 12px;
+            align-items: center; border-left: 4px solid ${borderColor};
         `;
 
         attendanceItem.innerHTML = `
@@ -361,90 +524,41 @@ function renderAttendance(data) {
                 <div class="d-flex flex-column align-items-center gap-2">
                     <span class="${statusBadgeClass}" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">${statusText}</span>
                     <div class="d-flex gap-2">
-                        <button onclick="handleAttendanceUpdate(${attendanceId}, 'PRESENT', '${status}')" 
-                                class="btn btn-sm rounded-circle d-flex justify-content-center align-items-center" 
+                        <button class="present-btn btn btn-sm rounded-circle d-flex justify-content-center align-items-center" 
                                 style="width: 32px; height: 32px; background-color: ${status === 'PRESENT' ? '#28a745' : '#ffffff'}; border: 1px solid #28a745; color: ${status === 'PRESENT' ? 'white' : '#28a745'};"
                                 title="Có mặt">
                             <i class="bi bi-check-lg"></i>
                         </button>
-                        <button onclick="handleAttendanceUpdate(${attendanceId}, 'ABSENT', '${status}')" 
-                                class="btn btn-sm rounded-circle d-flex justify-content-center align-items-center" 
+                        <button class="absent-btn btn btn-sm rounded-circle d-flex justify-content-center align-items-center" 
                                 style="width: 32px; height: 32px; background-color: ${status === 'ABSENT' ? '#dc3545' : '#ffffff'}; border: 1px solid #dc3545; color: ${status === 'ABSENT' ? 'white' : '#dc3545'};"
                                 title="Vắng mặt">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
-                    <div class="error-message text-danger small mt-1" id="error-${attendanceId}" style="display: none;"></div>
+                    <div class="error-message text-danger small mt-1" id="error-${attendanceId || userId}" style="display: none;"></div>
                 </div>
             </div>
         `;
+
+        const presentBtn = attendanceItem.querySelector('.present-btn');
+        const absentBtn = attendanceItem.querySelector('.absent-btn');
+
+        if (presentBtn) {
+            presentBtn.addEventListener('click', function () {
+                handleAttendanceUpdate(attendanceId || null, 'PRESENT', status, hasAttendance, scheduleId, userId);
+            });
+        }
+
+        if (absentBtn) {
+            absentBtn.addEventListener('click', function () {
+                handleAttendanceUpdate(attendanceId || null, 'ABSENT', status, hasAttendance, scheduleId, userId);
+            });
+        }
 
         attendanceList.appendChild(attendanceItem);
     });
 
     container.appendChild(attendanceList);
-
-    // Thêm script xử lý cập nhật trạng thái
-    const script = document.createElement("script");
-    script.innerHTML = `
-      function handleAttendanceUpdate(id, newStatus, currentStatus) {
-        // Nếu trạng thái mới giống trạng thái hiện tại, hiển thị thông báo lỗi
-        if (newStatus === currentStatus) {
-          const errorElement = document.getElementById('error-' + id);
-          errorElement.textContent = "Sinh viên đã được đánh dấu " + (newStatus === "PRESENT" ? "có mặt" : "vắng mặt") + " rồi!";
-          errorElement.style.display = "block";
-          
-          // Ẩn thông báo lỗi sau 3 giây
-          setTimeout(() => {
-            errorElement.style.display = "none";
-          }, 3000);
-          
-          return;
-        }
-        
-        // Cập nhật giao diện
-        const row = document.getElementById('attendance-row-' + id);
-        const statusBadge = row.querySelector('.badge');
-        
-        // Xác định màu sắc và văn bản mới
-        let borderColor, statusText, statusClass;
-        
-        if (newStatus === "PRESENT") {
-          borderColor = "#4caf50";
-          statusText = "Có mặt";
-          statusClass = "badge bg-success";
-        } else {
-          borderColor = "#f44336";
-          statusText = "Vắng mặt";
-          statusClass = "badge bg-danger";
-        }
-        
-        // Cập nhật viền (giữ màu nền trắng)
-        row.style.backgroundColor = "#ffffff";
-        row.style.borderLeft = '4px solid ' + borderColor;
-        
-        // Cập nhật badge trạng thái
-        statusBadge.className = statusClass;
-        statusBadge.textContent = statusText;
-        
-        // Cập nhật màu nút
-        const presentBtn = row.querySelector('button[title="Có mặt"]');
-        const absentBtn = row.querySelector('button[title="Vắng mặt"]');
-        
-        presentBtn.style.backgroundColor = newStatus === "PRESENT" ? "#28a745" : "#ffffff";
-        presentBtn.style.color = newStatus === "PRESENT" ? "white" : "#28a745";
-        
-        absentBtn.style.backgroundColor = newStatus === "ABSENT" ? "#dc3545" : "#ffffff";
-        absentBtn.style.color = newStatus === "ABSENT" ? "white" : "#dc3545";
-        
-        // Ẩn thông báo lỗi nếu có
-        document.getElementById('error-' + id).style.display = "none";
-        
-        // Gọi hàm cập nhật API
-        updateStatus(id, newStatus);
-      }
-    `;
-    document.body.appendChild(script);
 }
 
 function showEventDetails(event) {
@@ -547,8 +661,7 @@ function showEventDetails(event) {
 
     // Gọi API Attendance nếu có classId
     if (event.details && event.details.classId) {
-        fetchAttendance(event.details.classId);
-    }
+        fetchAttendance(event.details.classId, event.scheduleId) ;}
 }
 
 // Display all events on calendar - version with continuous blocks

@@ -25,7 +25,14 @@ public enum ErrorDictionaryConstraints {
     TASK_IS_ALREADY_EXISTS("There is already a task with this name"),
     TASK_NOT_EXISTS_ID("There is no task with this ID"),
     INVALID_TIME("Time not Valid"),
-    IS_ACTIVE_FALSE("This object is not active");
+    IS_ACTIVE_FALSE("This object is not active"),
+    TASK_IS_COMPLETED("This Task already Completed"),
+    COMPLETED_TASK_IS_NOT_FOUND("Not find any Completed Task"),
+    COMPLETED_TASK_IS_NOT_FOUND_ID("Not find any Completed Task ID"),
+
+    // ATTENDANCE
+    ATTENDANCE_IS_EMPTY("There is no attendance existed"),
+    SCHEDULE_NOT_EXISTS_ID("There is no Sechdule ID");
 
     private final String message;
 

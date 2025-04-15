@@ -2,9 +2,6 @@ package com.fsoft.fintern.dtos;
 
 import com.fsoft.fintern.enums.ClassType;
 import com.fsoft.fintern.enums.LanguageType;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 
 public class SchedulingDTO {
@@ -13,11 +10,11 @@ public class SchedulingDTO {
     private ClassType classType;
     private LanguageType languageType;
     private Integer roomId;
-    private Integer codeMentorId;  // ID của mentor dạy code (cho CODE_ONLY và COMBINED)
-    private Integer languageMentorId;  // ID của mentor dạy ngoại ngữ (cho LANGUAGE_ONLY và COMBINED)
+    private Integer codeMentorId;
+    private Integer languageMentorId;
 
     public SchedulingDTO(String classId, String className, ClassType classType, LanguageType languageType,
-                        Integer roomId, Integer codeMentorId, Integer languageMentorId) {
+                         Integer roomId, Integer codeMentorId, Integer languageMentorId) {
         this.classId = classId;
         this.className = className;
         this.languageType = languageType;

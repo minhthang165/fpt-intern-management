@@ -41,6 +41,7 @@ public class ScheduleService {
         }
     }
 
+
     // Tìm lịch học theo userId (người dùng thuộc lớp)
     public List<Schedule> findSchedulesByUserId(Integer userId) {
         List<Schedule> allSchedules = this.scheduleRepository.findAll();
@@ -77,6 +78,7 @@ public class ScheduleService {
         
         return schedulesByDate;
     }
+
 
     public ResponseEntity<Page<Schedule>> findAllWithPagination(Pageable pageable) throws BadRequestException {
         Page<Schedule> schedules = this.scheduleRepository.findAll(pageable);

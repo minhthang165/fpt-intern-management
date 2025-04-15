@@ -3,7 +3,6 @@ package com.fsoft.fintern.dtos;
 import com.fsoft.fintern.enums.AttendanceStatus;
 
 public class AttendanceDTO {
-    private Integer id;
     private Integer userId;
     private Integer scheduleId;
     private AttendanceStatus status;
@@ -11,19 +10,10 @@ public class AttendanceDTO {
     public AttendanceDTO() {
     }
 
-    public AttendanceDTO(Integer id, Integer userId, Integer scheduleId, AttendanceStatus status) {
-        this.id = id;
+    public AttendanceDTO(Integer userId, Integer scheduleId, String status) {
         this.userId = userId;
         this.scheduleId = scheduleId;
-        this.status = status;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
+        this.status = AttendanceStatus.valueOf(status);
     }
 
     public Integer getUserId() {

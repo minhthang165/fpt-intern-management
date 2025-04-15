@@ -26,13 +26,13 @@ public class RecruitmentController {
     @GetMapping("")
     @Operation(description = "view all Recruitment")
     public String viewAllRecruitment(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) {
-        model.addAttribute("user_id", user_id);
+        model.addAttribute("user", loginUserDTO);
         return "admin/ManageRequirement";
     }
 
     @GetMapping("/recruitments")
     public String listRecruitments(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) {
-        model.addAttribute("user_id", user_id);
+        model.addAttribute("user", loginUserDTO);
         return "recruitment-page";
     }
 

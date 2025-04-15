@@ -7,7 +7,16 @@ import java.time.LocalTime;
 public class ScheduleDTO {
     private Integer id;
     private String className;
-    private Integer mentorId;
+
+    private Integer mentorID;
+
+    public Integer getMentorId() {
+        return mentorID;
+    }
+
+    public void setMentorId(Integer mentorID) {
+        this.mentorID = mentorID;
+    }
 
     public Integer getId() {
         return id;
@@ -79,27 +88,6 @@ public class ScheduleDTO {
 
     public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
-    }
-
-    public Integer getMentorId() {
-        return mentorId;
-    }
-
-    public void setMentorId(Integer mentorId) {
-        this.mentorId = mentorId;
-    }
-
-    public ScheduleDTO(Integer id, String className, String subjectName, String roomName, String dayOfWeek, LocalTime startTime, LocalTime endTime, LocalDate endDate, LocalDate startDate, Integer mentorId) {
-        this.id = id;
-        this.className = className;
-        this.subjectName = subjectName;
-        this.roomName = roomName;
-        this.dayOfWeek = dayOfWeek;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.endDate = endDate;
-        this.startDate = startDate;
-        this.mentorId = mentorId;
     }
 
     public ScheduleDTO(Integer id, String className, String subjectName, String roomName, String dayOfWeek, LocalTime startTime, LocalTime endTime, LocalDate endDate, LocalDate startDate) {

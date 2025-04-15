@@ -7,6 +7,7 @@ import com.fsoft.fintern.dtos.CreateUserDTO;
 import com.fsoft.fintern.dtos.UpdateUserDTO;
 import com.fsoft.fintern.enums.Role;
 import com.fsoft.fintern.models.Classroom;
+import com.fsoft.fintern.models.Task;
 import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.repositories.ClassroomRepository;
 import com.fsoft.fintern.repositories.UserRepository;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -113,8 +115,10 @@ public class UserService {
 
     public ResponseEntity<Page<User>> findUserByRole(Role role, Pageable pageable) throws BadRequestException {
         Page<User> users = userRepository.findByRole(role, pageable);
-        if (users.isEmpty()) {
-            throw new BadRequestException(ErrorDictionaryConstraints.USERS_IS_EMPTY.getMessage());
+        for (User user : users.getContent()) {
+            String key = BAN_PREFIX + user.getId();
+            String banInfoJson = redisTemplate.opsForValue().get(key);
+            user.setActive(banInfoJson == null);
         }
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
@@ -208,4 +212,10 @@ public class UserService {
         redisTemplate.delete(key);
         return "User " + userId + " has been unbanned.";
     }
-}
+
+    public ResponseEntity<List<User>> findUserByClassroom_Id(Integer classId) {
+        List<User> users = null;
+        users = this.userRepository.findUserByClassroom_Id(classId).orElse(null);
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+    }

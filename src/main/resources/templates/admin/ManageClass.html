@@ -795,7 +795,7 @@
                 let conversationUserData = {
                     conversation_id: conversation.id,
                     user_id: managerId,
-                    is_admin: true
+                    admin: true
                 };
 
                 return fetch(`/api/conversation-user/add-user`, {
@@ -1009,7 +1009,7 @@
 
     function sortTable(columnIndex) {
         let table = document.getElementById("table-content");
-        let rows = Array.from(table.rows).slice(1);
+        let rows = Array.from(table.rows).slice(0);
         let isAscending = table.getAttribute("data-sort") !== "asc";
 
         rows.sort((rowA, rowB) => {
