@@ -80,6 +80,7 @@ public class AuthController {
         dto.setRole(user.getRole());
         if(user.getRole() == Role.INTERN) {
             dto.setClass_id(user.getClassroom().getId());
+    }
         }
         return dto;
     }

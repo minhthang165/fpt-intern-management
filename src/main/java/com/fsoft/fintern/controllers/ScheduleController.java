@@ -37,7 +37,7 @@ public class ScheduleController {
         if (user.getRole() == Role.INTERN) {
             model.addAttribute("classId", user.getClass_id());
         }
-        
+
         if (user.getRole() == Role.EMPLOYEE) {
             return "/employee/EmpSchedule";
         } else if (user.getRole() == Role.INTERN)

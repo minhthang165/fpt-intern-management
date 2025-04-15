@@ -13,14 +13,14 @@ import java.io.IOException;
 @RestController
 @RequestMapping("api/user-export")
 public class ExcelExportController {
-    private final ExcelTemplateGenerator excelTemplateGeneratore;
-    public ExcelExportController(ExcelTemplateGenerator excelTemplateGeneratore) {
-        this.excelTemplateGeneratore = excelTemplateGeneratore;
+    private final ExcelTemplateGenerator excelTemplateGenerator;
+    public ExcelExportController(ExcelTemplateGenerator excelTemplateGenerator) {
+        this.excelTemplateGenerator = excelTemplateGenerator;
     }
 
     @GetMapping("/intern")
     public ResponseEntity<byte[]> exportInternToExcel() throws IOException {
-        byte[] excelFile = excelTemplateGeneratore.exportInternUsers();
+        byte[] excelFile = excelTemplateGenerator.exportInternUsers();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=INTERN.xlsx");
@@ -30,7 +30,8 @@ public class ExcelExportController {
 
     @GetMapping("/employee")
     public ResponseEntity<byte[]> exportEmployeeToExcel() throws IOException {
-        byte[] excelFile = excelTemplateGeneratore.exportEmployeeUsers();
+        byte[] excelFile = excelTemplateGenerator.exportEmployeeUsers();
+
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=EMPLOYEE.xlsx");
@@ -40,7 +41,7 @@ public class ExcelExportController {
 
     @GetMapping("/admin")
     public ResponseEntity<byte[]> exportAdminToExcel() throws IOException {
-        byte[] excelFile = excelTemplateGeneratore.exportAdminUsers();
+        byte[] excelFile = excelTemplateGenerator.exportAdminUsers();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=ADMIN.xlsx");
@@ -50,7 +51,8 @@ public class ExcelExportController {
 
     @GetMapping("/guest")
     public ResponseEntity<byte[]> exportGuestToExcel() throws IOException {
-        byte[] excelFile = excelTemplateGeneratore.exportGuestUsers();
+        byte[] excelFile = excelTemplateGenerator.exportGuestUsers();
+
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=GUEST.xlsx");

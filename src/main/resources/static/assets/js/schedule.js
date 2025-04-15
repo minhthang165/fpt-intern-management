@@ -50,6 +50,529 @@ function deleteEvent(eventId) {
     renderEvents()
 }
 
+function showToast(message, type = 'info') {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 99999; /* Increased z-index to ensure it's above other elements */
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none; /* Allow clicking through the container */
+    `;
+        document.body.appendChild(toastContainer);
+    }
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.style.cssText = `
+    padding: 12px 20px;
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    min-width: 250px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+    pointer-events: auto; /* Make the toast itself clickable */
+    margin-bottom: 5px;
+    position: relative; /* Ensure it's positioned correctly */
+  `;
+
+    // Set background color based on type
+    switch (type) {
+        case 'success':
+            toast.style.backgroundColor = '#4caf50';
+            break;
+        case 'error':
+            toast.style.backgroundColor = '#f44336';
+            break;
+        case 'warning':
+            toast.style.backgroundColor = '#ff993c';
+            break;
+        default:
+            toast.style.backgroundColor = '#2196f3';
+    }
+
+    // Add message and close button
+    toast.innerHTML = `
+    <span>${message}</span>
+    <button style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; margin-left: 10px;">×</button>
+  `;
+
+    // Add to container
+    toastContainer.appendChild(toast);
+
+    // Add close functionality
+    const closeBtn = toast.querySelector('button');
+    closeBtn.addEventListener('click', () => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    });
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast {
+      transition: opacity 0.3s ease;
+    }
+  `;
+    document.head.appendChild(style);
+}
+
+// Thêm thư viện QR code
+function loadQRCodeLibrary() {
+    if (!document.getElementById('qrcode-script')) {
+        const qrScript = document.createElement('script');
+        qrScript.id = 'qrcode-script';
+        qrScript.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js';
+        document.head.appendChild(qrScript);
+
+        // Thêm Bootstrap Icons nếu chưa có
+        if (!document.querySelector('link[href*="bootstrap-icons"]')) {
+            const iconLink = document.createElement('link');
+            iconLink.rel = 'stylesheet';
+            iconLink.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css';
+            document.head.appendChild(iconLink);
+        }
+    }
+}
+
+// Thay thế hàm renderAttendance để thêm nút QR code
+function enhanceRenderAttendance() {
+    // Lưu lại hàm renderAttendance gốc
+    const originalRenderAttendance = window.renderAttendance;
+
+    // Thay thế bằng phiên bản mới có nút QR code
+    window.renderAttendance = function(data) {
+        const container = document.getElementById("attendanceContainer");
+        if (!container) {
+            console.error("Không tìm thấy container để hiển thị attendance");
+            return;
+        }
+
+        container.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="alert alert-warning text-center">Không có dữ liệu điểm danh.</div>';
+            return;
+        }
+
+        // Thêm tiêu đề và nút QR code
+        const headerContainer = document.createElement("div");
+        headerContainer.className = "d-flex justify-content-between align-items-center mb-3";
+        headerContainer.innerHTML = `
+      <h5 class="mb-0">Danh sách điểm danh</h5>
+      <button class="btn btn-primary btn-sm qr-attendance-btn">
+        <i class="bi bi-qr-code me-1"></i> QR Điểm danh
+      </button>
+    `;
+        container.appendChild(headerContainer);
+
+        // Thêm sự kiện click cho nút QR code
+        const qrButton = headerContainer.querySelector('.qr-attendance-btn');
+        qrButton.addEventListener('click', function() {
+            showAttendanceQRCode(data);
+        });
+
+        const attendanceList = document.createElement("div");
+        attendanceList.className = "attendance-list";
+        attendanceList.style.cssText = `display: flex; flex-direction: column; gap: 8px;`;
+
+        const header = document.createElement("div");
+        header.className = "attendance-header";
+        header.style.cssText = `display: grid; grid-template-columns: 120px 1fr 120px; background-color: #fff8e1; border-radius: 8px; padding: 10px; font-weight: 500;`;
+        header.innerHTML = `
+        <div class="text-center">Avatar</div>
+        <div>Thông tin</div>
+        <div class="text-center">Trạng thái</div>
+    `;
+        attendanceList.appendChild(header);
+
+        data.forEach(item => {
+            const user = item.user || {};
+            const fullName = `${user.firstName || ""} ${user.lastName || ""}`;
+            const username = user.username || "N/A";
+            const status = item.status || "UNKNOWN";
+            const avatarPath = user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            const attendanceId = item.id;
+            const hasAttendance = item.hasAttendance;
+            const scheduleId = item.scheduleId;
+            const userId = item.userId;
+
+            let bgColor = "#ffffff";
+            let statusBadgeClass = "badge bg-secondary";
+            let statusText = "Chưa điểm danh";
+            let borderColor = "#f0f0f0";
+
+            if (status === "PRESENT") {
+                statusBadgeClass = "badge bg-success";
+                statusText = "Có mặt";
+                borderColor = "#4caf50";
+            } else if (status === "ABSENT") {
+                statusBadgeClass = "badge bg-danger";
+                statusText = "Vắng mặt";
+                borderColor = "#f44336";
+            }
+
+            const attendanceItem = document.createElement("div");
+            attendanceItem.id = `attendance-row-${attendanceId || userId}`;
+            attendanceItem.className = "attendance-item";
+            attendanceItem.style.cssText = `
+          display: grid; grid-template-columns: 120px 1fr 120px;
+          background-color: ${bgColor}; border-radius: 8px; padding: 12px;
+          align-items: center; border-left: 4px solid ${borderColor};
+      `;
+
+            attendanceItem.innerHTML = `
+          <div class="text-center">
+              <img src="${avatarPath}" alt="Avatar" class="rounded-circle" 
+                   style="width: 45px; height: 45px; object-fit: cover; border: 2px solid #ffe0c0;" />
+          </div>
+          <div>
+              <div class="fw-medium fs-6">${fullName}</div>
+              <div class="text-muted small">@${username}</div>
+          </div>
+          <div class="text-center">
+              <div class="d-flex flex-column align-items-center gap-2">
+                  <span class="${statusBadgeClass}" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">${statusText}</span>
+                  <div class="d-flex gap-2">
+                      <button class="present-btn btn btn-sm rounded-circle d-flex justify-content-center align-items-center" 
+                              style="width: 32px; height: 32px; background-color: ${status === 'PRESENT' ? '#28a745' : '#ffffff'}; border: 1px solid #28a745; color: ${status === 'PRESENT' ? 'white' : '#28a745'};"
+                              title="Có mặt">
+                          <i class="bi bi-check-lg"></i>
+                      </button>
+                      <button class="absent-btn btn btn-sm rounded-circle d-flex justify-content-center align-items-center" 
+                              style="width: 32px; height: 32px; background-color: ${status === 'ABSENT' ? '#dc3545' : '#ffffff'}; border: 1px solid #dc3545; color: ${status === 'ABSENT' ? 'white' : '#dc3545'};"
+                              title="Vắng mặt">
+                          <i class="bi bi-x-lg"></i>
+                      </button>
+                  </div>
+                  <div class="error-message text-danger small mt-1" id="error-${attendanceId || userId}" style="display: none;"></div>
+              </div>
+          </div>
+      `;
+
+            const presentBtn = attendanceItem.querySelector('.present-btn');
+            const absentBtn = attendanceItem.querySelector('.absent-btn');
+
+            if (presentBtn) {
+                presentBtn.addEventListener('click', function () {
+                    handleAttendanceUpdate(attendanceId || null, 'PRESENT', status, hasAttendance, scheduleId, userId);
+                });
+            }
+
+            if (absentBtn) {
+                absentBtn.addEventListener('click', function () {
+                    handleAttendanceUpdate(attendanceId || null, 'ABSENT', status, hasAttendance, scheduleId, userId);
+                });
+            }
+
+            attendanceList.appendChild(attendanceItem);
+        });
+
+        container.appendChild(attendanceList);
+    };
+}
+
+// Hiển thị QR code cho điểm danh
+function showAttendanceQRCode(attendanceData) {
+    // Lấy thông tin lớp học và lịch học
+    const classId = window.currentClassId || '';
+    const scheduleId = window.currentScheduleId || '';
+    const className = document.querySelector('.modal-title')?.textContent || 'Lớp học';
+
+    // Tạo dữ liệu QR code
+    const qrData = JSON.stringify({
+        type: 'attendance',
+        classId: classId,
+        scheduleId: scheduleId,
+        timestamp: new Date().toISOString(),
+        expiry: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 phút
+    });
+
+    // Tạo modal cho QR code
+    const qrModal = document.createElement('div');
+    qrModal.className = 'modal fade show';
+    qrModal.id = 'qr-code-modal';
+    qrModal.style.display = 'block';
+    qrModal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    qrModal.style.zIndex = '99999';
+
+    // Tạo nội dung modal
+    qrModal.innerHTML = `
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">QR Code Điểm Danh - ${className}</h5>
+          <button type="button" class="btn-close btn-close-white" id="close-qr-modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p class="mb-3">Sinh viên quét mã QR này để điểm danh</p>
+          <div id="qrcode-container" class="d-flex justify-content-center mb-3"></div>
+          <div class="mt-3">
+            <div class="d-flex justify-content-center gap-2 mb-2">
+            </div>
+            <p class="text-muted small">Mã QR có hiệu lực trong 5 phút</p>
+            <div class="progress mt-2" style="height: 5px;">
+              <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" id="qr-expiry-bar" role="progressbar" style="width: 100%"></div>
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <h6 class="mb-2">Trạng thái điểm danh:</h6>
+            <div class="d-flex justify-content-center gap-3">
+              <div class="text-center">
+                <div class="h3 mb-0 text-success" id="present-count">0</div>
+                <div class="small text-muted">Có mặt</div>
+              </div>
+              <div class="text-center">
+                <div class="h3 mb-0 text-danger" id="absent-count">0</div>
+                <div class="small text-muted">Vắng mặt</div>
+              </div>
+              <div class="text-center">
+                <div class="h3 mb-0 text-secondary" id="unknown-count">0</div>
+                <div class="small text-muted">Chưa điểm danh</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="close-qr-btn">Đóng</button>
+          <button type="button" class="btn btn-primary" id="refresh-qr-btn">
+            <i class="bi bi-arrow-clockwise"></i> Làm mới
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+    document.body.appendChild(qrModal);
+
+    // Thêm backdrop
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop fade show';
+    document.body.appendChild(backdrop);
+
+    // Ngăn cuộn trang
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = '17px';
+
+    // Cập nhật số liệu thống kê điểm danh
+    updateAttendanceStats(attendanceData);
+
+    // Tạo mã QR
+    setTimeout(() => {
+        generateQRCode(qrData);
+        startExpiryTimer();
+    }, 100);
+
+    // Hàm đóng modal
+    const closeQRModal = () => {
+        qrModal.remove();
+        backdrop.remove();
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    };
+
+    // Thêm sự kiện cho các nút đóng
+    setTimeout(() => {
+        document.getElementById('close-qr-modal')?.addEventListener('click', closeQRModal);
+        document.getElementById('close-qr-btn')?.addEventListener('click', closeQRModal);
+
+        // Thêm sự kiện cho nút làm mới
+        document.getElementById('refresh-qr-btn')?.addEventListener('click', () => {
+            const newQrData = JSON.stringify({
+                type: 'attendance',
+                classId: classId,
+                scheduleId: scheduleId,
+                timestamp: new Date().toISOString(),
+                expiry: new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 phút
+            });
+            generateQRCode(newQrData);
+            startExpiryTimer();
+
+            // Hiển thị thông báo
+            showToast('Đã làm mới mã QR điểm danh', 'success');
+
+            // Cập nhật lại số liệu thống kê
+            fetchAttendance(classId, scheduleId);
+        });
+    }, 100);
+
+    // Thiết lập timer để tự động làm mới QR code
+    function startExpiryTimer() {
+        const progressBar = document.getElementById('qr-expiry-bar');
+        const qrCodeContainer = document.getElementById('qr-code-container'); // vùng chứa QR
+        const expiredOverlay = document.getElementById('qr-expired-overlay'); // lớp phủ nếu có
+
+        if (!progressBar) return;
+
+        // Reset trạng thái ban đầu
+        progressBar.style.width = '100%';
+        if (qrCodeContainer) {
+            qrCodeContainer.classList.remove('expired');
+        }
+        if (expiredOverlay) {
+            expiredOverlay.style.display = 'none';
+        }
+
+        const duration = 10000; // 5 phút
+        const startTime = Date.now();
+
+        const timer = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const remaining = Math.max(0, duration - elapsed);
+            const percent = (remaining / duration) * 100;
+
+            if (progressBar) {
+                progressBar.style.width = `${percent}%`;
+            }
+
+            if (percent <= 0) {
+                clearInterval(timer);
+
+                // Đánh dấu QR hết hạn
+                if (qrCodeContainer) {
+                    qrCodeContainer.classList.add('expired');
+                }
+
+                if (expiredOverlay) {
+                    expiredOverlay.style.display = 'block';
+                }
+
+                // Tự động làm mới nếu muốn (tuỳ chọn)
+                // document.getElementById('refresh-qr-btn')?.click();
+            }
+        }, 1000);
+    }
+}
+
+// Cập nhật số liệu thống kê điểm danh
+function updateAttendanceStats(data) {
+    if (!data) return;
+
+    let presentCount = 0;
+    let absentCount = 0;
+    let unknownCount = 0;
+
+    data.forEach(item => {
+        if (item.status === 'PRESENT') {
+            presentCount++;
+        } else if (item.status === 'ABSENT') {
+            absentCount++;
+        } else {
+            unknownCount++;
+        }
+    });
+
+    const presentEl = document.getElementById('present-count');
+    const absentEl = document.getElementById('absent-count');
+    const unknownEl = document.getElementById('unknown-count');
+
+    if (presentEl) presentEl.textContent = presentCount;
+    if (absentEl) absentEl.textContent = absentCount;
+    if (unknownEl) unknownEl.textContent = unknownCount;
+}
+
+// Tạo mã QR
+function generateQRCode(data) {
+    const container = document.getElementById('qrcode-container');
+    if (!container) return;
+
+    // Xóa mã QR cũ
+    container.innerHTML = '';
+
+    const qrSize = Math.min(250, window.innerWidth * 0.6);
+
+    // Tạo thẻ canvas mới
+    const canvas = document.createElement('canvas');
+    container.appendChild(canvas);
+
+    if (window.QRCode && window.QRCode.toCanvas) {
+        try {
+            window.QRCode.toCanvas(canvas, data, {
+                width: qrSize,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#ffffff'
+                }
+            }, function (error) {
+                if (error) {
+                    console.error('Lỗi tạo QR code:', error);
+                    container.innerHTML = '<div class="alert alert-danger">Không thể tạo mã QR</div>';
+                }
+            });
+        } catch (error) {
+            console.error('Error generating QR code:', error);
+            container.innerHTML = '<div class="alert alert-danger">Lỗi khi tạo mã QR</div>';
+            tryAlternativeQRMethod(container, data);
+        }
+    } else {
+        // Nếu chưa tải được thư viện thì tự động tải lại
+        container.innerHTML = `
+          <div style="width: 200px; height: 200px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">
+            <p>Đang tải mã QR...</p>
+          </div>
+        `;
+        const qrScript = document.createElement('script');
+        qrScript.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js';
+        qrScript.onload = () => generateQRCode(data);
+        qrScript.onerror = () => tryAlternativeQRMethod(container, data);
+        document.head.appendChild(qrScript);
+    }
+}
+
+
+// Phương pháp thay thế để tạo mã QR
+function tryAlternativeQRMethod(container, data) {
+    // Sử dụng API QR code online
+    const encodedData = encodeURIComponent(data);
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodedData}`;
+
+    container.innerHTML = `
+    <img src="${qrCodeUrl}" alt="QR Code" style="max-width: 100%;">
+    <p class="mt-2 text-muted small">Sử dụng API QR code thay thế</p>
+  `;
+}
+
+// Khởi tạo tính năng QR code điểm danh
+function initQRCodeAttendance() {
+    // Tải thư viện QR code
+    loadQRCodeLibrary();
+
+    // Thay thế hàm renderAttendance
+    enhanceRenderAttendance();
+
+    console.log("Tính năng QR code điểm danh đã được khởi tạo");
+}
+
+// Chạy khởi tạo khi trang đã tải xong
+document.addEventListener('DOMContentLoaded', initQRCodeAttendance);
+
+
 // Fetch data from API and add to events
 async function fetchAndRenderSchedules() {
     try {
@@ -62,6 +585,7 @@ async function fetchAndRenderSchedules() {
         const userId = document.getElementById("userId").value
         const userRole = document.getElementById("userRole").value
         console.log(`Fetching schedules for user: ${userId}, role: ${userRole}`)
+
 
         // API endpoint based on user role
         let endpoint = "/api/scheduling/all"
@@ -225,7 +749,7 @@ async function fetchAttendance(classId, scheduleId) {
         });
 
         if (!response.ok) {
-            throw new Error(`Không thể fetch danh sách điểm danh: ${response.status} ${response.statusText}`);
+            throw new Error("Không có sinh viên trong lớp này.");
         }
 
         const userList = await response.json();
@@ -258,7 +782,7 @@ async function fetchAttendance(classId, scheduleId) {
         console.error("❌ Lỗi khi fetch attendance:", error.message);
         const container = document.getElementById("attendanceContainer");
         if (container) {
-            container.innerHTML = `<div class="alert alert-danger">❌ Lỗi: ${error.message}</div>`;
+            container.innerHTML = `<div class="alert alert-warning">${error.message}</div>`;
         }
     }
 }
@@ -270,7 +794,7 @@ function createAttendance(newStatus, scheduleId, userId) {
 
     if (!safeUserId || !safeScheduleId) {
         console.error("❌ Thiếu userId hoặc scheduleId!", { userId, scheduleId });
-        alert("❌ Không thể tạo điểm danh vì thiếu thông tin người dùng hoặc lịch học.");
+        showToast("Không thể tạo điểm danh vì thiếu thông tin người dùng hoặc lịch học.", "error");
         return;
     }
 
@@ -310,14 +834,14 @@ function createAttendance(newStatus, scheduleId, userId) {
         })
         .then(data => {
             console.log("✅ Dữ liệu trả về:", data);
-            alert("✅ Tạo trạng thái điểm danh thành công!");
+            showToast("Tạo trạng thái điểm danh thành công!", "success");
             if (window.currentClassId) {
                 fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
             }
         })
         .catch(err => {
             console.error("❌ Lỗi khi tạo điểm danh:", err.message);
-            alert("❌ Có lỗi xảy ra khi tạo trạng thái. Vui lòng thử lại!");
+            showToast("Có lỗi xảy ra, yêu cầu nhập lại", "error");
             if (window.currentClassId) {
                 fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
             }
@@ -331,7 +855,7 @@ function updateAttendance(attendanceId, newStatus, scheduleId, userId) {
 
     if (!safeUserId || !safeScheduleId) {
         console.error("❌ Thiếu userId hoặc scheduleId!", { userId, scheduleId });
-        alert("❌ Không thể cập nhật vì thiếu thông tin người dùng hoặc lịch học.");
+        showToast("Không thể tạo điểm danh vì thiếu thông tin người dùng hoặc lịch học.", "error");
         return;
     }
 
@@ -369,14 +893,14 @@ function updateAttendance(attendanceId, newStatus, scheduleId, userId) {
         })
         .then(data => {
             console.log("✅ Dữ liệu trả về:", data);
-            alert("✅ Cập nhật trạng thái thành công!");
+            showToast("Cập nhập trạng thái điểm danh thành công!", "success");
             if (window.currentClassId) {
                 fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
             }
         })
         .catch(err => {
             console.error("❌ Lỗi khi cập nhật:", err.message);
-            alert("❌ Có lỗi xảy ra khi cập nhật trạng thái. Vui lòng thử lại!");
+            showToast("Không thể cập nhập, yêu cầu bạn nhập lại.", "error");
             if (window.currentClassId) {
                 fetchAttendance(window.currentClassId, window.currentScheduleId || safeScheduleId);
             }
@@ -389,7 +913,7 @@ function handleAttendanceUpdate(id, newStatus, currentStatus, hasAttendance, sch
     const safeUserId = Number(userId);
 
     if (!safeScheduleId || !safeUserId) {
-        alert("❌ Không đủ dữ liệu để cập nhật điểm danh.");
+        showToast("Không thể tạo điểm danh vì không đủ thông tin.", "error");
         return;
     }
 
@@ -397,9 +921,9 @@ function handleAttendanceUpdate(id, newStatus, currentStatus, hasAttendance, sch
     if (hasAttendance && newStatus === currentStatus) {
         const errorElement = document.getElementById('error-' + (id || userId));
         if (errorElement) {
-            errorElement.textContent = "Sinh viên đã được đánh dấu " + (newStatus === "PRESENT" ? "có mặt" : "vắng mặt") + " rồi!";
-            errorElement.style.display = "block";
-            setTimeout(() => { errorElement.style.display = "none"; }, 3000);
+            const statusText = newStatus === "PRESENT" ? "có mặt" : "vắng mặt";
+            showToast(`Sinh viên đã được điểm danh ${statusText} rồi!`, "warning");
+            return;
         }
         return;
     }
