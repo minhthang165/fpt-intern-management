@@ -1,5 +1,6 @@
 <header>
-  <div class="container header-container">
+  <input type="hidden" id="user_id_header" th:value="${user.id}">
+  <div class="header-container">
     <div class="logo">
       <a href="/home">
         <img src="/assets/img/logo/logo-fpt.png" alt="FPT Education">
@@ -8,8 +9,35 @@
     <nav>
       <a href="/recruitment/recruitments">Recruitments</a>
       <a href="/home">Home</a>
+      <a href="/messenger">Messenger</a>
     </nav>
-    <div class="user-account">
+    <div class="user-account flex">
+      <div class="notification-bell relative">
+        <button id="notification-bell" class="relative p-2 text-gray-600 hover:text-orange-500 focus:outline-none transition-colors duration-200" aria-label="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="notification-badge">0</span>
+        </button>
+        <div id="notification-dropdown" class="notification-dropdown absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-20 border border-gray-200 transition-all duration-300 ease-in-out transform scale-95 opacity-0 pointer-events-none">
+          <!-- Dropdown Header -->
+          <div class="notification-header px-4 py-3 border-b border-gray-200 bg-gray-50">
+            <div class="flex justify-between items-center">
+              <h4 class="text-sm font-medium text-gray-700">Notifications</h4>
+            </div>
+          </div>
+
+          <!-- Notification List -->
+          <ul id="notification-list" class="notification-list divide-y divide-gray-200 max-h-96 overflow-y-auto">
+            <!-- Notifications will be inserted here by JavaScript -->
+          </ul>
+
+          <!-- Dropdown Footer -->
+          <div class="px-4 py-2 bg-gray-50 text-center">
+            <a href="#" class="text-sm text-orange-500 hover:text-orange-700 font-medium">
+              View all notifications
+            </a>
+          </div>
+        </div>
+      </div>
       <button id="userportfolio" class="user-account-btn">
         <img th:src="${user.avatar_path}" alt="" style="border-radius: 50%; width: 45px">
         <span th:text="${user.first_name + ' ' + user.last_name}" style="font-weight: bold; font-size: 15px"></span>

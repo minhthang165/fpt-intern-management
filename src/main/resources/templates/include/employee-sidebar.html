@@ -1,5 +1,8 @@
 <div th:fragment="sidebar(content)">
     <!-- Preloder start -->
+    <input type="hidden" id="user_id_header" th:value="${user.id}">
+    <input type="hidden" id="user_fullName" th:value="${user.first_name + ' ' + user.last_name}">
+    <input type="hidden" id="user_avatar" th:value="${user.avatar_path}">
     <div id="preloader">
         <div class="sk-three-bounce">
             <div class="sk-child sk-bounce1"></div>
@@ -74,7 +77,18 @@
                         </a>
                     </div>
                     <div class="app__header-right">
-                        <div class="nav-item">
+                        <div class="nav-item flex">
+                            <div class="notification-bell">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-badge">0</span>
+                                <div class="notification-dropdown">
+                                    <div class="notification-header">
+                                        <h4>Notification</h4>
+                                    </div>
+                                    <ul class="notification-list">
+                                    </ul>
+                                </div>
+                            </div>
                             <button id="userportfolio" class="user-button">
                                 <div class="user__portfolio">
                                     <div class="user__portfolio-thumb">
@@ -85,7 +99,7 @@
                                     </div>
                                 </div>
                             </button>
-                            <div id="userDropdown" class="user__dropdown">
+                            <div class="user-dropdown">
                                 <ul>
                                     <li>
                                         <a href="/profile">

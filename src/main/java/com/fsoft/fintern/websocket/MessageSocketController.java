@@ -1,6 +1,5 @@
-package com.fsoft.fintern.controllers;
+package com.fsoft.fintern.websocket;
 
-import com.fsoft.fintern.dtos.MessageDTO;
 import com.fsoft.fintern.models.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;

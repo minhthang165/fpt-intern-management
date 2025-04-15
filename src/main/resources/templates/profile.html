@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head th:replace="include/master-header :: head"></head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <head th:replace="include/master-header :: head"></head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
     <style>
         :root {
             --fpt-orange: #f7941d;
@@ -27,123 +24,6 @@
             --gray-900: #212529;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --radius: 8px;
-        }
-
-        header {
-            background-color: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            padding: 16px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            width: 150px;
-            height: auto;
-            margin-right: 15px;
-        }
-
-        nav {
-            display: none;
-        }
-
-        @media (min-width: 768px) {
-            nav {
-                display: flex;
-                gap: 24px;
-            }
-        }
-
-        nav a {
-            color: #4b5563;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        nav a:hover {
-            color: #ea580c;
-        }
-
-        .user-account {
-            position: relative;
-        }
-
-        .user-account-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #4b5563;
-            font-family: inherit;
-            font-weight: 500;
-        }
-
-        .user-account-btn:hover {
-            color: #ea580c;
-        }
-
-        .user-dropdown {
-            display: none;
-            position: absolute;
-            top: 110%;
-            right: 0;
-            background: #fff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            border-radius: 8px;
-            width: 220px;
-            padding: 10px 0;
-            z-index: 1000;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .user-dropdown.show {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .user-dropdown ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .user-dropdown li {
-            padding: 10px 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .user-dropdown li a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #333;
-            font-weight: 500;
-            padding: 5px;
-            border-radius: 5px;
-            text-decoration: none;
-            width: 100%;
-        }
-
-        .user-dropdown li a:hover {
-            background: #f0f0f0;
-        }
-
-        .user-dropdown svg {
-            margin-right: 10px;
-            fill: #666;
         }
 
         .profile-card {
@@ -475,59 +355,6 @@
             cursor: not-allowed;
         }
 
-        .user__dropdown {
-            display: none;
-            position: absolute;
-            top: 110%;
-            right: 0;
-            background: #fff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            border-radius: 8px;
-            width: 220px;
-            padding: 10px 0;
-            z-index: 1000;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .user__dropdown.show {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .user__dropdown ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .user__dropdown li {
-            padding: 10px 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .user__dropdown li a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            width: 100%;
-        }
-
-        .user__dropdown li a:hover {
-            background: #f0f0f0;
-            border-radius: 5px;
-        }
-
-        .user__dropdown svg {
-            margin-right: 10px;
-            fill: #666;
-        }
-
         .header-title {
             color: var(--fpt-blue);
             font-size: 24px;
@@ -538,11 +365,6 @@
         .header-subtitle {
             color: var(--gray-600);
             font-size: 14px;
-        }
-
-        .logo {
-            height: 50px;
-            margin-right: 15px;
         }
 
         /* Reset and base styles (cần thiết cho header) */
@@ -562,101 +384,8 @@
             height: auto;
         }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
         /* Header styles */
-        header {
-            background-color: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            padding: 16px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
 
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            width: 150px;
-            height: auto;
-        }
-
-        .user-account {
-            position: relative;
-        }
-
-        .user-account-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #4b5563;
-            font-family: inherit;
-            font-weight: 500;
-        }
-
-        .user-account-btn:hover {
-            color: #ea580c;
-        }
-
-        .user-dropdown {
-            display: none;
-            position: absolute;
-            top: 110%;
-            right: 0;
-            background: #fff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            border-radius: 8px;
-            width: 220px;
-            padding: 10px 0;
-            z-index: 1000;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .user-dropdown.show {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .user-dropdown ul {
-            list-style: none;
-        }
-
-        .user-dropdown li {
-            padding: 10px 15px;
-        }
-
-        .user-dropdown li a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #333;
-            font-weight: 500;
-            padding: 5px;
-            border-radius: 5px;
-        }
-
-        .user-dropdown li a:hover {
-            background: #f0f0f0;
-        }
-
-        .px-4{
-            padding-top: 40px;
-        }
 
         /* Responsive adjustments for header spacing */
         @media (max-width: 768px) {
@@ -689,7 +418,6 @@
 
 <!-- Added header-spacing class to create space between header and content -->
 <section class="header-spacing px-4 pb-16">
-    <input type="hidden" id="user_id" th:value="${user.id}">
     <div class="max-w-5xl mx-auto">
         <!-- Profile Card -->
         <div class="profile-card bg-white rounded-xl shadow-lg overflow-hidden mb-8">
@@ -902,23 +630,6 @@
 
         // Fetch CV list
         await refreshCVList(id);
-
-        // Set up user dropdown if it exists
-        const userPortfolio = document.getElementById("userportfolio");
-        const userDropdown = document.querySelector(".user__dropdown");
-
-        if (userPortfolio && userDropdown) {
-            userPortfolio.addEventListener("click", function (event) {
-                userDropdown.classList.toggle("show");
-            });
-
-            // Close dropdown when clicking outside
-            document.addEventListener("click", function (event) {
-                if (!userPortfolio.contains(event.target) && !userDropdown.contains(event.target)) {
-                    userDropdown.classList.remove("show");
-                }
-            });
-        }
 
         // Set up delete confirmation modal event listeners
         document.getElementById('closeConfirmModal').addEventListener('click', function() {
@@ -1360,23 +1071,6 @@
         message.className = '';
         deleteButton.style.display = 'none';
     }
-
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const userAccountBtn = document.getElementById('userportfolio');
-        const userDropdown = document.querySelector('.user-dropdown');
-
-        userAccountBtn.addEventListener('click', function (event) {
-            event.preventDefault();
-            userDropdown.classList.toggle('show');
-        });
-
-        document.addEventListener('click', function (event) {
-            if (!userAccountBtn.contains(event.target) && !userDropdown.contains(event.target)) {
-                userDropdown.classList.remove('show');
-            }
-        });
-    });
 </script>
 </body>
 </html>

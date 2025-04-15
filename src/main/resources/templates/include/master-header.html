@@ -1,76 +1,208 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>FIntern - FPT Software Intern Management</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-style-mode" content="1">
+    <!-- Place favicon.ico in the root directory -->
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/img/logo/logo-fpt-small.svg">
+    <!-- CSS here -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/userNavbar.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/assets/css/employee-classroom.css">
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/meanmenu.min.css">
+    <link rel="stylesheet" href="/assets/css/animate.css">
+    <link rel="stylesheet" href="/assets/css/metisMenu.min.css">
+    <link rel="stylesheet" href="/assets/css/swiper-bundle.min.css">
+    <link rel="stylesheet" href="/assets/css/slick.css">
+    <link rel="stylesheet" href="/assets/css/backtotop.css">
+    <link rel="stylesheet" href="/assets/css/magnific-popup.css">
+    <link rel="stylesheet" href="/assets/css/flaticon_expovent.css">
+    <link rel="stylesheet" href="/assets/css/fontawesome-pro.css">
+    <link rel="stylesheet" href="/assets/css/spacing.css">
+    <link rel="stylesheet" href="/assets/css/schedule.css"/>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+    <style>
+        /* User Dropdown */
+        .user__dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 200px;
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            z-index: 100;
+            border: 1px solid #e5e5e5;
+            display: none;
+        }
 
-    <!doctype html>
-    <html lang="en" xmlns:th="http://www.thymeleaf.org">
-    <head th:fragment="head">
-        <meta charset="utf-8">
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <title>FIntern - FPT Software Intern Management</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-style-mode" content="1">
-        <!-- Place favicon.ico in the root directory -->
-        <link rel="shortcut icon" type="image/x-icon" href="/assets/img/logo/logo-fpt-small.svg">
-        <!-- CSS here -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-        <link rel="stylesheet" href="/assets/css/employee-classroom.css">
-        <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
-        <link rel="stylesheet" href="/assets/css/meanmenu.min.css">
-        <link rel="stylesheet" href="/assets/css/animate.css">
-        <link rel="stylesheet" href="/assets/css/metisMenu.min.css">
-        <link rel="stylesheet" href="/assets/css/swiper-bundle.min.css">
-        <link rel="stylesheet" href="/assets/css/slick.css">
-        <link rel="stylesheet" href="/assets/css/backtotop.css">
-        <link rel="stylesheet" href="/assets/css/magnific-popup.css">
-        <link rel="stylesheet" href="/assets/css/flaticon_expovent.css">
-        <link rel="stylesheet" href="/assets/css/fontawesome-pro.css">
-        <link rel="stylesheet" href="/assets/css/spacing.css">
-        <link rel="stylesheet" href="/assets/css/schedule.css"/>
-        <link rel="stylesheet" href="/assets/css/main.css">
-        <style>
-            /* User Dropdown */
-            .user__dropdown {
-                position: absolute;
-                top: 100%;
-                right: 0;
-                width: 200px;
-                background-color: #fff;
-                border-radius: 4px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                margin-top: 10px;
-                z-index: 100;
-                border: 1px solid #e5e5e5;
-                display: none;
-            }
+        .user__dropdown.active {
+            display: block;
+        }
 
-            .user__dropdown.active {
-                display: block;
-            }
+        .user__dropdown ul {
+            list-style: none;
+            padding: 8px 0;
+        }
 
-            .user__dropdown ul {
-                list-style: none;
-                padding: 8px 0;
-            }
+        .user__dropdown li {
+            padding: 0;
+        }
 
-            .user__dropdown li {
-                padding: 0;
-            }
+        .user__dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
 
-            .user__dropdown a {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 10px 15px;
-                color: #333;
-                text-decoration: none;
-                transition: background-color 0.2s;
-            }
+        .user__dropdown a:hover {
+            background-color: #f5f5f5;
+        }
 
-            .user__dropdown a:hover {
-                background-color: #f5f5f5;
-            }
+        .user__dropdown svg {
+            flex-shrink: 0;
+        }
 
-            .user__dropdown svg {
-                flex-shrink: 0;
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 15px;
+        }
+
+        .notification-bell i {
+            font-size: 20px;
+            color: #666;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: #ff4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+
+        .notification-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+        }
+
+        .notification-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-list {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+
+        .notification-item .time {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .notification-empty {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+
+        /* Notification container styles */
+        #notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .notification {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            padding: 15px;
+            width: 300px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification-content h4 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .notification-content p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
             }
-        </style>
-    </head>
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+    <!-- WebSocket scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="/assets/js/notification.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+</html>

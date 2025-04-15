@@ -1,4 +1,3 @@
-var stompClient = null;
 var user_fullName = document.getElementById("user_fullName").value;
 var user_id = document.getElementById("user_id").value;
 var user_avatar = document.getElementById("user_avatar").value;
@@ -20,14 +19,14 @@ var selectedRecipientId = null;
 var conversation_list = [];
 let originalConversationList = []; // Lưu trữ danh sách conversation gốc
 var isCurrentUserAdmin = false; // Thêm biến global mới
-const userId = document.getElementById("user_id").value;
-window.userId = userId; // Gắn vào window
-localStorage.setItem("userId", userId);
+window.userId = user_id; // Gắn vào window
+localStorage.setItem("userId", user_id);
 console.log("✅ User ID:", window.userId);
 
 document.addEventListener("DOMContentLoaded", async function () {
     await loadConversation(user_id);
     connectWebSocket();
+    adjustHeight();
     var chatDropdown = document.getElementById('chatDropdown');
     var userList = document.getElementById('userList');
     var userSearchInput = document.getElementById('userSearchInput');
@@ -52,13 +51,19 @@ document.addEventListener("DOMContentLoaded", async function () {
 //---------------------------------------- WEBSOCKET SETUP ----------------------------------------------
 
 function connectWebSocket() {
-    let socket = new SockJS('/ws');
-    stompClient = Stomp.over(socket);
-
-    stompClient.connect({}, function () {
+    if (stompClient && stompClient.connected) {
         stompClient.subscribe('/topic/messenger', handleWebsocketPayload);
-    });
+    } else {
+        // If not connected yet, wait until it's connected
+        const waitForConnect = setInterval(() => {
+            if (stompClient && stompClient.connected) {
+                stompClient.subscribe('/topic/messenger', handleWebsocketPayload);
+                clearInterval(waitForConnect);
+            }
+        }, 100); // Check every 100ms
+    }
 }
+
 //---------------------------------------- Call SETUP ----------------------------------------------
 
 window.makeCall = () => {
@@ -205,7 +210,7 @@ function setConversation(element) {
                 <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" width="40"/>
                 <div>
                     <div class="font-bold conversation-name">${conversationName}</div>
-                    <div class="text-green-500 text-sm">Đang hoạt động</div>
+                    <div class="text-green-500 text-sm">Online</div>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
@@ -381,6 +386,27 @@ function handleWebsocketPayload(payload) {
                 // Nếu đây là tin nhắn đầu tiên từ một cuộc trò chuyện mới
                 if (!conversation_list.some(conv => conv.id === message.conversation.id)) {
                     handleNewConversation(message);
+                } else {
+                    // Nếu cuộc trò chuyện đã tồn tại, di chuyển nó lên đầu danh sách
+                    const conversationIndex = conversation_list.findIndex(conv => conv.id === message.conversation.id);
+                    if (conversationIndex !== -1) {
+                        const conversation = conversation_list[conversationIndex];
+                        conversation_list.splice(conversationIndex, 1);
+                        conversation_list.unshift(conversation);
+                        
+                        // Cập nhật UI
+                        renderHtmlConversation(conversation_list);
+                        
+                        // Làm nổi bật tên cuộc trò chuyện
+                        const conversationElement = document.querySelector(`[data-id="${message.conversation.id}"] .font-bold`);
+                        if (conversationElement) {
+                            conversationElement.classList.add('text-blue-600');
+                            // Tự động bỏ nổi bật sau 3 giây
+                            setTimeout(() => {
+                                conversationElement.classList.remove('text-blue-600');
+                            }, 3000);
+                        }
+                    }
                 }
                 return;
             }
@@ -590,7 +616,6 @@ function waitForImagesToLoad(container) {
 }
 
 function sendMessage() {
-
     var inputText = document.getElementById("message").value;
     if (inputText !== '') {
         sendText();
@@ -633,6 +658,23 @@ async function sendAttachments() {
                 let responseData = await response.json();
                 document.querySelector(".list-file").innerHTML = '';
                 stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(responseData));
+                // Create notification object
+                let notification = {
+                    actorId: user_id,
+                    content: "You have new message from " + conversationName,
+                    type: "MESSENGER",
+                    recipientIds: conversationMember.map(member => member.user.id).filter(id => id !== user_id),
+                    url: "/messenger"
+                }
+                //Websocket
+                stompClient.send("/app/notification.sendNotification", {}, JSON.stringify(notification));
+                await fetch("api/notification/create-notification", {
+                    method: "POST",
+                    body: JSON.stringify(notification),
+                    headers: {
+                        "Content-Type": "application/json; charset=UTF-8"
+                    }
+                })
             }).catch(error => {
                 console.log(error);
             })
@@ -663,9 +705,24 @@ async function sendText() {
 
         let responseData = await response.json();
         console.log("Response Data:", responseData);  // Log full response data
-
+        // Create notification object
+        let notification = {
+            actorId: user_id,
+            content: "You have new message from " + conversationName,
+            type: "MESSENGER",
+            recipientIds: conversationMember.map(member => member.user.id).filter(id => id !== user_id),
+            url: "/messenger"
+        }
         // Send the entire response data object to the WebSocket
         stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(responseData));
+        stompClient.send("/app/notification.sendNotification", {}, JSON.stringify(notification));
+        await fetch("api/notification/create-notification", {
+            method: "POST",
+            body: JSON.stringify(notification),
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8"
+            }
+        })
     } catch (error) {
         console.log(error);
     }
@@ -1430,14 +1487,12 @@ function createGroup() {
         })
 
         .then(() => {
-            alert('Group created successfully!');
             document.getElementById('groupNameInput').value = '';
             listUserAdd = [];
             updateSelectedUsersDisplay();
         })
         .catch(error => {
             console.error('Error creating group:', error);
-            alert('Error creating group. Please try again.');
         });
 }
 
@@ -1654,9 +1709,6 @@ async function addMembersToGroup() {
         // Làm mới modal thành viên
         toggleModal('showMembers');
 
-        // Hiển thị thông báo thành công
-        alert(`Successfully added ${listUserAdd.length} member${listUserAdd.length > 1 ? 's' : ''} to the group`);
-
         // Đặt lại danh sách người dùng đã chọn
         listUserAdd = [];
     } catch (error) {
@@ -1863,7 +1915,6 @@ async function findOneToOneChatWithUser(recipientId) {
         
         // Nếu tìm thấy cuộc trò chuyện
         if (conversation && conversation.id) {
-            console.log("✅ Đã tìm thấy cuộc trò chuyện:", conversation);
             
             // Kiểm tra xem cuộc trò chuyện có trong danh sách chưa
             if (!conversation_list.some(conv => conv.id === conversation.id)) {
@@ -1905,16 +1956,16 @@ async function findOneToOneChatWithUser(recipientId) {
             if (conversationElement) {
                 setConversation(conversationElement);
             } else {
-                console.error("Không tìm thấy element của cuộc trò chuyện");
+                console.error("Cannot find html element");
             }
         } else {
             // Nếu không tìm thấy cuộc trò chuyện, hiển thị chat box tạm
-            console.log("⚠️ Không tìm thấy cuộc trò chuyện, hiển thị chat box tạm");
+            console.log("Cannot find conversation, open temp chat box")
             
             // Lấy thông tin người nhận
             const recipientResponse = await fetch(`/api/user/${recipientId}`);
             if (!recipientResponse.ok) {
-                throw new Error("Không thể tải thông tin người nhận");
+                throw new Error("Cannot load recipient's data");
             }
             
             const recipientUser = await recipientResponse.json();
@@ -1934,7 +1985,7 @@ async function findOneToOneChatWithUser(recipientId) {
                         <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationAvatar}" width="40"/>
                         <div>
                             <div class="font-bold conversation-name">${conversationName}</div>
-                            <div class="text-green-500 text-sm">Đang hoạt động</div>
+                            <div class="text-green-500 text-sm">Online</div>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
@@ -1993,3 +2044,12 @@ async function findOneToOneChatWithUser(recipientId) {
         document.getElementById("chat-container").innerHTML = '<div class="text-center p-4 text-red-500">Lỗi khi tải cuộc trò chuyện.</div>';
     }
 }
+
+function adjustHeight() {
+    const header = document.querySelector('header');
+    const content = document.getElementById('messengerBody');
+    const headerHeight = header.offsetHeight;
+    content.style.height = `calc(100vh - ${headerHeight}px)`;
+}
+window.addEventListener('load', adjustHeight);
+window.addEventListener('resize', adjustHeight);

@@ -12,7 +12,6 @@ public class ProfileController {
     @GetMapping("")
     public String profile(@SessionAttribute("user") LoginUserDTO loginUserDTO, @RequestParam(name = "user_id", required = false) Integer user_id, Model model) throws BadRequestException {
         if (user_id != null) {
-            model.addAttribute("user_id", user_id);
             model.addAttribute("user", loginUserDTO);
         }
         else {

@@ -433,15 +433,18 @@
         let isUnlock = icon.classList.contains("inactive");
         let action = isUnlock ? "unlock" : "lock";
         let duration;
+        let reason;
         if (isUnlock) {
             let response = await fetch(`/api/user/get-status/${userId}`);
             let data = await response.json();
             duration = data.duration;
+            reason = data.reason;
         }
 
         let message = isUnlock
-            ? `Are you sure you want to unlock this user? \n This user has been banned for ${duration} days`
+            ? `Are you sure you want to unlock this user? \nThis user has been banned for ${duration/3600/24} days.\nReason: ${reason}`
             : `Provide details for locking this user.`;
+
 
         if (isUnlock) {
             showModal("Unlock User", message, true, function() {
@@ -512,8 +515,15 @@
 
                 showModal("Success", `User has been ${action}ed!`);
                 let icon = document.querySelector(`.flaticon-padlock[data-id="${userId}"]`);
-                if (icon) icon.classList.toggle("inactive", action === "unlock");
-                if (icon) icon.classList.toggle("active", action !== "unlock");
+                if (icon) {
+                    if (icon.classList.contains("inactive")) {
+                        icon.classList.remove("inactive");
+                        icon.classList.add("active");
+                    } else if (icon.classList.contains("active")) {
+                        icon.classList.remove("active");
+                        icon.classList.add("inactive");
+                    }
+                }
             })
             .catch(error => showModal("Error", `Error: ${error.message}`));
     }
@@ -679,7 +689,7 @@
 
     function sortTable(columnIndex) {
         let table = document.getElementById("table-body");
-        let rows = Array.from(table.rows).slice(1);
+        let rows = Array.from(table.rows).slice(0);
         let isAscending = table.getAttribute("data-sort") !== "asc";
 
         rows.sort((rowA, rowB) => {
