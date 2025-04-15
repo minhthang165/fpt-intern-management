@@ -3,7 +3,6 @@
 <head th:replace="include/master-header :: head"></head>
 <body class="body-area">
 <input type="hidden" id="user_id" th:value="${user.id}">
-
 <th:block th:replace="~{include/employee-sidebar :: sidebar(~{::content})}">
   <!--header breadcrumb area-->
   <div class="app__slide-wrapper" th:fragment="content">
@@ -27,9 +26,10 @@
       </div>
     </div>
   </div>
+</div>
   <!-- insert main content here -->
   <section th:fragment="content">
-    <main class="fixed inset-0 bg-white p-8 shadow-lg animate-fade-in overflow-auto z-[9999] w-screen h-screen">
+    <main class="inset-0 bg-white p-8 shadow-lg animate-fade-in overflow-auto z-[9999]">
       <!-- Thêm input hidden để lưu userID -->
       <input type="hidden" id="userId" th:value="${userId}">
       <input type="hidden" id="userRole" th:value="${userRole}">
