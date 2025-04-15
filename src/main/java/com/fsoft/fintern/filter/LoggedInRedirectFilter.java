@@ -20,11 +20,21 @@ public class LoggedInRedirectFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
         String requestURI = request.getRequestURI();
-        if ((requestURI.equals("/login") || requestURI.equals("/register"))
-                && isAuthenticated()) {
-            response.sendRedirect("/edit");
+        if (requestURI.equals("/")) {
+            if (isAuthenticated()) {
+                response.sendRedirect("/home");
+            } else {
+                response.sendRedirect("/login");
+            }
             return;
         }
+
+        if ((requestURI.equals("/login") || requestURI.equals("/register") || requestURI.isEmpty())
+                && isAuthenticated()) {
+            response.sendRedirect("/home");
+            return;
+        }
+
         filterChain.doFilter(request, response);
     }
 

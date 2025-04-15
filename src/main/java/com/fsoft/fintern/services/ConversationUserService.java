@@ -54,8 +54,8 @@ public class ConversationUserService {
         return new ResponseEntity<>(savedUser,HttpStatus.OK);
     }
 
-    public ResponseEntity<List<User>> getAllUserFromConversation(int conversationId) {
-        List<User> users = new ArrayList<>();
+    public ResponseEntity<List<ConversationUser>> getAllUserFromConversation(int conversationId) {
+        List<ConversationUser> users = new ArrayList<>();
         users = this.conversationUserRepository.findUsersByConversationId(conversationId).orElse(null);
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
@@ -63,6 +63,20 @@ public class ConversationUserService {
     public ResponseEntity<List<Conversation>> getAllConversationsByUserId(int user_id) {
         List<Conversation> conversations = new ArrayList<>();
         conversations = this.conversationUserRepository.findConversationOfAUser(user_id).orElse(null);
+        
+        if (conversations != null) {
+            for (Conversation conversation : conversations) {
+                if ("OneToOne".equals(conversation.getType())) {
+                    User otherUser = this.conversationUserRepository.findOtherUserInOneToOneConversation(conversation.getId(), user_id)
+                            .orElse(null);
+                    if (otherUser != null) {
+                        conversation.setConversationName(otherUser.getFirst_name() + " " + otherUser.getLast_name());
+                        conversation.setConversationAvatar(otherUser.getAvatar_path());
+                    }
+                }
+            }
+        }
+        
         return new ResponseEntity<>(conversations, HttpStatus.OK);
     }
 

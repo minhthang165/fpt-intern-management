@@ -1,0 +1,130 @@
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header styles (Đồng bộ với Trang CSS 1) */
+header {
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-container {
+    display: flex;
+    margin: 0 60px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    width: 150px;
+    height: auto;
+    margin-right: 15px;
+}
+
+nav {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    nav {
+        display: flex;
+        gap: 24px;
+    }
+}
+
+nav a {
+    color: #4b5563;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #ea580c;
+}
+
+.user-account {
+    position: relative;
+}
+
+.user-account-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #4b5563;
+    font-family: inherit;
+    font-weight: 500;
+}
+
+.user-account-btn:hover {
+    color: #ea580c;
+}
+
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    width: 220px;
+    padding: 10px 0;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.user-dropdown.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.user-dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-dropdown li {
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+}
+
+.user-dropdown li a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+    font-weight: 500;
+    padding: 5px;
+    border-radius: 5px;
+    text-decoration: none;
+    width: 100%;
+}
+
+.user-dropdown li a:hover {
+    background: #f0f0f0;
+}
+
+.user-dropdown svg {
+    margin-right: 10px;
+    fill: #666;
+}
+
+.logo {
+    width: 150px;
+    height: auto;
+}

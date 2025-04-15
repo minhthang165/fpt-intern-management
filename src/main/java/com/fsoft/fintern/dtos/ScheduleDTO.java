@@ -7,6 +7,7 @@ import java.time.LocalTime;
 public class ScheduleDTO {
     private Integer id;
     private String className;
+
     private Integer mentorID;
 
     public Integer getMentorId() {
