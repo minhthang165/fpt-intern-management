@@ -442,45 +442,63 @@ body {
 
 
 /* Task item styles */
+/* Thêm CSS cho phần chứa danh sách task */
+.task-list {
+    max-height: 500px; /* Giới hạn chiều cao của danh sách task */
+    overflow-y: auto;  /* Cho phép cuộn dọc */
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Thêm bóng nhẹ cho task list */
+}
+
+/* Đảm bảo rằng task item có thể kéo ra ngoài và không bị đè lên nhau */
 .task-item {
     background-color: #f8f9fa;
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 15px;
-    border-left: 3px solid #e67e22;
-}
-.content-card {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 50px); /* Mở rộng gần hết màn hình */
+    border-left: 3px solid #e67e22; /* Mặc định màu vàng */
+    transition: all 0.3s ease-in-out;
 }
 
-.task-container {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1; /* Chiếm toàn bộ không gian còn lại */
-    overflow: hidden;
+/* Hiệu ứng hover cho task item */
+.task-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-
-
-.task-title {
-    font-weight: bold;
-    margin-bottom: 5px;
+/* Mức độ ưu tiên của task */
+.task-item.high {
+    border-left-color: #e74c3c;
+    background-color: #ffebee;
 }
 
-.task-description {
-    color: #666;
-    margin-bottom: 10px;
-    font-size: 14px;
+.task-item.medium {
+    border-left-color: #f1c40f;
+    background-color: #fff8e1;
 }
 
-.task-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: #888;
+.task-item.low {
+    border-left-color: #2ecc71;
+    background-color: #e8f5e9;
 }
+
+/* Khi cuộn đến cuối cùng, task cuối cùng sẽ được hiển thị */
+.task-list:after {
+    content: '';
+    display: block;
+    height: 1px;
+    width: 100%;
+    background-color: transparent;
+}
+
+/* Tăng cường khả năng cuộn mượt mà */
+.task-list {
+    scroll-behavior: smooth; /* Cuộn mượt mà */
+}
+
 .student-container {
     display: flex;
     flex-wrap: wrap;
@@ -650,6 +668,14 @@ body {
 .filters-container {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+}
+
+.student-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.student-card:hover {
+    transform: scale(1.03);
 }
 
 

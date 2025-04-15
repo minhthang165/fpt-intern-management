@@ -1,6 +1,6 @@
 package com.fsoft.fintern.controllers;
 
-import com.fsoft.fintern.services.ExcelExportService;
+import com.fsoft.fintern.services.ExcelTemplateGenerator;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,19 +9,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping("api/user-export")
 public class ExcelExportController {
-    private final ExcelExportService excelExportService;
-    public ExcelExportController(ExcelExportService excelExportService, ExcelExportService excelExportService1) {
-        this.excelExportService = excelExportService1;
+    private final ExcelTemplateGenerator excelTemplateGenerator;
+    public ExcelExportController(ExcelTemplateGenerator excelTemplateGenerator) {
+        this.excelTemplateGenerator = excelTemplateGenerator;
     }
 
     @GetMapping("/intern")
     public ResponseEntity<byte[]> exportInternToExcel() throws IOException {
-        byte[] excelFile = excelExportService.exportInternUsers();
+        byte[] excelFile = excelTemplateGenerator.exportInternUsers();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=INTERN.xlsx");
@@ -31,7 +30,7 @@ public class ExcelExportController {
 
     @GetMapping("/employee")
     public ResponseEntity<byte[]> exportEmployeeToExcel() throws IOException {
-        byte[] excelFile = excelExportService.exportEmployeeUsers();
+        byte[] excelFile = excelTemplateGenerator.exportEmployeeUsers();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=EMPLOYEE.xlsx");
@@ -41,7 +40,7 @@ public class ExcelExportController {
 
     @GetMapping("/admin")
     public ResponseEntity<byte[]> exportAdminToExcel() throws IOException {
-        byte[] excelFile = excelExportService.exportAdminUsers();
+        byte[] excelFile = excelTemplateGenerator.exportAdminUsers();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=ADMIN.xlsx");
@@ -51,7 +50,7 @@ public class ExcelExportController {
 
     @GetMapping("/guest")
     public ResponseEntity<byte[]> exportGuestToExcel() throws IOException {
-        byte[] excelFile = excelExportService.exportGuestUsers();
+        byte[] excelFile = excelTemplateGenerator.exportGuestUsers();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=GUEST.xlsx");

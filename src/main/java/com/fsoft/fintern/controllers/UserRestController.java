@@ -9,6 +9,7 @@ import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.apache.coyote.BadRequestException;
+import org.apache.el.stream.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -134,5 +135,10 @@ public class UserRestController {
     @GetMapping("/search/users")
     public ResponseEntity<List<User>> getAllUsersByEmail(@RequestParam String email) {
         return userService.searchUsersByEmail(email);
+    }
+
+    @GetMapping("/classroom/{classId}")
+    public ResponseEntity<List<User>> findUserByClassroom_Id(@PathVariable int classId) {
+        return userService.findUserByClassroom_Id(classId);
     }
 }

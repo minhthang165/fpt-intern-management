@@ -12,16 +12,16 @@ import jakarta.validation.constraints.NotNull;
 public class Attendance extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "attendance_id", nullable = false)
+    @Column(name = "attendance_id", nullable = true)
     private Integer id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "schedule_id", nullable = false)
     private Schedule schedule;
 
