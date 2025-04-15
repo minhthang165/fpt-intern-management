@@ -524,10 +524,10 @@ body {
 }
 
 
- body {
-     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-     background-color: #f5f5f5;
- }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+}
 
 .search-bar {
     border-radius: 8px;
@@ -597,7 +597,7 @@ body {
     max-height: calc(100vh - 50px);
     min-height: 100%;
     overflow-y: auto;
-    }
+}
 
 .error-tag {
     background-color: #fff2e6;
@@ -677,5 +677,4 @@ body {
 .student-card:hover {
     transform: scale(1.03);
 }
-
 

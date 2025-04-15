@@ -71,12 +71,11 @@ public class ScheduleService {
                 .filter(schedule -> {
                     LocalDate startDate = schedule.getStartDate();
                     LocalDate endDate = schedule.getEndDate();
-
-                    return (startDate == null || !date.isBefore(startDate)) && 
-                           (endDate == null || !date.isAfter(endDate));
+                    return (startDate == null || !date.isBefore(startDate)) &&
+                            (endDate == null || !date.isAfter(endDate));
                 })
                 .collect(Collectors.toList());
-        
+
         return schedulesByDate;
     }
 

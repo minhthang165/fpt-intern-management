@@ -77,9 +77,6 @@ public class SchedulingRestController {
         try {
             // Parse string date to LocalDate
             LocalDate parsedDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
-          
-            // Find schedules for the date
-            List<Schedule> dateSchedules = this.scheduleService.findSchedulesByDate(parsedDate);
 
             // Find schedules for the date
             List<Schedule> dateSchedules = this.scheduleService.findSchedulesByDate(parsedDate);
