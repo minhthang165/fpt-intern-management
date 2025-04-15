@@ -78,6 +78,9 @@ public class AuthController {
         dto.setLast_name(user.getLast_name());
         dto.setAvatar_path(user.getAvatar_path());
         dto.setRole(user.getRole());
+        if(user.getRole() == Role.INTERN) {
+            dto.setClass_id(user.getClassroom().getId());
+        }
         return dto;
     }
 }

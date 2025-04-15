@@ -9,13 +9,22 @@ import lombok.NoArgsConstructor;
 
 public class SchedulingDTO {
     private String classId;
+    private String className;
+    private ClassType classType;
+    private LanguageType languageType;
+    private Integer roomId;
+    private Integer codeMentorId;  // ID của mentor dạy code (cho CODE_ONLY và COMBINED)
+    private Integer languageMentorId;  // ID của mentor dạy ngoại ngữ (cho LANGUAGE_ONLY và COMBINED)
 
-    public SchedulingDTO(String classId, String className,  ClassType classType, LanguageType languageType,Integer roomId) {
+    public SchedulingDTO(String classId, String className, ClassType classType, LanguageType languageType,
+                        Integer roomId, Integer codeMentorId, Integer languageMentorId) {
         this.classId = classId;
         this.className = className;
         this.languageType = languageType;
         this.classType = classType;
         this.roomId = roomId;
+        this.codeMentorId = codeMentorId;
+        this.languageMentorId = languageMentorId;
     }
 
     public String getClassName() {
@@ -58,8 +67,19 @@ public class SchedulingDTO {
         this.roomId = roomId;
     }
 
-    private String className;
-    private ClassType classType;
-    private LanguageType languageType;
-    private Integer roomId;
-} 
+    public Integer getCodeMentorId() {
+        return codeMentorId;
+    }
+
+    public void setCodeMentorId(Integer codeMentorId) {
+        this.codeMentorId = codeMentorId;
+    }
+
+    public Integer getLanguageMentorId() {
+        return languageMentorId;
+    }
+
+    public void setLanguageMentorId(Integer languageMentorId) {
+        this.languageMentorId = languageMentorId;
+    }
+}

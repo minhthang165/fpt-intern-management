@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -54,6 +57,41 @@ public class SchedulingRestController {
         }
     }
 
+    @GetMapping("/class/{classId}")
+    @Operation(description = "Get schedules for a specific classroom")
+    public ResponseEntity<List<Schedule>> getSchedulesByClassId(@PathVariable Integer classId) {
+        try {
+            List<Schedule> classSchedules = this.scheduleService.findSchedulesByClassId(classId);
+            if (classSchedules.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(classSchedules, HttpStatus.OK);
+        }catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @GetMapping("/date/{date}")
+    @Operation(description = "Get schedules for a specific date (format: YYYY-MM-DD)")
+    public ResponseEntity<List<Schedule>> getSchedulesByDate(@PathVariable String date) {
+        try {
+            // Parse string date to LocalDate
+            LocalDate parsedDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
+            
+            // Find schedules for the date
+            List<Schedule> dateSchedules = this.scheduleService.findSchedulesByDate(parsedDate);
+            
+            if (dateSchedules.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(dateSchedules, HttpStatus.OK);
+        } catch (DateTimeParseException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/template")
     @Operation(description = "Generates and returns an Excel template for class scheduling data")
     @ApiResponses(value = {
@@ -73,45 +111,14 @@ public class SchedulingRestController {
                 .body(excelContent);
     }
 
-    @PostMapping("/import")
-    public ResponseEntity<List<SchedulingDTO>> importSchedulingData(@RequestPart final MultipartFile file) throws IOException
-    {
-        List<SchedulingDTO> data = schedulingService.importSchedulingData(file);
-        return ResponseEntity.ok(data);
-    }
-
     @PostMapping("/generate")
     @Operation(description = "Generates class schedule based on provided scheduling data")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Schedule generated successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid scheduling data"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
     public ResponseEntity<List<ScheduleDTO>> generateSchedule(
             @Parameter(description = "List of scheduling data")
-            @RequestBody List<SchedulingDTO> data) {
+            @RequestPart final MultipartFile file) throws IOException {
+        List<SchedulingDTO> data = schedulingService.importSchedulingData(file);
         List<ScheduleDTO> schedule = schedulingService.generateSchedule(data);
         schedulingService.saveSchedule(schedule);
         return ResponseEntity.ok(schedule);
     }
-
-//    @PostMapping("/save")
-//    @Operation(description = "Saves the generated schedule to the database")
-//    @ApiResponses(value = {
-//        @ApiResponse(responseCode = "200", description = "Schedule saved successfully"),
-//        @ApiResponse(responseCode = "400", description = "Invalid schedule data"),
-//        @ApiResponse(responseCode = "500", description = "Internal server error")
-//    })
-//    public ResponseEntity<?> saveSchedule(
-//            @Parameter(description = "List of schedule results to save")
-//            @RequestBody List<ScheduleDTO> schedules) {
-//        try {
-//            boolean success = schedulingService.saveSchedule(schedules);
-//            return ResponseEntity.ok(Map.of("success", success, "message", "Lịch học đã được lưu thành công"));
-//        } catch (IllegalArgumentException e) {
-//            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-//        } catch (Exception e) {
-//            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Lỗi hệ thống: " + e.getMessage()));
-//        }
-//    }
 } 
