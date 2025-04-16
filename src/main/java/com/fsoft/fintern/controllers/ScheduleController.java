@@ -28,6 +28,7 @@ public class ScheduleController {
     private String viewSchedule(@SessionAttribute("user")LoginUserDTO user, Model model) {
         model.addAttribute("userId", user.getId());
         model.addAttribute("userRole", user.getRole().toString());
+        model.addAttribute("user", user);
         
         // Get rooms and handle empty case
         ResponseEntity<List<Room>> roomsResponse = roomService.findAll();
@@ -37,7 +38,7 @@ public class ScheduleController {
         if (user.getRole() == Role.INTERN) {
             model.addAttribute("classId", user.getClass_id());
         }
-        
+
         if (user.getRole() == Role.EMPLOYEE) {
             return "/employee/EmpSchedule";
         } else if (user.getRole() == Role.INTERN)

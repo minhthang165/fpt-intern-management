@@ -70,17 +70,17 @@ public class SchedulingRestController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     @GetMapping("/date/{date}")
     @Operation(description = "Get schedules for a specific date (format: YYYY-MM-DD)")
     public ResponseEntity<List<Schedule>> getSchedulesByDate(@PathVariable String date) {
         try {
             // Parse string date to LocalDate
             LocalDate parsedDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
-            
+
             // Find schedules for the date
             List<Schedule> dateSchedules = this.scheduleService.findSchedulesByDate(parsedDate);
-            
+
             if (dateSchedules.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
