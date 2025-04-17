@@ -8,159 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-        }
-
-        .search-bar {
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 8px 12px;
-        }
-
-        .filter-btn {
-            border: 1px solid #e67e22;
-            color: #e67e22;
-            background-color: transparent;
-            border-radius: 20px;
-            padding: 4px 12px;
-            margin-right: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-
-        .filter-btn:hover {
-            background-color: #e67e22;
-            color: white;
-        }
-
-        .card {
-            border-radius: 8px;
-            border: none;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-        }
-
-        .sidebar-card {
-            background-color: #f0f2f5;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .sidebar-card:hover {
-            background-color: #e9ecef;
-        }
-
-        .sidebar-card.active {
-            background-color: #e9ecef;
-            border-left: 3px solid #e67e22;
-        }
-
-        .gamma-header {
-            color: #e67e22;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .content-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-            height: 100%;
-            overflow-y: auto; /* Add scroll for the entire content card */
-            max-height: calc(100vh - 120px); /* Limit height to enable scrolling */
-        }
-
-        .main-content {
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-        }
-
-        .error-tag {
-            background-color: #fff2e6;
-            color: #e67e22;
-            border: 1px solid #e67e22;
-            border-radius: 15px;
-            padding: 2px 10px;
-            font-size: 12px;
-            display: inline-block;
-        }
-
-        .chat-box {
-            border-left: 1px solid #eee;
-            height: 100%;
-            position: relative;
-        }
-
-        .student-list {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .student-list li {
-            margin-bottom: 8px;
-        }
-
-        .date-picker {
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 6px 12px;
-            background-color: white;
-        }
-
-        .chat-message {
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .chat-container {
-            padding: 15px;
-            height: 80vh;
-            overflow-y: auto;
-        }
-
-        .chat-input {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 15px;
-            background-color: white;
-        }
-
-        .filters-container {
-            overflow-x: auto;
-            white-space: nowrap;
-            padding-bottom: 10px;
-        }
-
-        /* Hide scrollbar for Chrome, Safari and Opera */
-        .filters-container::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Hide scrollbar for IE, Edge and Firefox */
-        .filters-container {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-
-        .detail-placeholder {
-            display: flex;
-            height: 100%;
-            align-items: center;
-            justify-content: center;
-            color: #aaa;
-            font-size: 18px;
-        }
-    </style>
 </head>
 <body class="body-area">
 <input type="hidden" id="user_id" th:value="${mentorId}">
@@ -240,16 +87,12 @@
         <!-- Templates for dynamic content -->
         <template id="detailsTemplate">
             <div class="content-card">
-                <div class="gamma-header mb-3 card-name"></div>
-                <div class="text-muted mb-4 card-time"></div>
-                <div class="mb-4">
-                    <strong>Sinh viên:</strong>
-                    <div class="student-container" id="student-container">
-                        <!-- Students will be inserted here -->
-                        <div class="spinner-border spinner-border-sm text-warning" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <span>Đang tải danh sách sinh viên...</span>
+                <div>
+                    <div class="gamma-header mb-3 card-name"></div>
+                    <div class="text-muted mb-4 card-time"></div>
+                    <div class="mb-4 d-flex align-items-center">
+                        <strong class="me-2">Sinh viên:</strong>
+                        <button class="btn btn-light border-0 p-1" id="student-menu-btn">⋮</button>
                     </div>
                     <div class="student-container" id="student-container">
                         <div class="spinner-border spinner-border-sm text-warning" role="status">
@@ -257,21 +100,22 @@
                         </div>
                         <span>Đang tải danh sách sinh viên...</span>
                     </div>
-                <div class="mb-3">
-                    <div class="task-list-header">
-                        <h5 class="mb-0">Danh sách Task</h5>
-                        <button class="add-task-btn" id="addTaskBtn">
-                            <i class="bi bi-plus"></i> Thêm Task mới
-                        </button>
-                    </div>
+                    <div class="mb-3">
+                        <div class="task-list-header">
+                            <h5 class="mb-0">Danh sách Task</h5>
+                            <button class="add-task-btn" id="addTaskBtn">
+                                <i class="bi bi-plus"></i> Thêm Task mới
+                            </button>
+                        </div>
 
-                    <div id="task-list" class="task-list">
-                        <!-- Danh sách công việc sẽ được hiển thị tại đây -->
-                        <div class="text-center py-2">
-                            <div class="spinner-border spinner-border-sm text-warning" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                        <div id="task-list" class="task-list">
+                            <!-- Danh sách công việc sẽ được hiển thị tại đây -->
+                            <div class="text-center py-2">
+                                <div class="spinner-border spinner-border-sm text-warning" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span>Đang tải danh sách task...</span>
                             </div>
-                            <span>Đang tải danh sách task...</span>
                         </div>
                     </div>
                 </div>
@@ -485,10 +329,7 @@
         <div id="globalAlertContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 2000;"></div>
 
         <!-- Toast container for notifications - MOVED TO TOP RIGHT -->
-        <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;
-
-
-
+        <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
     </div>
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
@@ -505,6 +346,8 @@
         // Get mentor ID from the data attribute
         const classroomList = document.getElementById("classroomList");
         const mentorId = classroomList.getAttribute("data-mentor-id");
+        connectWebSocket();
+
         if (mentorId) {
             fetchClassrooms(mentorId);
         } else {
@@ -513,6 +356,12 @@
 
         // Add event listener for the save task button
         document.getElementById("saveTaskBtn").addEventListener("click", handleSaveTask);
+
+        // Gắn sự kiện click cho nút ⋮ để mở modal
+        const studentMenuButton = document.querySelector("#student-menu-btn");
+        if (studentMenuButton) {
+            studentMenuButton.addEventListener("click", openStudentModal);
+        }
     });
 
     function openStudentModal() {
@@ -557,6 +406,7 @@
 
             // Render the classroom cards
             renderClassroomCards(classrooms);
+            cachedClassrooms = classrooms;
 
             // Hide loading indicator
             document.getElementById("loading-indicator").style.display = "none";
@@ -653,8 +503,7 @@
                 card.querySelector(".card-date").textContent = formattedDate;
                 card.querySelector(".card-name").textContent = classroom.className || "Unnamed Class";
                 card.querySelector(".card-description").textContent = classroom.classDescription || "Không có mô tả";
-                card.querySelector(".card-manager").textContent = managerName;
-                // card.querySelector(".card-status").textContent = classroom.status || "PENDING";
+
                 const statusElement = card.querySelector(".card-status");
                 statusElement.textContent = getStatusText(classroom.status);
 
@@ -765,6 +614,11 @@
                 openAddTaskModal(classId);
             });
 
+            const studentMenuButton = detailsContainer.querySelector("#student-menu-btn");
+            studentMenuButton.addEventListener("click", function() {
+                openStudentModal(); // Mở modal và hiển thị danh sách sinh viên
+            });
+
             // Load users for this classroom
             await loadUsers(classId);
 
@@ -831,8 +685,23 @@
 
             // Load existing messages
             await loadMessages(conversationId);
-            await loadMember(conversationId, 'Group')
+
             // Set up message input and send button
+            const messageInput = chatContainer.querySelector('#message');
+            const sendButton = chatContainer.querySelector('.btn-warning');
+
+            // Add event listeners
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            sendButton.addEventListener('click', function() {
+                sendMessage();
+            });
+
         } catch (error) {
             console.error("Error loading classroom conversation:", error);
             document.getElementById("chatContainer").innerHTML = `
@@ -858,6 +727,7 @@
                 return response.json();
             })
             .then(users => {
+                membersOfClass = users;
                 displayUsers(users);
             })
             .catch(error => {
@@ -889,47 +759,73 @@
             studentContainer = document.getElementById("student-list");
         }
 
-      if (!studentContainer) return;
+        if (!studentContainer) return;
 
         studentContainer.innerHTML = "";
 
         if (!users || users.length === 0) {
-            studentContainer.innerHTML = '<div class="text-muted">Không có sinh viên nào trong lớp mình</div>';
+            studentContainer.innerHTML = "<div class='text-muted'>Không có sinh viên nào trong lớp.</div>";
             return;
         }
-
         users.forEach(user => {
-            const studentBadge = document.createElement("div");
-            studentBadge.className = "student-badge";
-            studentBadge.style.display = "inline-block";
-            studentBadge.style.padding = "8px 15px";
-            studentBadge.style.borderRadius = "50px";
-            studentBadge.style.border = "1px solid #20c997";
-            studentBadge.style.backgroundColor = "#fff";
-            studentBadge.style.color = "#333";
-            studentBadge.style.fontSize = "14px";
-            studentBadge.style.whiteSpace = "nowrap";
-            studentBadge.style.marginRight = "10px";
-            studentBadge.style.marginBottom = "10px";
+            let studentElement;
+            if (displayType === "badge") {
+                studentElement = document.createElement("div");
+                studentElement.className = "student-badge";
+                studentElement.style.display = "inline-block";
+                studentElement.style.padding = "8px 15px";
+                studentElement.style.borderRadius = "50px";
+                studentElement.style.border = "1px solid #20c997";
+                studentElement.style.backgroundColor = "#fff";
+                studentElement.style.color = "#333";
+                studentElement.style.fontSize = "14px";
+                studentElement.style.whiteSpace = "nowrap";
+                studentElement.style.marginRight = "10px";
+                studentElement.style.marginBottom = "10px";
 
-            // Format the student ID and name
-            const studentName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-            studentBadge.textContent = `${studentName}`;
+                const studentName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                studentElement.textContent = studentName;
+            } else if (displayType === "modal") {
+                studentElement = document.createElement("div");
+                studentElement.classList.add("student-card");
+                studentElement.style.padding = "10px";
+                studentElement.style.marginBottom = "10px";
+                studentElement.style.border = "1px solid #20c997";
+                studentElement.style.borderRadius = "5px";
 
-            studentContainer.appendChild(studentBadge);
+                const studentName = `${user.first_name} ${user.last_name}`;
+                const studentEmail = user.email;
+                const studentPhone = user.phone_number || "Intern not add Phone number yet";
+                const studentPicture = user.picture || "assets/img/users/default-avatar.png";
+                const studentGender = user.gender || "OTHER";
+
+                studentElement.innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <img src="${studentPicture}" alt="Student Picture" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                    <div>
+                        <strong>${studentName}</strong><br>
+                        Email: ${studentEmail}<br>
+                        Phone: ${studentPhone}<br>
+                        Gender: ${studentGender}
+                    </div>
+                </div>
+            `;
+            }
+
+            studentContainer.appendChild(studentElement);
         });
     }
 
-    // Function to fetch tasks for a specific classroom
     async function fetchTasks(classId) {
         try {
             // Show loading indicator in the task list
-            document.getElementById("task-list").innerHTML = `
-                <div class="d-flex align-items-center">
-                    <div class="spinner-border spinner-border-sm text-warning me-2" role="status"></div>
-                    <span>Đang tải danh sách task...</span>
-                </div>
-            `;
+            const taskListElement = document.getElementById("task-list");
+            taskListElement.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm text-warning me-2" role="status"></div>
+                <span>Đang tải danh sách task...</span>
+            </div>
+        `;
 
             // Fetch tasks from API
             const response = await fetch(`/api/class/task/${classId}`);
@@ -952,22 +848,21 @@
             `;
                 return;
             }
-      
+
             // Render the tasks with the new design
             renderTasksNewDesign(tasks);
 
         } catch (error) {
-            // Show error message
+            // Show error message if API call fails
             document.getElementById("task-list").innerHTML = `
-                <div class="alert alert-danger">
-                    Không thể tải danh sách task. Vui lòng thử lại sau.
-                </div>
-            `;
+            <div class="alert alert-danger">
+                Không thể tải danh sách task. Vui lòng thử lại sau.
+            </div>
+        `;
             console.error("Error fetching tasks:", error);
         }
     }
 
-    // Function to render tasks with the new design
     function renderTasksNewDesign(tasks) {
         const taskListElement = document.getElementById("task-list");
 
@@ -1065,10 +960,10 @@
         // Xóa giá trị classId cũ
         document.getElementById("classId").value = "";
 
-        // Reset the form
-        document.getElementById("addTaskForm").reset();
+        // Gọi lại để hiển thị danh sách checkbox lớp học từ cachedClassrooms
+        renderClassCheckboxes();
 
-        // Open the modal
+        // Mở modal
         const modal = new bootstrap.Modal(document.getElementById("addTaskModal"));
         modal.show();
     }
@@ -1083,11 +978,6 @@
         const taskDescription = document.getElementById("taskDescription").value;
         const startTime = document.getElementById("startTime").value;
         const endTime = document.getElementById("endTime").value;
-        const classId = document.getElementById("classId").value;
-
-        // Validate form
-        if (!taskName || !startTime || !endTime || !classId) {
-            alert("Vui lòng điền đầy đủ thông tin!");
         const fileInput = document.getElementById("fileData");
         const saveButton = document.getElementById("saveTaskBtn");
         const originalText = saveButton.textContent;
@@ -1154,16 +1044,6 @@
             return;
         }
 
-        const taskData = {
-            taskName: taskName,
-            startTime: new Date(startTime).toISOString(),
-            endTime: new Date(endTime).toISOString(),
-            classId: classId,
-            creator: mentorId,
-            fileData: ""
-        };
-
-        console.log("Task Data before sending:", JSON.stringify(taskData, null, 2));
         // Check if fileInput exists
         if (!fileInput) {
             showCommentAlert("Không tìm thấy phần tử file input!", "danger");
@@ -1177,19 +1057,6 @@
         saveButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...`;
 
         try {
-            // Check if file is selected
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-
-                reader.onload = async function(e) {
-                    // If file selected, encode it as base64 and set in taskData
-                    taskData.fileData = e.target.result.split(',')[1]; // Get base64 data
-                    console.log("File Data (Base64):", taskData.fileData);  // Log file data to check
-
-                    // Submit task with file data
-                    await submitTask(taskData, saveButton);
-                };
             let fileUrl = null;
 
             console.log("Checking files before upload:", fileInput.files);
@@ -1217,9 +1084,7 @@
                     throw new Error("Cloudinary response missing secure_url");
                 }
             } else {
-                console.log("No file selected, submitting with default fileData.");
-                // Submit task without file (fileData will be empty string)
-                await submitTask(taskData, saveButton);
+                console.log("No file selected, fileUrl will be null");
             }
 
             // Create task data
@@ -1237,9 +1102,8 @@
             // Submit task to classes
             await submitTaskForClasses(taskData, selectedClassIds, saveButton);
         } catch (error) {
-            console.error("Error creating task:", error);
-            alert("Không thể tạo task. Vui lòng thử lại sau.");
-
+            console.error("Error in handleSaveTask:", error);
+            showCommentAlert(`Có lỗi xảy ra: ${error.message}`, "danger");
             saveButton.disabled = false;
             saveButton.textContent = originalText;
         }
@@ -1270,14 +1134,11 @@
                     throw new Error(`Failed to create task for classId ${classId}: ${response.status} ${response.statusText}. Details: ${errorText}`);
                 }
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Failed to create task: ${response.status} ${response.statusText}. Details: ${errorText}`);
+                const result = await response.json();
+                console.log("Task created for classId:", classId, result);
             }
 
-            const result = await response.json();
-            console.log("Task created:", result);
-
+            // Close modal and reset form
             const modal = bootstrap.Modal.getInstance(document.getElementById("addTaskModal"));
             modal.hide();
             document.getElementById("addTaskForm").reset();
@@ -1440,7 +1301,6 @@
         }
     }
 
-    // Hàm gán sự kiện click cho từng task
     function attachTaskEventListeners() {
         document.querySelectorAll(".task-item").forEach(taskDiv => {
             taskDiv.addEventListener("click", function () {
