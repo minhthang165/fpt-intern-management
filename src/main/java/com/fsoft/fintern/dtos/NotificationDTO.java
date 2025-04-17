@@ -9,6 +9,7 @@ public class NotificationDTO {
     private int actorId;
     private String content;
     private String url;
+    private String actor_avatar;
     private NotificationType type;
     private List<Integer> recipientIds;
 
@@ -34,6 +35,13 @@ public class NotificationDTO {
 
     public void setContent(String content) {
         this.content = content;
+    }
+    public String getActor_avatar() {
+        return actor_avatar;
+    }
+
+    public void setActor_avatar(String actor_avatar) {
+        this.actor_avatar = actor_avatar;
     }
 
     public String getUrl() {

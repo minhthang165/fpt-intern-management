@@ -247,6 +247,7 @@ public class SchedulingService {
                 SchedulingDTO dto = new SchedulingDTO(classId, className, classType, languageType, roomId, codeMentorId, languageMentorId);
                 results.add(dto);
             }
+            // Read mentor information from Mentors sheet
         }
 
         return results;

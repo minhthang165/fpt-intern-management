@@ -1,11 +1,17 @@
 <!-- JS here -->
 <footer th:fragment="footer">
+        <input type="hidden" id="user_id_header" th:value="${user.id}">
+        <input type="hidden" id="user_id" th:value="${user.id}">
+        <audio id="new-notification" preload="auto">
+                <source src="assets/audio/notification.mp3">
+        </audio>
         <script>
 
                 document.addEventListener('DOMContentLoaded', function() {
                         const user_id_noti = document.getElementById("user_id_header").value;
                         const userPortfolio = document.getElementById("userportfolio");
-                        const userDropdown = document.querySelector(".user-dropdown");
+                        let userDropdown = document.querySelector(".user-dropdown");
+                        if (userDropdown == null) userDropdown = document.querySelector(".user__dropdown");
 
                         userPortfolio.addEventListener("click", function (e) {
                                 e.stopPropagation()

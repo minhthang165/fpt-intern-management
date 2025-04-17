@@ -46,21 +46,33 @@ document.addEventListener("DOMContentLoaded", async function () {
             chatDropdown.classList.add('hidden');
         }
     });
+    const urlParams = new URLSearchParams(window.location.search);
+    const conversationIdFromUrl = urlParams.get('conversationId');
+
+    if (conversationIdFromUrl) {
+        // Tìm conversation element tương ứng
+        const conversationElement = document.querySelector(`[data-id="${conversationIdFromUrl}"]`);
+        if (conversationElement) {
+            // Mở conversation
+            setConversation(conversationElement);
+        }
+        // Xóa conversationId khỏi URL
+        window.history.replaceState({}, document.title, "/messenger");
+    }
 });
 
 //---------------------------------------- WEBSOCKET SETUP ----------------------------------------------
 
 function connectWebSocket() {
     if (stompClient && stompClient.connected) {
-        stompClient.subscribe('/topic/messenger', handleWebsocketPayload);
+        stompClient.subscribe(`/topic/messenger/${user_id}`, handleWebsocketPayload);
     } else {
-        // If not connected yet, wait until it's connected
         const waitForConnect = setInterval(() => {
             if (stompClient && stompClient.connected) {
-                stompClient.subscribe('/topic/messenger', handleWebsocketPayload);
+                stompClient.subscribe(`/topic/messenger/${user_id}`, handleWebsocketPayload);
                 clearInterval(waitForConnect);
             }
-        }, 100); // Check every 100ms
+        }, 100);
     }
 }
 
@@ -358,7 +370,7 @@ function renderFile(typeFile) {
     if (fileList.length == 0) {
         file.innerHTML = "";
         file.classList.remove("active");
-    } else {
+} else {
         file.innerHTML = listFileHTML;
         file.classList.add("active");
     }
@@ -414,33 +426,40 @@ function handleWebsocketPayload(payload) {
             // Xử lý tin nhắn thông thường
             if (!message.conversation) return;
 
-            // Kiểm tra xem tin nhắn có thuộc về cuộc trò chuyện hiện tại không
-            if (message.conversation.id !== conversationId) {
-                // Nếu cuộc trò chuyện đã tồn tại, di chuyển nó lên đầu danh sách
-                const conversationIndex = conversation_list.findIndex(conv => conv.id === message.conversation.id);
-                if (conversationIndex !== -1) {
-                    const conversation = conversation_list[conversationIndex];
-                    conversation_list.splice(conversationIndex, 1);
-                    conversation_list.unshift(conversation);
+            // Kiểm tra xem cuộc trò chuyện đã tồn tại trong danh sách chưa
+            const existingConversationIndex = conversation_list.findIndex(conv => conv.id === message.conversation.id);
 
-                    // Cập nhật UI
-                    renderHtmlConversation(conversation_list);
+            if (existingConversationIndex === -1) {
+                // Nếu chưa tồn tại, thêm vào đầu danh sách
+                conversation_list.unshift(message.conversation);
+                originalConversationList.unshift(message.conversation);
+            } else {
+                // Nếu đã tồn tại, di chuyển nó lên đầu danh sách
+                const conversation = conversation_list[existingConversationIndex];
+                conversation_list.splice(existingConversationIndex, 1);
+                conversation_list.unshift(conversation);
 
-                    // Làm nổi bật tên cuộc trò chuyện
-                    const conversationElement = document.querySelector(`[data-id="${message.conversation.id}"] .font-bold`);
-                    if (conversationElement) {
-                        conversationElement.classList.add('text-blue-600');
-                        // Tự động bỏ nổi bật sau 3 giây
-                        setTimeout(() => {
-                            conversationElement.classList.remove('text-blue-600');
-                        }, 3000);
-                    }
-                }
-                return;
+                // Cập nhật thông tin cuộc trò chuyện
+                conversation.last_message = message.messageContent;
+            }
+
+            // Cập nhật UI
+            renderHtmlConversation(conversation_list);
+
+            // Làm nổi bật tên cuộc trò chuyện
+            const conversationElement = document.querySelector(`[data-id="${message.conversation.id}"] .font-bold`);
+            if (conversationElement) {
+                conversationElement.classList.add('text-blue-600');
+                // Tự động bỏ nổi bật sau 3 giây
+                setTimeout(() => {
+                    conversationElement.classList.remove('text-blue-600');
+                }, 3000);
             }
 
             // Nếu là cuộc trò chuyện hiện tại, hiển thị tin nhắn
-            displayMessage(message);
+            if (message.conversation.id === conversationId) {
+                displayMessage(message);
+            }
     }
 }
 
@@ -483,11 +502,11 @@ function handleNewConversation(message) {
     // Lấy tên cuộc trò chuyện từ message
     let conversationName = message.conversation.conversationName;
     let displayName = conversationName;
-
+    
     // Xử lý tên cuộc trò chuyện dành cho OneToOne chat
     if (message.conversation.type == "OneToOne" && conversationName.includes(" - ")) {
         const nameParts = conversationName.split(" - ");
-
+        
         // Nếu người dùng hiện tại là người gửi tin nhắn
         if (message.createdBy == user_id) {
             // Hiển thị tên người nhận (phần sau dấu "-")
@@ -676,9 +695,10 @@ async function sendAttachments() {
                 let notification = {
                     actorId: user_id,
                     content: "You have new message from " + conversationName,
+                    actor_avatar: user_avatar,
                     type: "MESSENGER",
                     recipientIds: conversationMember.map(member => member.user.id).filter(id => id !== user_id),
-                    url: "/messenger"
+                    url: `/messenger?conversationId=${conversationId}`
                 }
                 //Websocket
                 stompClient.send("/app/notification.sendNotification", {}, JSON.stringify(notification));
@@ -723,12 +743,17 @@ async function sendText() {
         let notification = {
             actorId: user_id,
             content: "You have new message from " + conversationName,
+            actor_avatar: user_avatar,
             type: "MESSENGER",
             recipientIds: conversationMember.map(member => member.user.id).filter(id => id !== user_id),
-            url: "/messenger"
+            url: `/messenger?conversationId=${conversationId}`
         }
         // Send the entire response data object to the WebSocket
-        stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(responseData));
+        const payload = {
+            message: responseData,
+            recipients: conversationMember.map(member => member.user.id)
+        };
+        stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(payload));
         stompClient.send("/app/notification.sendNotification", {}, JSON.stringify(notification));
         await fetch("api/notification/create-notification", {
             method: "POST",
@@ -1134,10 +1159,16 @@ function leaveGroup(userId) {
                 if (userId == user_id) {
                     // Gửi thông báo qua WebSocket
                     if (stompClient) {
+                        // Lấy danh sách tất cả thành viên còn lại
+                        const remainingRecipients = conversationMember
+                            .filter(member => member.user.id != userId)
+                            .map(member => member.user.id);
+
                         const payload = {
                             type: "REMOVE_USER",
                             conversationId: conversationId,
-                            userId: userId
+                            userId: userId,
+                            recipients: remainingRecipients
                         };
                         stompClient.send("/app/chat.userRemoved", {}, JSON.stringify(payload));
                     }
@@ -1228,46 +1259,18 @@ async function startNewConversation(element) {
         headers: {
             "Content-Type": "application/json; charset=UTF-8"
         }
-    })
-        .then(response => {
-            if (stompClient) {
-                const payload = {
-                    type: "ADD_USER",
-                    userId: selectedRecipientId,
-                    conversation: {
-                        id: conversationId,
-                        conversationName: user_fullName,
-                        conversationAvatar: user_avatar,
-                        type: tempConversation.type
-                    }
-                };
-                stompClient.send("/app/chat.userAdded", {}, JSON.stringify(payload));
-            }
-        })
+    });
 
-    ;
+    // Step 4: Load conversation members
+    await loadMember(conversationId, conversationType);
 
-    let conversationHTML = `    
-                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" 
-                     data-id="${conversationData.id}" 
-                     data-conversationName="${recipientName}" 
-                     data-conversationAvatar="${conversationData.conversationAvatar}" 
-                     data-conversation-type="${conversationType}"
-                     onclick="setConversation(this)">
-                    <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationData.conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" width="40"/>
-                    <div>
-                        <div class="font-bold">${recipientName}</div>
-                        <div class="text-gray-500 text-sm">${conversationData.last_message || "No messages yet"}</div>
-                    </div>
-                </div>
-            `;
-    chatListContainer.innerHTML += conversationHTML;
-
-    // Step 4: Update the send button to send messages normally
+    // Step 5: Update the send button to send messages normally
     let sendButton = document.querySelector(".fa-paper-plane");
     sendButton.onclick = function (event) {
         sendMessage();
     };
+
+    // Step 6: Send the first message
     await sendMessage();
 }
 
@@ -1564,10 +1567,14 @@ function removeMember(userId, userName) {
 
                     // Gửi thông báo qua WebSocket
                     if (stompClient) {
+                        // Lấy danh sách tất cả thành viên còn lại
+                        const remainingRecipients = conversationMember.map(member => member.user.id);
+
                         const payload = {
                             type: "REMOVE_USER",
                             conversationId: conversationId,
-                            userId: userId
+                            userId: userId,
+                            recipients: remainingRecipients
                         };
                         stompClient.send("/app/chat.userRemoved", {}, JSON.stringify(payload));
                     }
@@ -1714,6 +1721,10 @@ async function addMembersToGroup() {
 
             // Gửi thông báo qua WebSocket
             if (stompClient) {
+                // Lấy danh sách tất cả thành viên hiện tại
+                const allRecipients = conversationMember
+                    .map(member => member.user.id)
+                    .concat(user.id); // Thêm người dùng mới vào danh sách
 
                 const payload = {
                     type: "ADD_USER",
@@ -1721,9 +1732,10 @@ async function addMembersToGroup() {
                     conversation: {
                         id: conversationId,
                         conversationName: conversationName,
-                        avatar_path: conversationAvatar,
+                        conversationAvatar: conversationAvatar,
                         type: conversationType
-                    }
+                    },
+                    recipients: allRecipients
                 };
                 stompClient.send("/app/chat.userAdded", {}, JSON.stringify(payload));
             }
@@ -1875,7 +1887,7 @@ async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
 
         if (response.ok) {
             const conversationData = await response.json();
-
+            
             // Nếu đã tìm thấy cuộc trò chuyện
             if (conversationData && conversationData.id) {
                 console.log("✅ Đã tìm thấy cuộc trò chuyện:", conversationData);
@@ -1887,10 +1899,10 @@ async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
         // Tải thông tin người nhận
         const recipientResponse = await fetch(`/api/user/${recipientId}`);
         if (!recipientResponse.ok) throw new Error("Không thể tải thông tin người nhận");
-
+        
         const recipientUser = await recipientResponse.json();
         const chatName = user_fullName + ` - ${recipientUser.first_name} ${recipientUser.last_name}`;
-
+        
         // Tạo cuộc trò chuyện mới
         const createResponse = await fetch('/api/conversation/group/create', {
             method: 'POST',
@@ -1903,11 +1915,11 @@ async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
                 "Content-Type": "application/json; charset=UTF-8"
             }
         });
-
+        
         if (!createResponse.ok) throw new Error("Không thể tạo cuộc trò chuyện mới");
-
+        
         const newConversation = await createResponse.json();
-
+        
         // Thêm người dùng hiện tại vào cuộc trò chuyện
         await fetch('/api/conversation-user/add-user', {
             method: 'POST',
@@ -1920,7 +1932,6 @@ async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
                 "Content-Type": "application/json; charset=UTF-8"
             }
         });
-
         // Thêm người nhận vào cuộc trò chuyện
         await fetch('/api/conversation-user/add-user', {
             method: 'POST',
@@ -1933,7 +1944,6 @@ async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
                 "Content-Type": "application/json; charset=UTF-8"
             }
         });
-
         console.log("✅ Đã tạo cuộc trò chuyện mới:", newConversation);
         return newConversation;
     } catch (error) {
@@ -1950,14 +1960,14 @@ async function findOneToOneChatWithUser(recipientId) {
         // Chỉ tìm kiếm cuộc trò chuyện hiện có, không tạo mới
         const response = await fetch(`/api/conversation/find-one-to-one/${user_id}/${recipientId}`);
         let conversation = null;
-
+        
         if (response.ok) {
             conversation = await response.json();
         }
-
+        
         // Nếu tìm thấy cuộc trò chuyện
         if (conversation && conversation.id) {
-
+            
             // Kiểm tra xem cuộc trò chuyện có trong danh sách chưa
             if (!conversation_list.some(conv => conv.id === conversation.id)) {
                 // Thêm vào danh sách nếu chưa có
@@ -1975,11 +1985,11 @@ async function findOneToOneChatWithUser(recipientId) {
                         </div>
                     </div>
                 `;
-
+                
                 // Thêm vào đầu danh sách HTML
                 let chatListContainer = document.querySelector(".space-y-4");
                 chatListContainer.innerHTML = conversationHTML + chatListContainer.innerHTML;
-
+                
                 // Thêm vào danh sách JavaScript
                 const newConversation = {
                     id: conversation.id,
@@ -1988,11 +1998,11 @@ async function findOneToOneChatWithUser(recipientId) {
                     last_message: "No messages yet",
                     type: "OneToOne"
                 };
-
+                
                 conversation_list.unshift(newConversation);
                 originalConversationList.unshift(newConversation);
             }
-
+            
             // Tìm element để hiển thị cuộc trò chuyện
             const conversationElement = document.querySelector(`[data-id="${conversation.id}"]`);
             if (conversationElement) {
@@ -2003,22 +2013,22 @@ async function findOneToOneChatWithUser(recipientId) {
         } else {
             // Nếu không tìm thấy cuộc trò chuyện, hiển thị chat box tạm
             console.log("Cannot find conversation, open temp chat box")
-
+            
             // Lấy thông tin người nhận
             const recipientResponse = await fetch(`/api/user/${recipientId}`);
             if (!recipientResponse.ok) {
                 throw new Error("Cannot load recipient's data");
             }
-
+            
             const recipientUser = await recipientResponse.json();
-
+            
             // Set các biến global để sử dụng cho hàm startNewConversation
             selectedRecipientId = recipientId;
             conversationId = null; // Đặt là null để khi bấm gửi sẽ gọi startNewConversation
             conversationName = recipientUser.first_name + " " + recipientUser.last_name;
             conversationAvatar = recipientUser.avatar_path;
             conversationType = "OneToOne";
-
+            
             // Hiển thị chat box tạm
             var rightSide = `
                 <!-- Conversation Header -->
@@ -2063,9 +2073,9 @@ async function findOneToOneChatWithUser(recipientId) {
                     </button>
                 </div>
             `;
-
+            
             document.getElementById("chat-container").innerHTML = rightSide;
-
+            
             // Add event listener for Enter key on message input
             document.getElementById("message").addEventListener("keypress", function(event) {
                 if (event.key === "Enter") {
@@ -2073,10 +2083,10 @@ async function findOneToOneChatWithUser(recipientId) {
                     startNewConversation(document.querySelector(".fa-paper-plane").parentElement);
                 }
             });
-
+            
             // Handle file upload
             displayFiles();
-
+            
             // Setup call button
             const callButton = document.querySelector(".btn_call");
             callButton.addEventListener("click", window.makeCall);
