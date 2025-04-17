@@ -94,7 +94,12 @@
                         <strong class="me-2">Sinh viên:</strong>
                         <button class="btn btn-light border-0 p-1" id="student-menu-btn">⋮</button>
                     </div>
-                </div>
+                    <div class="student-container" id="student-container">
+                        <div class="spinner-border spinner-border-sm text-warning" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span>Đang tải danh sách sinh viên...</span>
+                    </div>
                 <div class="mb-3">
                     <div class="task-list-header">
                         <h5 class="mb-0">Danh sách Task</h5>
@@ -224,6 +229,25 @@
         </div>
 
         <!-- Modal for Student List -->
+        <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document"> <!-- Hoặc modal-dialog custom-modal -->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="studentModalLabel">Danh sách sinh viên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="student-list">
+                        <!-- Danh sách sinh viên sẽ được hiển thị ở đây -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
         <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -595,7 +619,7 @@
             });
 
             // Load users for this classroom
-            loadUsers(classId);
+            await loadUsers(classId);
 
             // Load tasks for this classroom
             await fetchTasks(classId);
@@ -680,8 +704,8 @@
         } catch (error) {
             console.error("Error loading classroom conversation:", error);
             document.getElementById("chatContainer").innerHTML = `
-                <div class="alert alert-danger">
-                    Không thể tải tin nhắn. Vui lòng thử lại sau.
+                <div class="alert alert-bg-1">
+                    Không có người dùng trong lớp này
                 </div>
             `;
         }
@@ -706,8 +730,9 @@
                 displayUsers(users);
             })
             .catch(error => {
+                console.log(classId)
                 console.error("Error fetching users:", error);
-                studentContainer.innerHTML = '<div class="text-danger">Không thể tải danh sách sinh viên</div>';
+                studentContainer.innerHTML = '<div class="text-warning">Không thể tải danh sách sinh viên</div>';
             });
     }
 
@@ -811,13 +836,13 @@
 
             // Parse the JSON response
             const tasks = await response.json();
-            console.log("Tasks API Response:", tasks); // Debug log
+            console.log("Tasks API Response:", tasks);
 
             // If no tasks found
             if (tasks.length === 0) {
                 taskListElement.innerHTML = `
                 <div class="alert alert-info">
-                    Không có nhiệm vụ nào cho lớp này.
+                    Không có bài tập nào cho lớp này.
                 </div>
             `;
                 return;
@@ -1271,7 +1296,7 @@
             taskDetailModal.show();
         } catch (error) {
             console.error("Error fetching submissions:", error);
-            showCommentAlert("There hasn't been any submission yet.", "danger");
+            showCommentAlert("There hasn't been any submission yet.", "warning");
         }
     }
 

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -142,6 +143,51 @@ public class AttendanceService {
         }
 
         List<Object[]> results = this.attendance_Repository.findUsersAttendanceByClassIdAndScheduleId(classId, scheduleId);
+
+        if (results.isEmpty()) {
+            throw new BadRequestException("No users found in this class");
+        }
+
+        return new ResponseEntity<>(results, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<Object[]>> findUsersAttendanceByClassIdAndUserIdAndScheduleId(int classId, int scheduleId, int userId) throws BadRequestException {
+
+        if (!classroomRepository.existsById(classId)) {
+            throw new BadRequestException(ErrorDictionaryConstraints.CLASS_NOT_EXISTS_ID.getMessage());
+        }
+
+        // Check if schedule exists
+        if (!scheduleRepository.existsById(scheduleId)) {
+            throw new BadRequestException(ErrorDictionaryConstraints.SCHEDULE_NOT_EXISTS_ID.getMessage());
+        }
+
+        if (!userRepository.existsById(userId)) {
+            throw new BadRequestException(ErrorDictionaryConstraints.USER_NOT_FOUND.getMessage());
+        }
+
+        List<Object[]> results = this.attendance_Repository.findUsersAttendanceByClassIdAndUserIdAndScheduleId(classId, scheduleId, userId);
+
+        if (results.isEmpty()) {
+            throw new BadRequestException("Not found this User in this class");
+        }
+
+        return new ResponseEntity<>(results, HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<Object[]>> findUsersAttendanceByClassIdAndScheduleIdAndDate(int classId, int scheduleId, String createAt) throws BadRequestException {
+
+        LocalDate localDate = LocalDate.parse(createAt);
+        if (!classroomRepository.existsById(classId)) {
+            throw new BadRequestException(ErrorDictionaryConstraints.CLASS_NOT_EXISTS_ID.getMessage());
+        }
+
+        // Check if schedule exists
+        if (!scheduleRepository.existsById(scheduleId)) {
+            throw new BadRequestException(ErrorDictionaryConstraints.SCHEDULE_NOT_EXISTS_ID.getMessage());
+        }
+
+        List<Object[]> results = this.attendance_Repository.findUsersAttendanceByClassIdAndScheduleIdAndDate(classId, scheduleId, localDate);
 
         if (results.isEmpty()) {
             throw new BadRequestException("No users found in this class");

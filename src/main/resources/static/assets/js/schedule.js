@@ -787,7 +787,7 @@ async function fetchAttendance(classId, scheduleId) {
     }
 }
 
-// Create a new attendance record
+// Create a new attendance
 function createAttendance(newStatus, scheduleId, userId) {
     const safeUserId = Number(userId);
     const safeScheduleId = Number(scheduleId);
@@ -848,7 +848,7 @@ function createAttendance(newStatus, scheduleId, userId) {
         });
 }
 
-// Update an existing attendance record
+// Update an existing attendance
 function updateAttendance(attendanceId, newStatus, scheduleId, userId) {
     const safeUserId = Number(userId);
     const safeScheduleId = Number(scheduleId);
@@ -907,7 +907,7 @@ function updateAttendance(attendanceId, newStatus, scheduleId, userId) {
         });
 }
 
-// Modified handleAttendanceUpdate to use new functions
+
 function handleAttendanceUpdate(id, newStatus, currentStatus, hasAttendance, scheduleId, userId) {
     const safeScheduleId = Number(scheduleId);
     const safeUserId = Number(userId);
@@ -971,94 +971,14 @@ function handleAttendanceUpdate(id, newStatus, currentStatus, hasAttendance, sch
         createAttendance(newStatus, safeScheduleId, safeUserId);
     }
 }
+// Fetch Attendance view theo UserRole
+async function showEventDetails(event) {
+    const userRole = document.getElementById("userRole").value;
+    const userId = document.getElementById("userId").value;
 
+    if (document.querySelector("#event-modal") || document.querySelector("#intern-event-modal")) return;
 
-function showEventDetails(event) {
-    if (document.querySelector("#event-modal")) return;
-
-    const modal = document.createElement("div");
-    modal.id = "event-modal";
-    modal.className = "modal fade show";
-    modal.style.display = "block";
-    modal.style.backgroundColor = "rgba(0,0,0,0.5)";
-
-    modal.innerHTML = `
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
-      <div class="modal-content">
-        <div class="modal-header" style="background-color: #ff9d42; color: white;">
-          <h5 class="modal-title">${event.title || "Chi tiết sự kiện"}</h5>
-        </div>
-        <div class="modal-body">
-          <div class="card mb-4 border-warning">
-            <div class="card-header bg-warning bg-opacity-25">
-              <h5 class="mb-0">Thông tin lớp học</h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                ${event.details ? `
-                <div class="col-md-6">
-                  <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between">
-                      <span class="fw-bold">Lớp:</span>
-                      <span>${event.details.className}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                      <span class="fw-bold">Môn học:</span>
-                      <span>${event.details.subjectName}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                      <span class="fw-bold">Phòng:</span>
-                      <span>${event.details.roomName}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                      <span class="fw-bold">Thời gian:</span>
-                      <span>${formatTime(event.details.startTime)} - ${formatTime(event.details.endTime)}</span>
-                    </li>
-                  </ul>
-                </div>
-                ` : `
-                <div class="col-12">
-                  <p class="card-text">
-                    <i class="bi bi-calendar-event me-2"></i>
-                    ${formatDate(event.startDate)} ${event.startHour}:00 - ${event.endHour}:00
-                  </p>
-                </div>
-                `}
-              </div>
-            </div>
-          </div>
-
-          <!-- Vùng hiển thị Attendance -->
-          <div id="attendanceContainer" class="mt-4">
-            <div class="d-flex align-items-center mb-3">
-              <h3 class="h5 mb-0 me-2">Danh sách điểm danh</h3>
-              <div class="spinner-border spinner-border-sm text-warning" role="status">
-                <span class="visually-hidden">Đang tải...</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" id="close-modal-btn" class="btn btn-warning">Đóng</button>
-        </div>
-      </div>
-    </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    // Add Bootstrap modal backdrop
-    const backdrop = document.createElement("div");
-    backdrop.className = "modal-backdrop fade show";
-    document.body.appendChild(backdrop);
-
-    // Prevent body scrolling
-    document.body.classList.add("modal-open");
-    document.body.style.overflow = "hidden";
-    document.body.style.paddingRight = "17px";
-
-    // Close modal functions
-    const closeModal = () => {
+    const closeModal = (modal, backdrop) => {
         modal.remove();
         backdrop.remove();
         document.body.classList.remove("modal-open");
@@ -1066,17 +986,233 @@ function showEventDetails(event) {
         document.body.style.paddingRight = "";
     };
 
-    modal.querySelector("#close-modal-btn").addEventListener("click", closeModal);
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal();
-    });
+    if (userRole === "INTERN") {
+        const modal = document.createElement("div");
+        modal.id = "intern-event-modal";
+        modal.className = "modal fade show";
+        modal.style.display = "block";
+        modal.style.backgroundColor = "rgba(0,0,0,0.5)";
 
-    // Gọi API Attendance nếu có classId
-    if (event.details && event.details.classId) {
-        fetchAttendance(event.details.classId, event.scheduleId) ;}
+        modal.innerHTML = `
+  <div class="modal-dialog modal-dialog-centered modal-lg" style="margin: auto; max-width: 800px; padding: 0 1rem;">
+  <div class="modal-content shadow">
+    <div class="modal-header">
+      <h5 class="modal-title">
+        <i class="bi bi-calendar-event me-2"></i>
+        ${event.title || "Chi tiết sự kiện"}
+      </h5>
+      <button type="button" id="close-modal-btn-header" class="btn-close" aria-label="Close"></button>
+    </div>
+      <div class="modal-body">
+        <div class="mb-4">
+          <h6 class="fw-bold text-secondary">Classroom Information</h6>
+          <ul class="list-group list-group-flush">
+          
+            <li class="list-group-item d-flex justify-content-between">
+              <span class="fw-semibold">Time:</span>
+              <span>${formatTime(event.details?.startTime)} - ${formatTime(event.details?.endTime)}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span class="fw-semibold">Class:</span>
+              <span class="badge rounded-pill bg-warning-subtle text-dark">${event.details?.className || "N/A"}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span class="fw-semibold">Subject:</span>
+              <span>${event.details?.subjectName || "N/A"}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span class="fw-semibold">Room:</span>
+              <span class="badge rounded-pill bg-info-subtle text-dark">${event.details?.roomName || "N/A"}</span>
+            </li>
+          </ul>
+        </div>
+
+        <hr class="my-3" />
+
+        <div class="mb-3">
+          <h6 class="fw-bold text-secondary">Your Information</h6>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between">
+              <span class="fw-semibold">Your Name:</span>
+              <span id="internFullName">Loading...</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span class="fw-semibold">Username:</span>
+              <span id="internUsername">Loading...</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span class="fw-semibold">Status:</span>
+              <span id="internAttendanceStatus" class="fw-bold">Loading...</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="close-modal-btn-footer" class="btn btn-outline-primary">Đóng</button>
+      </div>
+    </div>
+  </div>
+`;
+
+
+        document.body.appendChild(modal);
+
+        const backdrop = document.createElement("div");
+        backdrop.className = "modal-backdrop fade show";
+        document.body.appendChild(backdrop);
+
+        document.body.classList.add("modal-open");
+        document.body.style.overflow = "hidden";
+        document.body.style.paddingRight = "17px";
+
+        modal.querySelector("#close-modal-btn-header").addEventListener("click", () => closeModal(modal, backdrop));
+        modal.querySelector("#close-modal-btn-footer").addEventListener("click", () => closeModal(modal, backdrop));
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) closeModal(modal, backdrop);
+        });
+
+        // Gọi API
+        if (event.details?.classId && event.scheduleId && userId) {
+            try {
+                const classId = Number(event.details.classId);
+                const scheduleId = Number(event.scheduleId);
+                const internId = Number(userId);
+
+                const response = await fetch(`/api/attendance/class/${classId}/${scheduleId}/user/${internId}`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" }
+                });
+
+                const userList = await response.json();
+                const fullNameSpan = modal.querySelector("#internFullName");
+                const usernameSpan = modal.querySelector("#internUsername");
+                const attendanceStatusSpan = modal.querySelector("#internAttendanceStatus");
+
+                if (userList?.length > 0) {
+                    const [userId, avatar, firstName, lastName, username, status] = userList[0];
+                    fullNameSpan.textContent = `${firstName || "N/A"} ${lastName || "N/A"}`;
+                    usernameSpan.textContent = `@`+ username || "N/A";
+
+                    attendanceStatusSpan.textContent = status || "NOT ATTENDANCE YET";
+                    attendanceStatusSpan.className = "fw-bold";
+                    attendanceStatusSpan.style.color =
+                        status === "PRESENT" ? "#16a34a" :
+                            status === "ABSENT" ? "#dc2626" : "#6b7280";
+                } else {
+                    fullNameSpan.textContent = "N/A";
+                    usernameSpan.textContent = "N/A";
+                    attendanceStatusSpan.textContent = "NOT RECORDED";
+                    attendanceStatusSpan.style.color = "#6b7280";
+                }
+            } catch (error) {
+                console.error("Lỗi khi lấy điểm danh của intern:", error.message);
+                modal.querySelector("#internFullName").textContent = "ERROR";
+                modal.querySelector("#internUsername").textContent = "ERROR";
+                const attendanceStatusSpan = modal.querySelector("#internAttendanceStatus");
+                attendanceStatusSpan.textContent = "ERROR";
+                attendanceStatusSpan.style.color = "#dc2626";
+            }
+        } else {
+            console.warn("Thiếu dữ liệu: classId, scheduleId hoặc userId.");
+            modal.querySelector("#internFullName").textContent = "UNAVAILABLE";
+            modal.querySelector("#internUsername").textContent = "UNAVAILABLE";
+            const attendanceStatusSpan = modal.querySelector("#internAttendanceStatus");
+            attendanceStatusSpan.textContent = "UNAVAILABLE";
+            attendanceStatusSpan.style.color = "#6b7280";
+        }
+    }
+    else {
+        const modal = document.createElement("div");
+        modal.id = "event-modal";
+        modal.className = "modal fade show";
+        modal.style.display = "block";
+        modal.style.backgroundColor = "rgba(0,0,0,0.5)";
+
+        modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+          <div class="modal-content">
+            <div class="modal-header" style="background-color: #ff9d42; color: white;">
+              <h5 class="modal-title">${event.title || "Chi tiết sự kiện"}</h5>
+            </div>
+            <div class="modal-body">
+              <div class="card mb-4 border-warning">
+                <div class="card-header bg-warning bg-opacity-25">
+                  <h5 class="mb-0">Thông tin lớp học</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    ${event.details ? `
+                    <div class="col-md-6">
+                      <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                          <span class="fw-bold">Lớp:</span>
+                          <span>${event.details.className}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                          <span class="fw-bold">Môn học:</span>
+                          <span>${event.details.subjectName}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                          <span class="fw-bold">Phòng:</span>
+                          <span>${event.details.roomName}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                          <span class="fw-bold">Thời gian:</span>
+                          <span>${formatTime(event.details.startTime)} - ${formatTime(event.details.endTime)}</span>
+                        </li>
+                      </ul>
+                    </div>
+                    ` : `
+                    <div class="col-12">
+                      <p class="card-text">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        ${formatDate(event.startDate)} ${event.startHour}:00 - ${event.endHour}:00
+                      </p>
+                    </div>
+                    `}
+                  </div>
+                </div>
+              </div>
+              <div id="attendanceContainer" class="mt-4">
+                <div class="d-flex align-items-center mb-3">
+                  <h3 class="h5 mb-0 me-2">Danh sách điểm danh</h3>
+                  <div class="spinner-border spinner-border-sm text-warning" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" id="close-modal-btn" class="btn btn-warning">Đóng</button>
+            </div>
+          </div>
+        </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const backdrop = document.createElement("div");
+        backdrop.className = "modal-backdrop fade show";
+        document.body.appendChild(backdrop);
+
+        document.body.classList.add("modal-open");
+        document.body.style.overflow = "hidden";
+        document.body.style.paddingRight = "17px";
+
+        modal.querySelector("#close-modal-btn").addEventListener("click", () => closeModal(modal, backdrop));
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) closeModal(modal, backdrop);
+        });
+
+        if (event.details && event.details.classId) {
+            fetchAttendance(event.details.classId, event.scheduleId);
+        }
+    }
 }
 
+
 // Display all events on calendar - version with continuous blocks
+// Cần phải sửa đoạn fetch Schedule gấp
 function renderEvents() {
     console.log("renderEvents called with", events.length, "events")
 
