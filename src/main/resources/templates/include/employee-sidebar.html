@@ -1,6 +1,5 @@
 <div th:fragment="sidebar(content)">
     <!-- Preloder start -->
-    <input type="hidden" id="user_id_header" th:value="${user.id}">
     <input type="hidden" id="user_fullName" th:value="${user.first_name + ' ' + user.last_name}">
     <input type="hidden" id="user_avatar" th:value="${user.avatar_path}">
     <div id="preloader">
@@ -78,15 +77,30 @@
                     </div>
                     <div class="app__header-right">
                         <div class="nav-item flex">
-                            <div class="notification-bell">
-                                <i class="fas fa-bell"></i>
-                                <span class="notification-badge">0</span>
-                                <div class="notification-dropdown">
-                                    <div class="notification-header">
-                                        <h4>Notification</h4>
+                            <div class="notification-bell relative">
+                                <button id="notification-bell" class="relative p-2 text-gray-600 hover:text-orange-500 focus:outline-none transition-colors duration-200" aria-label="Notifications">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="notification-badge">0</span>
+                                </button>
+                                <div id="notification-dropdown" class="notification-dropdown absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-20 border border-gray-200 transition-all duration-300 ease-in-out transform scale-95 opacity-0 pointer-events-none">
+                                    <!-- Dropdown Header -->
+                                    <div class="notification-header px-4 py-3 border-b border-gray-200 bg-gray-50">
+                                        <div class="flex justify-between items-center">
+                                            <h4 class="text-sm font-medium text-gray-700">Notifications</h4>
+                                        </div>
                                     </div>
-                                    <ul class="notification-list">
+
+                                    <!-- Notification List -->
+                                    <ul id="notification-list" class="notification-list divide-y divide-gray-200 max-h-96 overflow-y-auto">
+                                        <!-- Notifications will be inserted here by JavaScript -->
                                     </ul>
+
+                                    <!-- Dropdown Footer -->
+                                    <div class="px-4 py-2 bg-gray-50 text-center">
+                                        <a href="#" class="text-sm text-orange-500 hover:text-orange-700 font-medium">
+                                            View all notifications
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             <button id="userportfolio" class="user-button">

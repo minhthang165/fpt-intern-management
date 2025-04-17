@@ -46,26 +46,37 @@ document.addEventListener("DOMContentLoaded", async function () {
             chatDropdown.classList.add('hidden');
         }
     });
+    const urlParams = new URLSearchParams(window.location.search);
+    const conversationIdFromUrl = urlParams.get('conversationId');
+
+    if (conversationIdFromUrl) {
+        // Tìm conversation element tương ứng
+        const conversationElement = document.querySelector(`[data-id="${conversationIdFromUrl}"]`);
+        if (conversationElement) {
+            // Mở conversation
+            setConversation(conversationElement);
+        }
+        // Xóa conversationId khỏi URL
+        window.history.replaceState({}, document.title, "/messenger");
+    }
 });
 
 //---------------------------------------- WEBSOCKET SETUP ----------------------------------------------
 
 function connectWebSocket() {
     if (stompClient && stompClient.connected) {
-        stompClient.subscribe('/topic/messenger', handleWebsocketPayload);
+        stompClient.subscribe(`/topic/messenger/${user_id}`, handleWebsocketPayload);
     } else {
-        // If not connected yet, wait until it's connected
         const waitForConnect = setInterval(() => {
             if (stompClient && stompClient.connected) {
-                stompClient.subscribe('/topic/messenger', handleWebsocketPayload);
+                stompClient.subscribe(`/topic/messenger/${user_id}`, handleWebsocketPayload);
                 clearInterval(waitForConnect);
             }
-        }, 100); // Check every 100ms
+        }, 100);
     }
 }
 
 //---------------------------------------- Call SETUP ----------------------------------------------
-
 
 window.makeCall = () => {
     if (!conversationId) {
@@ -161,7 +172,18 @@ async function loadMember(conversationId, conversationType) {
         console.log("✅ Loaded members for conversation", conversationId, ":", conversationMember);
         console.log("✅ Current user_id:", user_id);
 
-        logAllMemberIds(conversationMember);
+        // Kiểm tra nếu là hội thoại 1:1 và có ít nhất 2 thành viên
+        if (conversationType === "OneToOne" && conversationMember.length >= 2) {
+            // Sử dụng user_id thay vì userId để đảm bảo đúng người dùng hiện tại
+            const otherMember = conversationMember.find(member => member.id != user_id);
+
+            if (otherMember) {
+                window.receiverId = otherMember.id;
+                console.log("✅ Receiver ID set to:", window.receiverId);
+            } else {
+                console.error("❌ Could not find the other member in this conversation");
+            }
+        }
     } catch (error) {
         console.error("❌ Lỗi khi tải danh sách thành viên:", error);
     }
@@ -294,7 +316,7 @@ function setConversation(element) {
     if (conversationType === "OneToOne") { // Sửa lỗi chính tả
         callButton.addEventListener("click", window.makeCall);
     } else {
-        callButton.addEventListener("click", window.makeCall);
+        callButton.addEventListener("click", () => alert("Please select a one-to-one conversation"));
     }
 
     // Handle file upload
@@ -414,33 +436,57 @@ function handleWebsocketPayload(payload) {
             // Xử lý tin nhắn thông thường
             if (!message.conversation) return;
 
-            // Kiểm tra xem tin nhắn có thuộc về cuộc trò chuyện hiện tại không
-            if (message.conversation.id !== conversationId) {
-                // Nếu cuộc trò chuyện đã tồn tại, di chuyển nó lên đầu danh sách
-                const conversationIndex = conversation_list.findIndex(conv => conv.id === message.conversation.id);
-                if (conversationIndex !== -1) {
-                    const conversation = conversation_list[conversationIndex];
-                    conversation_list.splice(conversationIndex, 1);
-                    conversation_list.unshift(conversation);
-
-                    // Cập nhật UI
-                    renderHtmlConversation(conversation_list);
-
-                    // Làm nổi bật tên cuộc trò chuyện
-                    const conversationElement = document.querySelector(`[data-id="${message.conversation.id}"] .font-bold`);
-                    if (conversationElement) {
-                        conversationElement.classList.add('text-blue-600');
-                        // Tự động bỏ nổi bật sau 3 giây
-                        setTimeout(() => {
-                            conversationElement.classList.remove('text-blue-600');
-                        }, 3000);
+            // Xử lý tên hiển thị cho cuộc trò chuyện one-to-one
+            if (message.conversation.type === "OneToOne") {
+                const conversationName = message.conversation.conversationName;
+                if (conversationName.includes(" - ")) {
+                    const nameParts = conversationName.split(" - ");
+                    // Nếu người dùng hiện tại là người gửi tin nhắn
+                    if (message.createdBy == user_id) {
+                        // Hiển thị tên người nhận (phần sau dấu "-")
+                        message.conversation.conversationName = nameParts[1];
+                    } else {
+                        // Nếu người dùng hiện tại là người nhận
+                        // Hiển thị tên người gửi (phần trước dấu "-")
+                        message.conversation.conversationName = nameParts[0];
                     }
                 }
-                return;
+            }
+
+            // Kiểm tra xem cuộc trò chuyện đã tồn tại trong danh sách chưa
+            const existingConversationIndex = conversation_list.findIndex(conv => conv.id === message.conversation.id);
+
+            if (existingConversationIndex === -1) {
+                // Nếu chưa tồn tại, thêm vào đầu danh sách
+                conversation_list.unshift(message.conversation);
+                originalConversationList.unshift(message.conversation);
+            } else {
+                // Nếu đã tồn tại, di chuyển nó lên đầu danh sách
+                const conversation = conversation_list[existingConversationIndex];
+                conversation_list.splice(existingConversationIndex, 1);
+                conversation_list.unshift(conversation);
+
+                // Cập nhật thông tin cuộc trò chuyện
+                conversation.last_message = message.messageContent;
+            }
+
+            // Cập nhật UI
+            renderHtmlConversation(conversation_list);
+
+            // Làm nổi bật tên cuộc trò chuyện
+            const conversationElement = document.querySelector(`[data-id="${message.conversation.id}"] .font-bold`);
+            if (conversationElement) {
+                conversationElement.classList.add('text-blue-600');
+                // Tự động bỏ nổi bật sau 3 giây
+                setTimeout(() => {
+                    conversationElement.classList.remove('text-blue-600');
+                }, 3000);
             }
 
             // Nếu là cuộc trò chuyện hiện tại, hiển thị tin nhắn
-            displayMessage(message);
+            if (message.conversation.id === conversationId) {
+                displayMessage(message);
+            }
     }
 }
 
@@ -676,9 +722,10 @@ async function sendAttachments() {
                 let notification = {
                     actorId: user_id,
                     content: "You have new message from " + conversationName,
+                    actor_avatar: user_avatar,
                     type: "MESSENGER",
                     recipientIds: conversationMember.map(member => member.user.id).filter(id => id !== user_id),
-                    url: "/messenger"
+                    url: `/messenger?conversationId=${conversationId}`
                 }
                 //Websocket
                 stompClient.send("/app/notification.sendNotification", {}, JSON.stringify(notification));
@@ -723,12 +770,17 @@ async function sendText() {
         let notification = {
             actorId: user_id,
             content: "You have new message from " + conversationName,
+            actor_avatar: user_avatar,
             type: "MESSENGER",
             recipientIds: conversationMember.map(member => member.user.id).filter(id => id !== user_id),
-            url: "/messenger"
+            url: `/messenger?conversationId=${conversationId}`
         }
         // Send the entire response data object to the WebSocket
-        stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(responseData));
+        const payload = {
+            message: responseData,
+            recipients: conversationMember.map(member => member.user.id)
+        };
+        stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(payload));
         stompClient.send("/app/notification.sendNotification", {}, JSON.stringify(notification));
         await fetch("api/notification/create-notification", {
             method: "POST",
@@ -1134,10 +1186,16 @@ function leaveGroup(userId) {
                 if (userId == user_id) {
                     // Gửi thông báo qua WebSocket
                     if (stompClient) {
+                        // Lấy danh sách tất cả thành viên còn lại
+                        const remainingRecipients = conversationMember
+                            .filter(member => member.user.id != userId)
+                            .map(member => member.user.id);
+
                         const payload = {
                             type: "REMOVE_USER",
                             conversationId: conversationId,
-                            userId: userId
+                            userId: userId,
+                            recipients: remainingRecipients
                         };
                         stompClient.send("/app/chat.userRemoved", {}, JSON.stringify(payload));
                     }
@@ -1228,46 +1286,18 @@ async function startNewConversation(element) {
         headers: {
             "Content-Type": "application/json; charset=UTF-8"
         }
-    })
-        .then(response => {
-            if (stompClient) {
-                const payload = {
-                    type: "ADD_USER",
-                    userId: selectedRecipientId,
-                    conversation: {
-                        id: conversationId,
-                        conversationName: user_fullName,
-                        conversationAvatar: user_avatar,
-                        type: tempConversation.type
-                    }
-                };
-                stompClient.send("/app/chat.userAdded", {}, JSON.stringify(payload));
-            }
-        })
+    });
 
-    ;
+    // Step 4: Load conversation members
+    await loadMember(conversationId, conversationType);
 
-    let conversationHTML = `    
-                <div class="flex items-center space-x-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200" 
-                     data-id="${conversationData.id}" 
-                     data-conversationName="${recipientName}" 
-                     data-conversationAvatar="${conversationData.conversationAvatar}" 
-                     data-conversation-type="${conversationType}"
-                     onclick="setConversation(this)">
-                    <img alt="User avatar" id="conversation-avatar" class="rounded-full" height="40" src="${conversationData.conversationAvatar || 'https://storage.googleapis.com/a1aa/image/P3mTDAXzCcHqcSIVZqLFhn31Oc6SJ-ZYT5fCH91vHJ4.jpg'}" width="40"/>
-                    <div>
-                        <div class="font-bold">${recipientName}</div>
-                        <div class="text-gray-500 text-sm">${conversationData.last_message || "No messages yet"}</div>
-                    </div>
-                </div>
-            `;
-    chatListContainer.innerHTML += conversationHTML;
-
-    // Step 4: Update the send button to send messages normally
+    // Step 5: Update the send button to send messages normally
     let sendButton = document.querySelector(".fa-paper-plane");
     sendButton.onclick = function (event) {
         sendMessage();
     };
+
+    // Step 6: Send the first message
     await sendMessage();
 }
 
@@ -1546,14 +1576,12 @@ function createGroup() {
 
 
 function removeMember(userId, userName) {
-    console.log(userId + userName);
     if (!isCurrentUserAdmin) {
         alert("Only admin can remove members from the group.");
         return;
     }
 
     if (confirm(`Are you sure you want to remove ${userName} from the group?`)) {
-        // Gọi API để xóa người dùng
         fetch(`/api/conversation-user/${conversationId}/users/${userId}`, {
             method: 'DELETE'
         })
@@ -1564,10 +1592,14 @@ function removeMember(userId, userName) {
 
                     // Gửi thông báo qua WebSocket
                     if (stompClient) {
+                        // Lấy danh sách tất cả thành viên còn lại
+                        const remainingRecipients = conversationMember.map(member => member.user.id);
+
                         const payload = {
                             type: "REMOVE_USER",
                             conversationId: conversationId,
-                            userId: userId
+                            userId: userId,
+                            recipients: remainingRecipients
                         };
                         stompClient.send("/app/chat.userRemoved", {}, JSON.stringify(payload));
                     }
@@ -1714,6 +1746,10 @@ async function addMembersToGroup() {
 
             // Gửi thông báo qua WebSocket
             if (stompClient) {
+                // Lấy danh sách tất cả thành viên hiện tại
+                const allRecipients = conversationMember
+                    .map(member => member.user.id)
+                    .concat(user.id); // Thêm người dùng mới vào danh sách
 
                 const payload = {
                     type: "ADD_USER",
@@ -1721,9 +1757,10 @@ async function addMembersToGroup() {
                     conversation: {
                         id: conversationId,
                         conversationName: conversationName,
-                        avatar_path: conversationAvatar,
+                        conversationAvatar: conversationAvatar,
                         type: conversationType
-                    }
+                    },
+                    recipients: allRecipients
                 };
                 stompClient.send("/app/chat.userAdded", {}, JSON.stringify(payload));
             }
@@ -1732,7 +1769,6 @@ async function addMembersToGroup() {
         // Cập nhật danh sách thành viên cục bộ
         const updatedMembers = [...conversationMember];
         listUserAdd.forEach(user => {
-            // Chuyển đổi cấu trúc để phù hợp với dữ liệu conversationMember
             updatedMembers.push({
                 user: {
                     id: user.id,

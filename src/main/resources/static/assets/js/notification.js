@@ -27,6 +27,7 @@ function onError(error) {
 
 function onNotificationReceived(payload) {
     const notification = JSON.parse(payload.body);
+    document.getElementById("new-notification").play();
     showNotification(notification);
 }
 
@@ -35,12 +36,32 @@ function showNotification(notification) {
     const notificationElement = document.createElement('li');
     const notificationList = document.querySelector('.notification-list');
     notificationElement.innerHTML = `
-        <div class="notification-content">
-             <p>${notification.content}</p>
-        </div>
+        <a href="${notification.url}">
+            <div class="flex px-4 py-3 hover:bg-gray-50 transition duration-200">
+              <img class="h-10 w-10 rounded-full object-cover" src="${notification.actor_avatar}" alt="Avatar">
+              <div class="ml-3 flex-1">
+                <div class="flex items-baseline justify-between">
+                  <p class="text-sm font-medium text-gray-900">${notification.type}</p>
+                  <p class="text-xs text-gray-500">${new Date().toLocaleDateString('en-GB')}</p>
+                </div>
+                <p class="text-xs text-gray-600 mt-1">${notification.content}</p>
+              </div>
+            </div>
+            </a>
     `;
     notificationList.appendChild(notificationElement);
     updateNotificationBadge(++notificationCount);
+    showTemporaryNotification(`You have new ${notificationCount} notification`);
+}
+
+function showTemporaryNotification(message) {
+    const originalTitle = document.title;
+    document.title = message;
+
+    // Trở về tiêu đề gốc sau 3 giây
+    setTimeout(() => {
+        document.title = originalTitle;
+    }, 3000);
 }
 
 function updateNotificationBadge(count) {
