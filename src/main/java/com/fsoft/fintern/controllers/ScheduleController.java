@@ -17,7 +17,7 @@ public class ScheduleController {
         // Lấy userID từ session và đưa vào model
         model.addAttribute("userId", user.getId());
         model.addAttribute("userRole", user.getRole().toString());
-
+        model.addAttribute("user", user);
         if(user.getRole() == Role.INTERN) {
             model.addAttribute("classId", user.getClass_id());
         }

@@ -234,37 +234,8 @@ public class SchedulingService {
 
                 SchedulingDTO dto = new SchedulingDTO(classId, className, classType, languageType, roomId, codeMentorId, languageMentorId);
                 results.add(dto);
-            }         
-            // Read mentor information from Mentors sheet
-            Sheet mentorSheet = workbook.getSheet("Mentors");
-            if (mentorSheet != null) {
-                // Skip header row
-                for (int i = 1; i <= mentorSheet.getLastRowNum(); i++) {
-                    Row row = mentorSheet.getRow(i);
-                    if (row == null) continue;
-                    
-                    String mentorIdStr = getCellValueAsString(row.getCell(0));
-                    String name = getCellValueAsString(row.getCell(1));
-                    String specialization = getCellValueAsString(row.getCell(2));
-                    String mentorType = getCellValueAsString(row.getCell(3));
-                    String maxHoursStr = getCellValueAsString(row.getCell(4));
-                    String minHoursStr = getCellValueAsString(row.getCell(5));
-                    
-                    // Skip empty rows
-                    if (mentorIdStr.isEmpty()) continue;
-                    
-                    try {
-                        Integer mentorId = Integer.parseInt(mentorIdStr);
-                        Integer maxHours = maxHoursStr.isEmpty() ? 40 : Integer.parseInt(maxHoursStr);
-                        Integer minHours = minHoursStr.isEmpty() ? 25 : Integer.parseInt(minHoursStr);
-                        
-                        MentorInfo mentorInfo = new MentorInfo(mentorId, name, specialization, mentorType, maxHours, minHours, 0);
-                        mentorMap.put(mentorId, mentorInfo);
-                    } catch (NumberFormatException e) {
-                        throw new IOException("Invalid number format in Mentors sheet: " + e.getMessage());
-                    }
-                }
             }
+            // Read mentor information from Mentors sheet
         }
 
         return results;
@@ -441,7 +412,7 @@ public class SchedulingService {
                     DEFAULT_END_DATE,
                     classData.getLanguageMentorId() // Sử dụng languageMentorId cho LANGUAGE_ONLY
             );
-          
+
             classSchedules.add(scheduleDTO);
         }
     }
@@ -1029,5 +1000,6 @@ public class SchedulingService {
             this.minHours = minHours;
             this.currentHours = currentHours;
         }
+    }
     }
 
