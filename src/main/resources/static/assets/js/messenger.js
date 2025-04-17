@@ -172,7 +172,18 @@ async function loadMember(conversationId, conversationType) {
         console.log("✅ Loaded members for conversation", conversationId, ":", conversationMember);
         console.log("✅ Current user_id:", user_id);
 
-        logAllMemberIds(conversationMember);
+        // Kiểm tra nếu là hội thoại 1:1 và có ít nhất 2 thành viên
+        if (conversationType === "OneToOne" && conversationMember.length >= 2) {
+            // Sử dụng user_id thay vì userId để đảm bảo đúng người dùng hiện tại
+            const otherMember = conversationMember.find(member => member.id != user_id);
+
+            if (otherMember) {
+                window.receiverId = otherMember.id;
+                console.log("✅ Receiver ID set to:", window.receiverId);
+            } else {
+                console.error("❌ Could not find the other member in this conversation");
+            }
+        }
     } catch (error) {
         console.error("❌ Lỗi khi tải danh sách thành viên:", error);
     }
@@ -305,7 +316,7 @@ function setConversation(element) {
     if (conversationType === "OneToOne") { // Sửa lỗi chính tả
         callButton.addEventListener("click", window.makeCall);
     } else {
-        callButton.addEventListener("click", window.makeCall);
+        callButton.addEventListener("click", () => alert("Please select a one-to-one conversation"));
     }
 
     // Handle file upload
@@ -369,7 +380,7 @@ function renderFile(typeFile) {
     if (fileList.length == 0) {
         file.innerHTML = "";
         file.classList.remove("active");
-} else {
+    } else {
         file.innerHTML = listFileHTML;
         file.classList.add("active");
     }
@@ -424,6 +435,23 @@ function handleWebsocketPayload(payload) {
         default:
             // Xử lý tin nhắn thông thường
             if (!message.conversation) return;
+
+            // Xử lý tên hiển thị cho cuộc trò chuyện one-to-one
+            if (message.conversation.type === "OneToOne") {
+                const conversationName = message.conversation.conversationName;
+                if (conversationName.includes(" - ")) {
+                    const nameParts = conversationName.split(" - ");
+                    // Nếu người dùng hiện tại là người gửi tin nhắn
+                    if (message.createdBy == user_id) {
+                        // Hiển thị tên người nhận (phần sau dấu "-")
+                        message.conversation.conversationName = nameParts[1];
+                    } else {
+                        // Nếu người dùng hiện tại là người nhận
+                        // Hiển thị tên người gửi (phần trước dấu "-")
+                        message.conversation.conversationName = nameParts[0];
+                    }
+                }
+            }
 
             // Kiểm tra xem cuộc trò chuyện đã tồn tại trong danh sách chưa
             const existingConversationIndex = conversation_list.findIndex(conv => conv.id === message.conversation.id);
@@ -946,6 +974,7 @@ function toggleModal(option) {
             mediaContainer.classList.toggle("hidden");
             break;
         case 'startOneToOneChat':
+            console.log("test");
             if (chatDropdown.classList.contains('hidden')) {
                 chatDropdown.classList.remove('hidden');
             } else {
@@ -1179,7 +1208,6 @@ function leaveGroup(userId) {
                     document.getElementById("chat-container").innerHTML = '';
                     conversationId = null;
                 }
-                document.getElementById("messengerBox").innerHTML = '';
             } else {
                 console.error("Failed to leave the group");
             }
@@ -1542,7 +1570,6 @@ function createGroup() {
         })
         .catch(error => {
             console.error('Error creating group:', error);
-            alert('Error creating group. Please try again.');
         });
 }
 
