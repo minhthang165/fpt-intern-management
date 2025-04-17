@@ -1011,7 +1011,7 @@ function toggleModal(option) {
                 `;
                 document.body.appendChild(addMembersModal);
             }
-            
+
             // Reset selected users list
             listUserAdd = [];
             updateSelectedGroupMembers();
