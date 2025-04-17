@@ -1415,8 +1415,7 @@
         taskElement.innerHTML = `
         ${statusIndicator}
         <div class="task-title">${task.taskName || 'Unnamed Task'}</div>
-        <div class="task-description">${task.description}</div>
-        <div class="task-link"> <a href="${task.fileData}" target="_blank" rel="noreferrer">Link đính <kè></kè>m</a> </div>
+        <div class="task-description">${task.description || 'Không có mô tả nào'}</div>
         <div class="task-meta">
           <div>Bắt đầu: ${formattedStartTime}</div>
           <div class="task-deadline">Hạn nộp: ${formattedEndTime}</div>

@@ -1,24 +1,13 @@
 package com.fsoft.fintern.controllers;
 
-import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
 import com.fsoft.fintern.dtos.AttendanceDTO;
+import com.fsoft.fintern.dtos.GetAttendanceDTO;
 import com.fsoft.fintern.models.Attendance;
-import com.fsoft.fintern.models.Task;
-import com.fsoft.fintern.repositories.AttendanceRepository;
 import com.fsoft.fintern.services.AttendanceService;
-import com.fsoft.fintern.services.ScheduleService;
-import com.fsoft.fintern.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -75,6 +64,21 @@ public class AttendanceRestController {
     @Operation(summary = "Find Intern Attendance by classId")
     public ResponseEntity<List<Object[]>> getAttendanceByClassId(@PathVariable int classId, @PathVariable int scheduleId) throws BadRequestException {
         return this.attendanceService.findUsersAttendanceByClassIdAndScheduleId(classId, scheduleId);
+    }
+
+    @GetMapping("/class/{classId}/{scheduleId}/user/{userId}")
+    @Operation(summary = "Find Intern Attendance by classId and userId")
+    public ResponseEntity<List<Object[]>> getAttendanceByClassIdAndUserId(@PathVariable int classId, @PathVariable int scheduleId, @PathVariable int userId) throws BadRequestException {
+        return this.attendanceService.findUsersAttendanceByClassIdAndUserIdAndScheduleId(classId, scheduleId, userId);
+    }
+
+    @PostMapping("/class/get-attendance")
+    @Operation(summary = "Find Intern Attendance by classId, ScheduleId, Date")
+    public ResponseEntity<List<Object[]>> getAttendanceByClassIdAndScheduleIdAndDate(@RequestBody GetAttendanceDTO getAttendanceDTO) throws BadRequestException {
+        return this.attendanceService.findUsersAttendanceByClassIdAndScheduleIdAndDate(
+                getAttendanceDTO.getClassId(),
+                getAttendanceDTO.getScheduleId(),
+                getAttendanceDTO.getCreateAt());
     }
 
 }
