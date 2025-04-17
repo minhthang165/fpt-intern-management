@@ -721,7 +721,7 @@ async function sendAttachments() {
                 // Create notification object
                 let notification = {
                     actorId: user_id,
-                    content: "You have new message from " + conversationName,
+                    content: "You have new message from " + (conversationType === "Group" ? conversationName : user_fullName),
                     actor_avatar: user_avatar,
                     type: "MESSENGER",
                     recipientIds: conversationMember.map(member => member.user.id).filter(id => id !== user_id),
@@ -769,7 +769,7 @@ async function sendText() {
         // Create notification object
         let notification = {
             actorId: user_id,
-            content: "You have new message from " + conversationName,
+            content: "You have new message from " + (conversationType === "Group" ? conversationName : user_fullName),
             actor_avatar: user_avatar,
             type: "MESSENGER",
             recipientIds: conversationMember.map(member => member.user.id).filter(id => id !== user_id),
