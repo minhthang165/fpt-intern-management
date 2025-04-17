@@ -3,6 +3,7 @@
 <head th:replace="include/master-header :: head"></head>
 <body class="body-area">
 <input type="hidden" id="user_id" th:value="${user.id}">
+
 <th:block th:replace="~{include/employee-sidebar :: sidebar(~{::content})}">
   <!--header breadcrumb area-->
   <div class="app__slide-wrapper" th:fragment="content">

@@ -36,6 +36,7 @@ public class NotificationDTO {
     public void setContent(String content) {
         this.content = content;
     }
+
     public String getActor_avatar() {
         return actor_avatar;
     }

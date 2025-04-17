@@ -29,12 +29,12 @@ public class ScheduleController {
         model.addAttribute("userId", user.getId());
         model.addAttribute("userRole", user.getRole().toString());
         model.addAttribute("user", user);
-        
+
         // Get rooms and handle empty case
         ResponseEntity<List<Room>> roomsResponse = roomService.findAll();
         List<Room> rooms = roomsResponse.getBody() != null ? roomsResponse.getBody() : new ArrayList<>();
         model.addAttribute("rooms", rooms);
-        
+
         if (user.getRole() == Role.INTERN) {
             model.addAttribute("classId", user.getClass_id());
         }
