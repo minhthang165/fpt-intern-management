@@ -1,35 +1,56 @@
 package com.fsoft.fintern.dtos;
 
-
-import com.fsoft.fintern.enums.TaskStatus;
-import java.sql.Timestamp;
-
+import java.time.LocalDateTime;
 
 public class CompletedTaskDTO {
-    private TaskStatus status;
-    private String comment;
-    private String fileData;
+
     private Integer taskId;
     private Integer userId;
-    private Timestamp startTime;
-    private Timestamp endTime;
+    private Integer classId;
+    private String file;
+    private String status; // Using String instead of Enum for simplicity in DTO
+    private String comment;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
+    private Boolean isActive;
+    private Integer mark;
 
-    public TaskStatus getStatus() {
-        return status;
+    public Integer getMark() {
+        return mark;
     }
 
-    public void setStatus(TaskStatus status) {
+    public void setMark(Integer mark) {
+        this.mark = mark;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
+    // Constructors
+    public CompletedTaskDTO() {}
+
+    public CompletedTaskDTO(Integer taskId, Integer userId, Integer classId, String file, String status,
+                            String comment, LocalDateTime createdAt, LocalDateTime updatedAt,
+                            LocalDateTime deletedAt, Boolean isActive) {
+        this.taskId = taskId;
+        this.userId = userId;
+        this.classId = classId;
+        this.file = file;
         this.status = status;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
         this.comment = comment;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.deletedAt = deletedAt;
+        this.isActive = isActive;
     }
 
+    // Getters and Setters
     public Integer getTaskId() {
         return taskId;
     }
@@ -46,27 +67,78 @@ public class CompletedTaskDTO {
         this.userId = userId;
     }
 
-    public Timestamp getStartTime() {
-        return startTime;
+    public Integer getClassId() {
+        return classId;
     }
 
-    public void setStartTime(Timestamp startTime) {
-        this.startTime = startTime;
+    public void setClassId(Integer classId) {
+        this.classId = classId;
     }
 
-    public Timestamp getEndTime() {
-        return endTime;
+    public String getFile() {
+        return file;
     }
 
-    public void setEndTime(Timestamp endTime) {
-        this.endTime = endTime;
+    public void setFile(String file) {
+        this.file = file;
     }
 
-    public String getFileData() {
-        return fileData;
+    public String getStatus() {
+        return status;
     }
 
-    public void setFileData(String fileData) {
-        this.fileData = fileData;
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    @Override
+    public String toString() {
+        return "CompletedTaskDTO{" +
+                "taskId=" + taskId +
+                ", userId=" + userId +
+                ", classId=" + classId +
+                ", status='" + status + '\'' +
+                ", isActive=" + isActive +
+                '}';
     }
 }

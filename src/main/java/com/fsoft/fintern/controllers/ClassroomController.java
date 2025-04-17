@@ -60,7 +60,24 @@ public class ClassroomController {
                 model.addAttribute("error", ErrorDictionaryConstraints.CLASS_IS_EMPTY.getMessage());
                 return "employee/EmployeeDashboard";
             }
-        } else {
+        }
+        else if (user.getRole() == Role.INTERN) {
+            try {
+                ResponseEntity<Page<User>> response = userService.findUserByRole(Role.INTERN, pageable);
+                model.addAttribute("internClassList", response.getBody());
+                List<Classroom> classrooms = classroomService.getClassroomsByMentorId(user.getId());
+                model.addAttribute("classList", classrooms);
+                model.addAttribute("classId", user.getClass_id());
+                model.addAttribute("internID", user.getId());
+                return "intern/InternViewClass";
+
+            } catch (BadRequestException e) {
+                model.addAttribute("error", ErrorDictionaryConstraints.CLASS_IS_EMPTY.getMessage());
+                return "intern/InternDashboard";
+            }
+
+        }
+        else {
             return "errorPage";
         }
     }

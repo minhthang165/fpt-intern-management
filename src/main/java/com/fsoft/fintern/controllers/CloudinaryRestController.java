@@ -32,4 +32,11 @@ public class CloudinaryRestController {
         Map data = this.cloudinaryService.upload(file);
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
+    @PostMapping("uploadFile")
+    @Operation(description = "Upload file to cloudinary and return data")
+    public ResponseEntity<Map> uploadImage2(@RequestParam("file") MultipartFile file){
+        System.out.println("data sout: " + file.getSize());
+        Map data = this.cloudinaryService.upload2(file);
+        return new ResponseEntity<>(data, HttpStatus.OK);
+    }
 }

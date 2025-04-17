@@ -1,122 +1,97 @@
 package com.fsoft.fintern.services;
 
-
-
-import com.fsoft.fintern.constraints.ErrorDictionaryConstraints;
-import com.fsoft.fintern.dtos.CompletedTaskDTO;
-import com.fsoft.fintern.enums.TaskStatus;
-import com.fsoft.fintern.models.CompletedTasks;
+import com.fsoft.fintern.models.CompletedTask;
 import com.fsoft.fintern.models.EmbedableID.CompletedTaskId;
-import com.fsoft.fintern.models.Task;
-import com.fsoft.fintern.models.User;
-import com.fsoft.fintern.repositories.ClassroomRepository;
 import com.fsoft.fintern.repositories.CompletedTaskRepository;
-import com.fsoft.fintern.repositories.TaskRepository;
-import com.fsoft.fintern.repositories.UserRepository;
-import com.fsoft.fintern.utils.BeanUtilsHelper;
-import org.apache.coyote.BadRequestException;
-import org.springframework.beans.BeanUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-
 @Service
 public class CompletedTaskService {
-    private final TaskRepository taskRepository;
-    private final UserRepository userRepository;
-    private final CompletedTaskRepository completeTaskRepository;
 
+    private final CompletedTaskRepository completedTaskRepository;
 
-    public CompletedTaskService(ClassroomRepository classRepository, TaskRepository taskRepository, UserRepository userRepository, CompletedTaskRepository completeTaskRepository) {
-        this.taskRepository = taskRepository;
-        this.userRepository = userRepository;
-        this.completeTaskRepository = completeTaskRepository;
-    }
-    public ResponseEntity<CompletedTasks> createCompletedTask(CompletedTaskDTO completedTaskDTO) throws BadRequestException {
-        Task existingTask = this.taskRepository.findById(completedTaskDTO.getTaskId()).orElse(null);
-        User existingUser = this.userRepository.findById(completedTaskDTO.getUserId()).orElse(null);
-
-
-
-        if (existingUser == null) {
-            throw new BadRequestException(ErrorDictionaryConstraints.USERS_ALREADY_EXISTS.getMessage());
-        }
-
-        if (existingTask == null) {
-            throw new BadRequestException(ErrorDictionaryConstraints.TASK_IS_EMPTY.getMessage());
-        }
-
-        if (existingTask.getDeletedAt() != null) {
-            throw new BadRequestException(ErrorDictionaryConstraints.TASK_IS_COMPLETED.getMessage());
-        }
-
-
-
-        CompletedTasks newCompleted = new CompletedTasks();
-        newCompleted.setId(new CompletedTaskId(completedTaskDTO.getTaskId(), completedTaskDTO.getUserId()));
-        newCompleted.setComment(completedTaskDTO.getComment());
-        newCompleted.setTask(existingTask);
-        newCompleted.setUser(existingUser);
-        newCompleted.setStatus(TaskStatus.COMPLETED);
-        newCompleted.setCreatedAt(Timestamp.from(Instant.now()));
-
-        CompletedTasks savedCompTask = this.completeTaskRepository.save(newCompleted);
-        return new ResponseEntity<>(savedCompTask, HttpStatus.CREATED);
+    @Autowired
+    public CompletedTaskService(CompletedTaskRepository completedTaskRepository) {
+        this.completedTaskRepository = completedTaskRepository;
     }
 
+    // Create or update a task
+    public CompletedTask saveTask(CompletedTask task) {
+        // Validate status
+        if (!isValidStatus(task.getStatus())) {
+            throw new IllegalArgumentException("Status must be PENDING, COMPLETED, or REJECTED");
+        }
+        return completedTaskRepository.save(task);
+    }
 
-    public ResponseEntity<List<CompletedTasks>> findAll() throws BadRequestException {
-        List<CompletedTasks> completedTasks = this.completeTaskRepository.findAll();
+    // Get all tasks
+    public List<CompletedTask> getAllTasks() {
+        return completedTaskRepository.findAll();
+    }
 
-        if (completedTasks.isEmpty()) {
-            throw new BadRequestException(ErrorDictionaryConstraints.COMPLETED_TASK_IS_NOT_FOUND.getMessage());
+    // Get a task by ID
+    public Optional<CompletedTask> getTaskById(CompletedTaskId id) {
+        return completedTaskRepository.findById(id);
+    }
+
+    // Delete a task (soft delete by setting deleted_at and is_active)
+    public void deleteTask(CompletedTaskId id) {
+        Optional<CompletedTask> taskOpt = completedTaskRepository.findById(id);
+        if (taskOpt.isPresent()) {
+            CompletedTask task = taskOpt.get();
+            task.setIsActive(false);
+            completedTaskRepository.save(task);
         } else {
-            return new ResponseEntity<>(completedTasks, HttpStatus.OK);
+            throw new RuntimeException("Task not found with ID: " + id);
         }
     }
-
-
-    public ResponseEntity<CompletedTasks> findById(CompletedTaskId completedTaskId) throws BadRequestException {
-
-        Optional<CompletedTasks> completedTask = this.completeTaskRepository.findById(completedTaskId);
-        if (completedTask.isPresent()) {
-            return new ResponseEntity<>(completedTask.get(), HttpStatus.OK);
-        } else {
-            throw new BadRequestException(ErrorDictionaryConstraints.COMPLETED_TASK_IS_NOT_FOUND.getMessage());
-        }
+    public Optional<CompletedTask> getCompletedTaskByTaskIdAndUserIdAndClassId(int taskId, int userId, int classId) {
+        return completedTaskRepository.findByTaskIdAndUserIdAndClassroomId(taskId, userId, classId);
     }
+    public CompletedTask updateComment(CompletedTaskId id, String comment) {
+        Optional<CompletedTask> existingTaskOpt = completedTaskRepository.findById(id);
 
-
-    public ResponseEntity<CompletedTasks> update(CompletedTaskId completedTaskId, CompletedTaskDTO completedTaskDTO) throws BadRequestException {
-        CompletedTasks completedTask = this.completeTaskRepository.findById(completedTaskId).orElseThrow(()
-                -> new BadRequestException(ErrorDictionaryConstraints.TASK_NOT_EXISTS_ID.getMessage()));
-
-        BeanUtils.copyProperties(completedTaskDTO, completedTask, BeanUtilsHelper.getNullPropertyNames(completedTaskDTO));
-
-        this.completeTaskRepository.save(completedTask);
-        return new ResponseEntity<>(completedTask, HttpStatus.OK);
-    }
-
-
-
-    public ResponseEntity<CompletedTasks> delete(CompletedTaskId completedTaskId) throws BadRequestException {
-
-        CompletedTasks completedTask = this.completeTaskRepository.findById(completedTaskId).orElse(null);
-        if (completedTask == null) {
-            throw new BadRequestException(ErrorDictionaryConstraints.TASK_NOT_EXISTS_ID.getMessage());
+        if (!existingTaskOpt.isPresent()) {
+            throw new RuntimeException("Task not found with ID: " + id);
         }
 
-        this.completeTaskRepository.delete(completedTask);
-        return new ResponseEntity<>(completedTask, HttpStatus.OK);
+        CompletedTask existingTask = existingTaskOpt.get();
+
+        // Cập nhật comment nếu được cung cấp
+        if (comment != null) {
+            existingTask.setComment(comment);
+        }
+
+        return completedTaskRepository.save(existingTask);
     }
 
+    public CompletedTask updateMark(CompletedTaskId id, Integer mark) {
+        Optional<CompletedTask> existingTaskOpt = completedTaskRepository.findById(id);
+
+        if (!existingTaskOpt.isPresent()) {
+            throw new RuntimeException("Task not found with ID: " + id);
+        }
+
+        CompletedTask existingTask = existingTaskOpt.get();
+
+        // Cập nhật mark và trạng thái nếu mark được cung cấp
+        if (mark != null) {
+            existingTask.setMark(mark);
+            existingTask.setStatus("COMPLETED");
+        }
+
+        return completedTaskRepository.save(existingTask);
+    }
+    public List<CompletedTask> listCompletedTask(int taskId, int classId) {
+        return completedTaskRepository.findByTaskIdAndClassroomId(taskId, classId);
+    }
+
+    // Helper method to validate status
+    private boolean isValidStatus(String status) {
+        return "PENDING".equals(status) || "COMPLETED".equals(status) || "REJECTED".equals(status);
+    }
 }
-

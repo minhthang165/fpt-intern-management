@@ -15,4 +15,4 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     List<Schedule> findBySubjectId(Integer subjectId);
     List<Schedule> findByRoomId(Integer roomId);
 
-} 
+}

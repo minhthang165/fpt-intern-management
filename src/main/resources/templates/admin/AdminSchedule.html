@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="include/master-header :: head">
+    <!-- CSS directly linked for this page -->
+    <link rel="stylesheet" th:href="~{/assets/css/adminSchedule.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="body-area">
+<input type="hidden" id="userId" th:value="${userId}">
+<input type="hidden" id="userRole" th:value="${userRole}">
+<input type="hidden" id="classId" th:value="${classId}">
+
+<th:block th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
+    <!--header breadcrumb area-->
+    <div class="app__slide-wrapper" th:fragment="content">
+        <div class="breadcrumb__area">
+            <div class="breadcrumb__wrapper mb-35" style="padding: 0px;">
+                <div class="breadcrumb__main">
+                    <div class="breadcrumb__inner">
+                        <div class="breadcrumb__icon">
+                            <i class="flaticon-home"></i>
+                        </div>
+                        <div class="breadcrumb__menu">
+                            <nav>
+                                <ul>
+                                    <li><span><a href="authenticate">Dashboard</a></span></li>
+                                    <li class="active"><span>Manage Schedule</span></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="container">
+            <!-- Header -->
+                       <!-- <div class="header">-->
+            <!--                <h1>QUẢN LÝ ĐĂNG KÝ XEM THI</h1>-->
+            <!--                <div class="header-buttons">-->
+            <!--                    <button class="btn btn-outline">-->
+            <!--                        <i class="fas fa-calendar"></i>-->
+            <!--                        Chọn phòng thi-->
+            <!--                    </button>-->
+            <!--                    <button class="btn btn-outline">-->
+            <!--                        <i class="fas fa-envelope"></i>-->
+            <!--                        Gửi email-->
+            <!--                    </button>-->
+            <!--                    <button class="btn btn-primary">-->
+            <!--                        <i class="fas fa-cog"></i>-->
+            <!--                        Cài đặt đợt thi-->
+            <!--                    </button>-->
+            <!--                    <button class="btn btn-circle">-->
+                                   <!-- <i class="fas fa-info"></i> -->
+            <!--                    </button>-->
+            <!--                </div>-->
+            <!--            </div> -->
+
+            <!-- Navigation bar -->
+            <div class="nav-bar">
+                <div class="nav-buttons">
+                    <button class="nav-btn-1" id="prevDay">
+                        <i class="flaticon-right-arrow-1"></i>
+                    </button>
+                    <button class="nav-btn" id="nextDay">
+                        <i class="flaticon-right-arrow-1"></i>
+                    </button>
+                    <button class="nav-btn" id="todayBtn">Today</button>
+                    <button class="nav-btn">Week</button>
+                    <button class="nav-btn">Day</button>
+                </div>
+                <div class="current-date">2 tháng 4, 2025</div>
+                <div class="action-buttons">
+                    <button class="btn btn-dark" id="generateScheduleBtn">Import Schedule</button>
+                    <button class="btn btn-dark" id="downloadTemplateBtn">Download Template</button>
+                </div>
+            </div>
+
+            <!-- Schedule table -->
+            <div class="schedule-container">
+                <table class="schedule-table">
+                    <thead>
+                    <tr>
+                        <!-- Modified diagonal header cell -->
+                        <th class="corner-header">
+                            <div class="diagonal-container">
+                                <div class="diagonal-content">
+                                    <div class="times-label">Time</div>
+                                    <div class="rooms-label">Room</div>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="hour-column">07:00</th>
+                        <th class="hour-column">08:00</th>
+                        <th class="hour-column">09:00</th>
+                        <th class="hour-column">10:00</th>
+                        <th class="hour-column">11:00</th>
+                        <th class="hour-column">12:00</th>
+                        <th class="hour-column">13:00</th>
+                        <th class="hour-column">14:00</th>
+                        <th class="hour-column">15:00</th>
+                        <th class="hour-column">16:00</th>
+                        <th class="hour-column">17:00</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Debug info -->
+                    <tr>
+                        <td colspan="12" th:if="${rooms.empty}">No rooms found in database</td>
+                    </tr>
+                    <tr th:each="room : ${rooms}" th:if="${room.active}">
+                        <td class="room-column" th:text="${room.roomName}"></td>
+                        <td class="schedule-cell"></td>
+                        <td class="schedule-cell"></td>
+                        <td class="schedule-cell"></td>
+                        <td class="schedule-cell"></td>
+                        <td class="schedule-cell"></td>
+                        <td class="schedule-cell"></td>
+                        <td class="schedule-cell"></td>
+                        <td class="schedule-cell"></td>
+                        <td class="schedule-cell"></td>
+                        <td class="schedule-cell"></td>
+                        <td class="schedule-cell"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</th:block>
+<footer th:replace="~{include/master-footer :: footer}"></footer>
+
+<link rel="stylesheet" th:href="@{/assets/css/adminSchedule.css}">
+<script th:src="@{/assets/js/adminSchedule.js}"></script>
+
+
+</body>
+</html>

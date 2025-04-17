@@ -1,5 +1,7 @@
 package com.fsoft.fintern.dtos;
 
+import com.fsoft.fintern.enums.TaskStatus;
+
 import java.sql.Timestamp;
 
 
@@ -7,7 +9,26 @@ public class TaskDTO {
     private String taskName;
     private String fileData;
     private Timestamp startTime;
+    private String description;
+    private TaskStatus status;
     private Timestamp endTime;
+
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     private Integer creatorId;
     private Integer classId;
     public Integer getCreator() {
