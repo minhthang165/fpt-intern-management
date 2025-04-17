@@ -3,6 +3,7 @@
 <head th:replace="include/master-header :: head"></head>
 <body class="body-area">
 <input type="hidden" id="user_id" th:value="${user.id}">
+
 <th:block th:replace="~{include/employee-sidebar :: sidebar(~{::content})}">
   <!--header breadcrumb area-->
   <div class="app__slide-wrapper" th:fragment="content">
@@ -26,7 +27,6 @@
       </div>
     </div>
   </div>
-</div>
   <!-- insert main content here -->
   <section th:fragment="content">
     <main class="inset-0 bg-white p-8 shadow-lg animate-fade-in overflow-auto z-[9999]">
@@ -49,25 +49,6 @@
               <h1 class="text-xl font-medium">Calendar</h1>
             </div>
             <div class="flex items-center gap-2 action-buttons">
-<!--              <button class="btn btn-outline">-->
-<!--                &lt;!&ndash; Hash Icon &ndash;&gt;-->
-<!--                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">-->
-<!--                  <line x1="4" y1="9" x2="20" y2="9"></line>-->
-<!--                  <line x1="4" y1="15" x2="20" y2="15"></line>-->
-<!--                  <line x1="10" y1="3" x2="8" y2="21"></line>-->
-<!--                  <line x1="16" y1="3" x2="14" y2="21"></line>-->
-<!--                </svg>-->
-<!--                <span>Join with an ID</span>-->
-<!--              </button>-->
-<!--              <button class="btn btn-outline">-->
-<!--                &lt;!&ndash; Monitor Icon &ndash;&gt;-->
-<!--                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">-->
-<!--                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>-->
-<!--                  <line x1="8" y1="21" x2="16" y2="21"></line>-->
-<!--                  <line x1="12" y1="17" x2="12" y2="21"></line>-->
-<!--                </svg>-->
-<!--                <span>Meet now</span>-->
-<!--              </button>-->
               <button class="btn btn-primary">
                 <!-- Plus Icon -->
                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

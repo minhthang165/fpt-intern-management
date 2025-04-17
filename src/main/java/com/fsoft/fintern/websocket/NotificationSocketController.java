@@ -26,14 +26,9 @@ public class NotificationSocketController {
 
     @MessageMapping("/notification.sendNotification")
     public void sendNotification(@Payload NotificationDTO dto) {
-        NotificationType type = dto.getType();
-        Notification notification = new Notification();
-        notification.setContent(dto.getContent());
-        notification.setUrl(dto.getUrl());
-        notification.setNotificationType(type);
         for (Integer recipientId : dto.getRecipientIds()) {
             if(recipientId != dto.getActorId())
-                messagingTemplate.convertAndSend("/topic/notifications/" + recipientId, notification);
+                messagingTemplate.convertAndSend("/topic/notifications/" + recipientId, dto);
         }
     }
 
