@@ -1,0 +1,368 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: #333;
+    background-color: #fff;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Navigation bar */
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f3f4f6;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #4b5563;
+}
+
+.nav-btn-1 {
+    margin-top: 2px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #4b5563;
+    transform: rotate(180deg);
+}
+
+.nav-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.nav-status {
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.current-date {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-left: 5px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid transparent;
+}
+
+.btn-dark {
+    background-color: #374151;
+    color: white;
+    border: none;
+}
+
+.btn-dark:hover {
+    background-color: #1f2937;
+}
+
+/* Schedule table */
+.schedule-container {
+    overflow-x: auto;
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e5e7eb;
+}
+
+.schedule-table th,
+.schedule-table td {
+    border: 1px solid #e5e7eb;
+    padding: 12px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.schedule-table th {
+    background-color: #f9fafb;
+    font-weight: 500;
+    color: #4b5563;
+    text-align: left;
+}
+
+/* Corner header with diagonal divider */
+.corner-header {
+    position: relative;
+    width: 160px;
+    height: 60px;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.diagonal-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.diagonal-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Diagonal line */
+.diagonal-content::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 140%;
+    height: 1px;
+    background-color: #e5e7eb;
+    transform: rotate(20deg);
+    transform-origin: bottom left;
+}
+
+
+.rooms-label {
+    position: absolute;
+    bottom: 5px;
+    left: 10px;
+    font-weight: 500;
+    color: #4b5563;
+    font-size: 18px;
+}
+
+
+.times-label {
+    position: absolute;
+    top: 3px;
+    right: 10px;
+    font-weight: 500;
+    color: #4b5563;
+    font-size: 18px;
+}
+
+.room-column {
+    width: 160px;
+    font-weight: 500;
+}
+
+.hour-column {
+    min-width: 100px;
+    text-align: center;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-container input {
+    width: 16px;
+    height: 16px;
+}
+
+
+.schedule-cell {
+    height: 80px;
+    vertical-align: top;
+    position: relative;
+    background-color: #fff;
+    transition: background-color 0.2s;
+    padding: 0 !important;
+    overflow: visible;
+}
+
+.schedule-cell:hover {
+    background-color: #f9fafb;
+}
+
+.schedule-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 2px;
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    z-index: 5;
+    border: 1px solid rgba(0,0,0,0.1);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.schedule-item:hover {
+    transform: scale(1.02);
+    z-index: 20;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.schedule-time {
+    font-weight: bold;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px;
+    color: #333;
+    border-bottom: 1px dashed rgba(0,0,0,0.1);
+    padding-bottom: 2px;
+}
+
+.class-name {
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.mentor-username {
+    opacity: 0.75;
+    font-size: 10px;
+    font-style: italic;
+}
+
+.subject-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px;
+    opacity: 0.85;
+}
+
+/* Footer */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-badges {
+    display: flex;
+    gap: 8px;
+}
+
+.badge {
+    padding: 8px 16px;
+    border-radius: 9999px;
+    color: white;
+    font-weight: 500;
+}
+
+.badge-blue {
+    background-color: #3b82f6;
+}
+
+.badge-yellow {
+    background-color: #f59e0b;
+}
+
+.badge-green {
+    background-color: #10b981;
+}
+
+.badge-red {
+    background-color: #ef4444;
+}
+
+.badge-gray {
+    background-color: #6b7280;
+}
+
+.badge-orange {
+    background-color: #f97316;
+}
+
+.status-text {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-bar {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .nav-buttons, .action-buttons {
+        flex-wrap: wrap;
+    }
+
+    .corner-header {
+        width: 120px;
+    }
+
+    .room-column {
+        width: 120px;
+    }
+
+    .hour-column {
+        min-width: 80px;
+    }
+
+    .footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .status-badges {
+        flex-wrap: wrap;
+    }
+}
+
+.font-weight-bold {
+    font-weight: bold;
+}

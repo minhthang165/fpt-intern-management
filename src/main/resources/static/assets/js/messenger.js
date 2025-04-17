@@ -78,52 +78,89 @@ function connectWebSocket() {
 
 //---------------------------------------- Call SETUP ----------------------------------------------
 
+
 window.makeCall = () => {
     if (!conversationId) {
         alert("Please select a conversation first!");
         return;
     }
 
-    if (conversationType !== "OneToOne") {
-        alert("Calling is only supported for one-to-one conversations.");
+    if (!conversationMember || conversationMember.length === 0) {
+        alert("No members found in this conversation!");
+        console.error("Conversation members not loaded:", conversationMember);
         return;
     }
 
-    const receiverId = window.receiverId;
-    if (!receiverId) {
-        alert("Unable to determine the recipient for the call!");
-        console.error("Receiver ID not found. Members:", conversationMember);
+    // Lấy danh sách receiverIds từ conversationMember, loại bỏ user_id của người hiện tại
+    const receiverIds = conversationMember
+        .filter(member => member.user.id != user_id)
+        .map(member => member.user.id);
+
+    if (receiverIds.length === 0) {
+        alert("No other members to call in this conversation!");
         return;
     }
 
-    console.log("✅ Initiating call with receiverId:", receiverId);
-    startCall(receiverId);
+    console.log("✅ Initiating call with receiverIds:", receiverIds);
+    startCall(receiverIds);
 };
 
-const startCall = (receiverId) => {
-    if (!receiverId) {
-        alert("Invalid Receiver ID!");
+const startCall = (receiverIds) => {
+    if (!receiverIds || receiverIds.length === 0) {
+        alert("Invalid Receiver IDs!");
         return;
     }
 
-    const roomID = Math.floor(Math.random() * 10000) + "";
+    const roomID = Math.floor(Math.random() * 10000) + ""; // Tạo roomID duy nhất cho toàn bộ cuộc gọi
     localStorage.setItem("roomID", roomID);
 
-    fetch(`/calls/create/${window.userId}/${receiverId}/${roomID}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.roomID) {
-                window.open(`/video-call.html?room=${data.roomID}`, '_blank');
+    // Gửi yêu cầu gọi đến từng receiverId
+    const callPromises = receiverIds.map(receiverId => {
+        return fetch(`/calls/create/${window.userId}/${receiverId}/${roomID}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.roomID) {
+                    console.log(`✅ Call request sent to ${receiverId} with roomID: ${data.roomID}`);
+                    return { success: true, receiverId };
+                } else {
+                    console.warn(`❌ Receiver ${receiverId} is busy or unavailable`);
+                    return { success: false, receiverId };
+                }
+            })
+            .catch(error => {
+                console.error(`❌ Error sending call to ${receiverId}:`, error);
+                return { success: false, receiverId };
+            });
+    });
+
+    // Chờ tất cả các yêu cầu hoàn tất
+    Promise.all(callPromises)
+        .then(results => {
+            const successfulCalls = results.filter(result => result.success);
+            if (successfulCalls.length > 0) {
+                // Nếu ít nhất một yêu cầu thành công, mở tab video call
+                window.open(`/video-call.html?room=${roomID}`, '_blank');
             } else {
-                alert("Receiver is busy or unavailable!");
+                alert("All receivers are busy or unavailable!");
             }
         })
-        .catch(error => console.error("Error starting call:", error));
+        .catch(error => {
+            console.error("Error processing call requests:", error);
+            alert("An error occurred while initiating the call.");
+        });
 };
+function logAllMemberIds(members) {
+    if (!members || members.length === 0) {
+        console.log("⚠️ No members to log");
+        return;
+    }
 
+    const memberIds = members.map(member => member.user.id);
+    console.log("📋 All member IDs in conversation:", memberIds);
+}
 
 //---------------------------------------- CONVERSATION INTERACT (SET, LOAD) ------------------------------------------------
 async function loadMember(conversationId, conversationType) {
@@ -136,18 +173,7 @@ async function loadMember(conversationId, conversationType) {
         console.log("✅ Loaded members for conversation", conversationId, ":", conversationMember);
         console.log("✅ Current user_id:", user_id);
 
-        // Kiểm tra nếu là hội thoại 1:1 và có ít nhất 2 thành viên
-        if (conversationType === "OneToOne" && conversationMember.length >= 2) {
-            // Sử dụng user_id thay vì userId để đảm bảo đúng người dùng hiện tại
-            const otherMember = conversationMember.find(member => member.id != user_id);
-
-            if (otherMember) {
-                window.receiverId = otherMember.id;
-                console.log("✅ Receiver ID set to:", window.receiverId);
-            } else {
-                console.error("❌ Could not find the other member in this conversation");
-            }
-        }
+        logAllMemberIds(conversationMember);
     } catch (error) {
         console.error("❌ Lỗi khi tải danh sách thành viên:", error);
     }
@@ -280,7 +306,7 @@ function setConversation(element) {
     if (conversationType === "OneToOne") { // Sửa lỗi chính tả
         callButton.addEventListener("click", window.makeCall);
     } else {
-        callButton.addEventListener("click", () => alert("Please select a one-to-one conversation"));
+        callButton.addEventListener("click", window.makeCall);
     }
 
     // Handle file upload
@@ -1523,12 +1549,14 @@ function createGroup() {
 
 
 function removeMember(userId, userName) {
+    console.log(userId + userName);
     if (!isCurrentUserAdmin) {
         alert("Only admin can remove members from the group.");
         return;
     }
 
     if (confirm(`Are you sure you want to remove ${userName} from the group?`)) {
+        // Gọi API để xóa người dùng
         fetch(`/api/conversation-user/${conversationId}/users/${userId}`, {
             method: 'DELETE'
         })
@@ -1716,6 +1744,7 @@ async function addMembersToGroup() {
         // Cập nhật danh sách thành viên cục bộ
         const updatedMembers = [...conversationMember];
         listUserAdd.forEach(user => {
+            // Chuyển đổi cấu trúc để phù hợp với dữ liệu conversationMember
             updatedMembers.push({
                 user: {
                     id: user.id,
@@ -1855,7 +1884,7 @@ async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
     try {
         // Trước tiên, tìm kiếm xem đã có cuộc trò chuyện one-to-one giữa hai người dùng chưa
         const response = await fetch(`/api/conversation/find-one-to-one/${currentUserId}/${recipientId}`);
-        
+
         if (response.ok) {
             const conversationData = await response.json();
             
@@ -1865,7 +1894,7 @@ async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
                 return conversationData;
             }
         }
-        
+
         // Nếu chưa có cuộc trò chuyện, tạo mới
         // Tải thông tin người nhận
         const recipientResponse = await fetch(`/api/user/${recipientId}`);
@@ -1903,7 +1932,6 @@ async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
                 "Content-Type": "application/json; charset=UTF-8"
             }
         });
-        
         // Thêm người nhận vào cuộc trò chuyện
         await fetch('/api/conversation-user/add-user', {
             method: 'POST',
@@ -1916,7 +1944,6 @@ async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
                 "Content-Type": "application/json; charset=UTF-8"
             }
         });
-        
         console.log("✅ Đã tạo cuộc trò chuyện mới:", newConversation);
         return newConversation;
     } catch (error) {
@@ -1929,7 +1956,7 @@ async function findOrCreateOneToOneConversation(currentUserId, recipientId) {
 async function findOneToOneChatWithUser(recipientId) {
     try {
         document.getElementById("chat-container").innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Đang tải cuộc trò chuyện...</div>';
-        
+
         // Chỉ tìm kiếm cuộc trò chuyện hiện có, không tạo mới
         const response = await fetch(`/api/conversation/find-one-to-one/${user_id}/${recipientId}`);
         let conversation = null;

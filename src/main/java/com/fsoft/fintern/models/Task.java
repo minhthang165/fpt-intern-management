@@ -26,6 +26,16 @@ public class Task extends BaseModel {
     @Column(name = "[file]")
     private String fileData;
 
+    @Column(name = "description")
+    private String description;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     @ManyToOne
     @JoinColumn(name = "class_id", referencedColumnName = "id")

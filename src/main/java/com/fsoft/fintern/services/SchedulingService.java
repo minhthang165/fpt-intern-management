@@ -43,15 +43,28 @@ public class SchedulingService {
     private static final String KOREAN_SUBJECT = "Korean";
 
 
-    private static final LocalTime MORNING_START = LocalTime.of(7, 30);
-    private static final LocalTime MORNING_END = LocalTime.of(11, 30);
-    private static final LocalTime LANGUAGE_START = LocalTime.of(7, 30);
-    private static final LocalTime LANGUAGE_END = LocalTime.of(9, 0);
-    private static final LocalTime NOON_START = LocalTime.of(9, 0);
-    private static final LocalTime NOON_END = LocalTime.of(12, 0);
-    private static final LocalTime AFTERNOON_START = LocalTime.of(13, 0);
-    private static final LocalTime AFTERNOON_END = LocalTime.of(17, 0);
-    private static final LocalTime AFTERNOON_START_LANGUAGE = LocalTime.of(14, 00);
+    private static final LocalTime LANGUAGE_ONLY_START = LocalTime.of(7, 30);
+    private static final LocalTime LANGUAGE_ONLY_END = LocalTime.of(9, 0);
+
+    private static final LocalTime CODE_ONLY_MORNING_START = LocalTime.of(7, 30);
+    private static final LocalTime CODE_ONLY_MORNING_END = LocalTime.of(11, 30);
+    private static final LocalTime CODE_ONLY_AFTERNOON_START = LocalTime.of(13, 0);
+    private static final LocalTime CODE_ONLY_AFTERNOON_END = LocalTime.of(17, 0);
+
+    private static final LocalTime COMBINED_START_LANGUAGE_FIRST_1 = LocalTime.of(8, 30);
+    private static final LocalTime COMBINED_END_LANGUAGE_FIRST_1 = LocalTime.of(11, 30);
+    private static final LocalTime COMBINED_START_LANGUAGE_FIRST_2 = LocalTime.of(9, 0);
+    private static final LocalTime COMBINED_END_LANGUAGE_FIRST_2 = LocalTime.of(12, 0);
+
+    private static final LocalTime COMBINED_START_CODE_AFTER = LocalTime.of(13, 0);
+    private static final LocalTime COMBINED_END_CODE_AFTER = LocalTime.of(17, 0);
+
+    private static final LocalTime COMBINED_START_CODE_FIRST = LocalTime.of(7, 30);
+    private static final LocalTime COMBINED_END_CODE_FIRST = LocalTime.of(11, 30);
+    private static final LocalTime COMBINED_START_LANGUAGE_AFTER = LocalTime.of(14, 0);
+    private static final LocalTime COMBINED_END_LANGUAGE_AFTER = LocalTime.of(17, 0);
+
+
     private static final LocalDate DEFAULT_START_DATE = LocalDate.now();
     private static final LocalDate DEFAULT_END_DATE = DEFAULT_START_DATE.plusMonths(3);
 
@@ -78,7 +91,6 @@ public class SchedulingService {
 
     public List<SchedulingDTO> importSchedulingData(MultipartFile file) throws IOException {
         List<SchedulingDTO> results = new ArrayList<>();
-
 
         mentorMap.clear();
         try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
@@ -261,8 +273,6 @@ public class SchedulingService {
         Subject japaneseSubject = getOrCreateSubject(JAPANESE_SUBJECT);
         Subject koreanSubject = getOrCreateSubject(KOREAN_SUBJECT);
 
-        // 3. Sắp xếp các lớp học theo độ ưu tiên
-        // Độ ưu tiên: COMBINED > LANGUAGE_ONLY > CODE_ONLY
         Collections.sort(data, (a, b) -> {
             int priorityA = getPriority(a.getClassType());
             int priorityB = getPriority(b.getClassType());
@@ -308,6 +318,7 @@ public class SchedulingService {
 
         return schedule;
     }
+
     private List<ScheduleDTO> scheduleClass(SchedulingDTO classData, List<Room> availableRooms,
                                             Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule,
                                             Subject codeSubject, Subject japaneseSubject, Subject koreanSubject,
@@ -372,7 +383,7 @@ public class SchedulingService {
                 boolean canUse = true;
                 // Kiểm tra phòng có sẵn cho tất cả các ngày từ thứ 2 đến thứ 6
                 for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
-                    if (!isRoomAvailable(room, day, LANGUAGE_START, LANGUAGE_END, roomSchedule)) {
+                    if (!isRoomAvailable(room, day, LANGUAGE_ONLY_START, LANGUAGE_ONLY_END, roomSchedule)) {
                         canUse = false;
                         break;
                     }
@@ -394,8 +405,7 @@ public class SchedulingService {
         // Xếp lịch vào tất cả các ngày từ thứ 2 đến thứ 6
         for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
             // Đánh dấu phòng đã được sử dụng
-            markRoomAsOccupied(selectedRoom, day, LANGUAGE_START, LANGUAGE_END, roomSchedule);
-
+            markRoomAsOccupied(selectedRoom, day, LANGUAGE_ONLY_START, LANGUAGE_ONLY_END, roomSchedule);
 
             // Tăng số lần sử dụng phòng
             roomUsageCount.put(selectedRoom.getId(), roomUsageCount.getOrDefault(selectedRoom.getId(), 0) + 1);
@@ -406,8 +416,8 @@ public class SchedulingService {
                     languageSubject.getSubjectName(),
                     selectedRoom.getRoomName(),
                     day,
-                    LANGUAGE_START,
-                    LANGUAGE_END,
+                    LANGUAGE_ONLY_START,
+                    LANGUAGE_ONLY_END,
                     DEFAULT_START_DATE,
                     DEFAULT_END_DATE,
                     classData.getLanguageMentorId() // Sử dụng languageMentorId cho LANGUAGE_ONLY
@@ -418,12 +428,10 @@ public class SchedulingService {
     }
 
     private void scheduleCodeOnlyClass(SchedulingDTO classData, List<Room> availableRooms,
-
                                        Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule,
                                        Subject codeSubject, List<ScheduleDTO> classSchedules,
                                        Map<Integer, Integer> roomUsageCount) {
-
-        // Code-only classes flexible: morning (7:30-11:30) or afternoon (13:00-17:00)
+        // Code-only classes flexible: morning (7:30-9:00) or afternoon (13:00-17:00)
 
         // Tìm phòng học khả dụng, ưu tiên dùng phòng mà người dùng đã chọn (nếu có)
         Room selectedRoom = null;
@@ -449,7 +457,7 @@ public class SchedulingService {
                 boolean canUse = true;
                 // Kiểm tra phòng có sẵn cho tất cả các ngày từ thứ 2 đến thứ 6 (buổi sáng)
                 for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
-                    if (!isRoomAvailable(room, day, MORNING_START, MORNING_END, roomSchedule)) {
+                    if (!isRoomAvailable(room, day, CODE_ONLY_MORNING_START, CODE_ONLY_MORNING_END, roomSchedule)) {
                         canUse = false;
                         break;
                     }
@@ -463,7 +471,7 @@ public class SchedulingService {
                 // Nếu không thể xếp buổi sáng, thử buổi chiều
                 canUse = true;
                 for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
-                    if (!isRoomAvailable(room, day, AFTERNOON_START, AFTERNOON_END, roomSchedule)) {
+                    if (!isRoomAvailable(room, day, CODE_ONLY_AFTERNOON_START, CODE_ONLY_AFTERNOON_END, roomSchedule)) {
                         canUse = false;
                         break;
                     }
@@ -485,7 +493,7 @@ public class SchedulingService {
         // Kiểm tra có thể xếp lịch buổi sáng cho tất cả các ngày không
         boolean canScheduleMorning = true;
         for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
-            if (!isRoomAvailable(selectedRoom, day, MORNING_START, MORNING_END, roomSchedule)) {
+            if (!isRoomAvailable(selectedRoom, day, CODE_ONLY_MORNING_START, CODE_ONLY_MORNING_END, roomSchedule)) {
                 canScheduleMorning = false;
                 break;
             }
@@ -495,8 +503,7 @@ public class SchedulingService {
         if (canScheduleMorning) {
             for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
                 // Đánh dấu phòng đã được sử dụng
-                markRoomAsOccupied(selectedRoom, day, MORNING_START, MORNING_END, roomSchedule);
-
+                markRoomAsOccupied(selectedRoom, day, CODE_ONLY_MORNING_START, CODE_ONLY_MORNING_END, roomSchedule);
 
                 // Tăng số lần sử dụng phòng
                 roomUsageCount.put(selectedRoom.getId(), roomUsageCount.getOrDefault(selectedRoom.getId(), 0) + 1);
@@ -507,12 +514,11 @@ public class SchedulingService {
                         codeSubject.getSubjectName(),
                         selectedRoom.getRoomName(),
                         day,
-                        MORNING_START,
-                        MORNING_END,
+                        CODE_ONLY_MORNING_START,
+                        CODE_ONLY_MORNING_END,
                         DEFAULT_START_DATE,
                         DEFAULT_END_DATE,
                         classData.getCodeMentorId() // Sử dụng codeMentorId cho CODE_ONLY
-
                 );
 
                 classSchedules.add(scheduleDTO);
@@ -521,8 +527,7 @@ public class SchedulingService {
             // Nếu không thể xếp buổi sáng, xếp buổi chiều
             for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
                 // Đánh dấu phòng đã được sử dụng
-                markRoomAsOccupied(selectedRoom, day, AFTERNOON_START, AFTERNOON_END, roomSchedule);
-
+                markRoomAsOccupied(selectedRoom, day, CODE_ONLY_AFTERNOON_START, CODE_ONLY_AFTERNOON_END, roomSchedule);
 
                 // Tăng số lần sử dụng phòng
                 roomUsageCount.put(selectedRoom.getId(), roomUsageCount.getOrDefault(selectedRoom.getId(), 0) + 1);
@@ -533,8 +538,8 @@ public class SchedulingService {
                         codeSubject.getSubjectName(),
                         selectedRoom.getRoomName(),
                         day,
-                        AFTERNOON_START,
-                        AFTERNOON_END,
+                        CODE_ONLY_AFTERNOON_START,
+                        CODE_ONLY_AFTERNOON_END,
                         DEFAULT_START_DATE,
                         DEFAULT_END_DATE,
                         classData.getCodeMentorId() // Sử dụng codeMentorId cho CODE_ONLY
@@ -547,15 +552,16 @@ public class SchedulingService {
     }
 
     private void scheduleCombinedClass(SchedulingDTO classData, List<Room> availableRooms,
-
                                        Map<String, Map<Integer, Set<TimeSlot>>> roomSchedule,
                                        Subject codeSubject, Subject languageSubject,
                                        List<ScheduleDTO> classSchedules,
                                        Map<Integer, Integer> roomUsageCount) {
-        // Combined classes with flexible morning/afternoon scheduling
+        // Combined classes with the new scheduling requirements
+
         // Tìm phòng học khả dụng, ưu tiên dùng phòng mà người dùng đã chọn (nếu có)
         Room selectedRoom = null;
-        boolean codeInMorning = true; // Mặc định code học buổi sáng
+        boolean languageOnlyUsingRoom = false;
+        boolean useOption1 = true; // default to option 1 (8:30-11:30)
 
         if (classData.getRoomId() != null) {
             selectedRoom = availableRooms.stream()
@@ -563,6 +569,7 @@ public class SchedulingService {
                     .findFirst()
                     .orElse(null);
         }
+
         // Nếu không có phòng được chọn, tìm phòng khả dụng theo độ ưu tiên sử dụng
         if (selectedRoom == null) {
             // Tạo danh sách các phòng sắp xếp theo số lần sử dụng (nhiều nhất lên đầu)
@@ -573,31 +580,31 @@ public class SchedulingService {
                     roomUsageCount.getOrDefault(a.getId(), 0)
             ));
 
-            // Thử tìm phòng với code học buổi sáng trước
+            // Try to find a room for the combined class
             for (Room room : sortedRooms) {
-                boolean canUse = true;
+                // Check if this room is used by LANGUAGE_ONLY class
+                boolean roomUsedByLanguageOnly = false;
                 for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
-                    if (!isRoomAvailable(room, day, MORNING_START, MORNING_END, roomSchedule) ||
-                            !isRoomAvailable(room, day, AFTERNOON_START_LANGUAGE, AFTERNOON_END, roomSchedule)) {
-                        canUse = false;
-                        break;
+                    Map<Integer, Set<TimeSlot>> daySchedule = roomSchedule.get(day);
+                    if (daySchedule.containsKey(room.getId())) {
+                        Set<TimeSlot> timeSlots = daySchedule.get(room.getId());
+                        for (TimeSlot slot : timeSlots) {
+                            if (slot.startTime.equals(LANGUAGE_ONLY_START) && slot.endTime.equals(LANGUAGE_ONLY_END)) {
+                                roomUsedByLanguageOnly = true;
+                                break;
+                            }
+                        }
                     }
+                    if (roomUsedByLanguageOnly) break;
                 }
 
-                if (canUse) {
-                    selectedRoom = room;
-                    codeInMorning = true;
-                    break;
-                }
-            }
-
-            // Nếu không tìm được phòng với code học buổi sáng, thử tìm với code học buổi chiều
-            if (selectedRoom == null) {
-                for (Room room : sortedRooms) {
+                if (roomUsedByLanguageOnly) {
+                    // If room is used by LANGUAGE_ONLY, need to schedule language in morning, code in afternoon
                     boolean canUse = true;
                     for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
-                        if (!isRoomAvailable(room, day, NOON_START, NOON_END, roomSchedule) ||
-                                !isRoomAvailable(room, day, AFTERNOON_START, AFTERNOON_END, roomSchedule)) {
+                        // Check for language time (9:00-12:00) and code time (13:00-17:00)
+                        if (!isRoomAvailable(room, day, COMBINED_START_LANGUAGE_FIRST_2, COMBINED_END_LANGUAGE_FIRST_2, roomSchedule) ||
+                                !isRoomAvailable(room, day, COMBINED_START_CODE_AFTER, COMBINED_END_CODE_AFTER, roomSchedule)) {
                             canUse = false;
                             break;
                         }
@@ -605,60 +612,123 @@ public class SchedulingService {
 
                     if (canUse) {
                         selectedRoom = room;
-                        codeInMorning = false;
+                        languageOnlyUsingRoom = true;
+                        useOption1 = false; // use option 2 (9:00-12:00)
+                        break;
+                    }
+                } else {
+                    // Try option 1 (8:30-11:30 + 13:00-17:00)
+                    boolean canUseOption1 = true;
+                    for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
+                        if (!isRoomAvailable(room, day, COMBINED_START_LANGUAGE_FIRST_2, COMBINED_END_LANGUAGE_FIRST_2, roomSchedule) ||
+                                !isRoomAvailable(room, day, COMBINED_START_CODE_AFTER, COMBINED_END_CODE_AFTER, roomSchedule)) {
+                            canUseOption1 = false;
+                            break;
+                        }
+                    }
+
+                    if (canUseOption1) {
+                        selectedRoom = room;
+                        languageOnlyUsingRoom = false;
+                        useOption1 = true;
+                        break;
+                    }
+
+                    // Try option 2 (9:00-12:00 + 13:00-17:00)
+                    boolean canUseOption2 = true;
+                    for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
+                        if (!isRoomAvailable(room, day, COMBINED_START_LANGUAGE_FIRST_2, COMBINED_END_LANGUAGE_FIRST_2, roomSchedule) ||
+                                !isRoomAvailable(room, day, COMBINED_START_CODE_AFTER, COMBINED_END_CODE_AFTER, roomSchedule)) {
+                            canUseOption2 = false;
+                            break;
+                        }
+                    }
+
+                    if (canUseOption2) {
+                        selectedRoom = room;
+                        languageOnlyUsingRoom = false;
+                        useOption1 = false; // use option 2
+                        break;
+                    }
+
+                    // If no Language First options work and room is not used by LANGUAGE_ONLY,
+                    // try the original code first option as fallback
+                    boolean canUseCodeFirst = true;
+                    for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
+                        if (!isRoomAvailable(room, day, COMBINED_START_CODE_FIRST, COMBINED_END_CODE_FIRST, roomSchedule) ||
+                                !isRoomAvailable(room, day, COMBINED_START_LANGUAGE_AFTER, COMBINED_END_LANGUAGE_AFTER, roomSchedule)) {
+                            canUseCodeFirst = false;
+                            break;
+                        }
+                    }
+
+                    if (canUseCodeFirst) {
+                        selectedRoom = room;
+                        languageOnlyUsingRoom = false;
+                        useOption1 = false; // This will be handled separately
                         break;
                     }
                 }
             }
+        } else {
+            // If a specific room was requested, check if it's used by LANGUAGE_ONLY
+            boolean roomUsedByLanguageOnly = false;
+            for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
+                Map<Integer, Set<TimeSlot>> daySchedule = roomSchedule.get(day);
+                if (daySchedule.containsKey(selectedRoom.getId())) {
+                    Set<TimeSlot> timeSlots = daySchedule.get(selectedRoom.getId());
+                    for (TimeSlot slot : timeSlots) {
+                        if (slot.startTime.equals(LANGUAGE_ONLY_START) && slot.endTime.equals(LANGUAGE_ONLY_END)) {
+                            roomUsedByLanguageOnly = true;
+                            break;
+                        }
+                    }
+                }
+                if (roomUsedByLanguageOnly) break;
+            }
+
+            languageOnlyUsingRoom = roomUsedByLanguageOnly;
+
+            // Check schedule availability
+            if (languageOnlyUsingRoom) {
+                // Only option is COMBINED_START_LANGUAGE_FIRST_2
+                useOption1 = false;
+            } else {
+                // Check if option 1 (8:30-11:30) works
+                boolean canUseOption1 = true;
+                for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
+                    if (!isRoomAvailable(selectedRoom, day, COMBINED_START_LANGUAGE_FIRST_2, COMBINED_END_LANGUAGE_FIRST_2, roomSchedule) ||
+                            !isRoomAvailable(selectedRoom, day, COMBINED_START_CODE_AFTER, COMBINED_END_CODE_AFTER, roomSchedule)) {
+                        canUseOption1 = false;
+                        break;
+                    }
+                }
+
+                useOption1 = canUseOption1;
+            }
         }
+
 
         if (selectedRoom == null) {
             throw new RuntimeException("No available room for combined class: " + classData.getClassName() +
                     " that can be used from Monday to Friday for both morning and afternoon");
         }
 
+        // Schedule based on the determination
         // Xếp lịch cho tất cả các ngày từ thứ 2 đến thứ 6
         for (String day : Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")) {
-            if (codeInMorning) {
-                // Sáng học lập trình
-                markRoomAsOccupied(selectedRoom, day, MORNING_START, MORNING_END, roomSchedule);
-                ScheduleDTO codeScheduleDTO = createScheduleDTO(
-                        classData.getClassName(),
-                        codeSubject.getSubjectName(),
-                        selectedRoom.getRoomName(),
-                        day,
-                        MORNING_START,
-                        MORNING_END,
-                        DEFAULT_START_DATE,
-                        DEFAULT_END_DATE,
-                        classData.getCodeMentorId()
-                );
-                classSchedules.add(codeScheduleDTO);
-
-                // Chiều học ngoại ngữ (14:00-17:00)
-                markRoomAsOccupied(selectedRoom, day, AFTERNOON_START_LANGUAGE, AFTERNOON_END, roomSchedule);
-                ScheduleDTO langScheduleDTO = createScheduleDTO(
-                        classData.getClassName(),
-                        languageSubject.getSubjectName(),
-                        selectedRoom.getRoomName(),
-                        day,
-                        AFTERNOON_START_LANGUAGE,
-                        AFTERNOON_END,
-                        DEFAULT_START_DATE,
-                        DEFAULT_END_DATE,
-                        classData.getLanguageMentorId()
-                );
-                classSchedules.add(langScheduleDTO);
-            } else {
+            if (languageOnlyUsingRoom) {
+                // Nếu phòng đã được sử dụng bởi lớp LANGUAGE_ONLY, BẮT BUỘC dùng option 2
+                // Option 2: Language in morning (9:00-12:00), code in afternoon (13:00-17:00)
                 // Sáng học ngoại ngữ (9:00-12:00)
-                markRoomAsOccupied(selectedRoom, day, NOON_START, NOON_END, roomSchedule);
+                markRoomAsOccupied(selectedRoom, day, COMBINED_START_LANGUAGE_FIRST_2, COMBINED_END_LANGUAGE_FIRST_2, roomSchedule);
                 ScheduleDTO langScheduleDTO = createScheduleDTO(
                         classData.getClassName(),
                         languageSubject.getSubjectName(),
                         selectedRoom.getRoomName(),
                         day,
-                        NOON_START,
-                        NOON_END,
+                        COMBINED_START_LANGUAGE_FIRST_2,
+                        COMBINED_END_LANGUAGE_FIRST_2,
                         DEFAULT_START_DATE,
                         DEFAULT_END_DATE,
                         classData.getLanguageMentorId()
@@ -666,19 +736,112 @@ public class SchedulingService {
                 classSchedules.add(langScheduleDTO);
 
                 // Chiều học lập trình
-                markRoomAsOccupied(selectedRoom, day, AFTERNOON_START, AFTERNOON_END, roomSchedule);
+                markRoomAsOccupied(selectedRoom, day, COMBINED_START_CODE_AFTER, COMBINED_END_CODE_AFTER, roomSchedule);
                 ScheduleDTO codeScheduleDTO = createScheduleDTO(
                         classData.getClassName(),
                         codeSubject.getSubjectName(),
                         selectedRoom.getRoomName(),
                         day,
-                        AFTERNOON_START,
-                        AFTERNOON_END,
+                        COMBINED_START_CODE_AFTER,
+                        COMBINED_END_CODE_AFTER,
                         DEFAULT_START_DATE,
                         DEFAULT_END_DATE,
                         classData.getCodeMentorId()
                 );
                 classSchedules.add(codeScheduleDTO);
+//            } else if (useOption1) {
+//                // Nếu phòng KHÔNG được sử dụng bởi lớp LANGUAGE_ONLY và có thể dùng option 1
+//                // Option 1: Language in morning (8:30-11:30), code in afternoon (13:00-17:00)
+//                markRoomAsOccupied(selectedRoom, day, COMBINED_START_LANGUAGE_FIRST_2, COMBINED_END_LANGUAGE_FIRST_2, roomSchedule);
+//                ScheduleDTO langScheduleDTO = createScheduleDTO(
+//                    classData.getClassName(),
+//                    languageSubject.getSubjectName(),
+//                    selectedRoom.getRoomName(),
+//                    day,
+//                    COMBINED_START_LANGUAGE_FIRST_2,
+//                    COMBINED_END_LANGUAGE_FIRST_2,
+//                    DEFAULT_START_DATE,
+//                    DEFAULT_END_DATE,
+//                    classData.getLanguageMentorId()
+//                );
+//                classSchedules.add(langScheduleDTO);
+//
+//                // Afternoon code class
+//                markRoomAsOccupied(selectedRoom, day, COMBINED_START_CODE_AFTER, COMBINED_END_CODE_AFTER, roomSchedule);
+//                ScheduleDTO codeScheduleDTO = createScheduleDTO(
+//                    classData.getClassName(),
+//                    codeSubject.getSubjectName(),
+//                    selectedRoom.getRoomName(),
+//                    day,
+//                    COMBINED_START_CODE_AFTER,
+//                    COMBINED_END_CODE_AFTER,
+//                    DEFAULT_START_DATE,
+//                    DEFAULT_END_DATE,
+//                    classData.getCodeMentorId()
+//                );
+//                classSchedules.add(codeScheduleDTO);
+            } else if (!languageOnlyUsingRoom) {
+                // Nếu phòng KHÔNG được sử dụng bởi lớp LANGUAGE_ONLY và KHÔNG thể dùng option 1
+                // Option 2: Language in morning (9:00-12:00), code in afternoon (13:00-17:00)
+                markRoomAsOccupied(selectedRoom, day, COMBINED_START_LANGUAGE_FIRST_2, COMBINED_END_LANGUAGE_FIRST_2, roomSchedule);
+                ScheduleDTO langScheduleDTO = createScheduleDTO(
+                        classData.getClassName(),
+                        languageSubject.getSubjectName(),
+                        selectedRoom.getRoomName(),
+                        day,
+                        COMBINED_START_LANGUAGE_FIRST_2,
+                        COMBINED_END_LANGUAGE_FIRST_2,
+                        DEFAULT_START_DATE,
+                        DEFAULT_END_DATE,
+                        classData.getLanguageMentorId()
+                );
+                classSchedules.add(langScheduleDTO);
+
+                // Chiều học lập trình
+                markRoomAsOccupied(selectedRoom, day, COMBINED_START_CODE_AFTER, COMBINED_END_CODE_AFTER, roomSchedule);
+                ScheduleDTO codeScheduleDTO = createScheduleDTO(
+                        classData.getClassName(),
+                        codeSubject.getSubjectName(),
+                        selectedRoom.getRoomName(),
+                        day,
+                        COMBINED_START_CODE_AFTER,
+                        COMBINED_END_CODE_AFTER,
+                        DEFAULT_START_DATE,
+                        DEFAULT_END_DATE,
+                        classData.getCodeMentorId()
+                );
+                classSchedules.add(codeScheduleDTO);
+            } else {
+                // Fallback: Code first (7:30-11:30), Language after (14:00-17:00)
+                // Sáng học lập trình
+                markRoomAsOccupied(selectedRoom, day, COMBINED_START_CODE_FIRST, COMBINED_END_CODE_FIRST, roomSchedule);
+                ScheduleDTO codeScheduleDTO = createScheduleDTO(
+                        classData.getClassName(),
+                        codeSubject.getSubjectName(),
+                        selectedRoom.getRoomName(),
+                        day,
+                        COMBINED_START_CODE_FIRST,
+                        COMBINED_END_CODE_FIRST,
+                        DEFAULT_START_DATE,
+                        DEFAULT_END_DATE,
+                        classData.getCodeMentorId()
+                );
+                classSchedules.add(codeScheduleDTO);
+
+                // Chiều học ngoại ngữ (14:00-17:00)
+                markRoomAsOccupied(selectedRoom, day, COMBINED_START_LANGUAGE_AFTER, COMBINED_END_LANGUAGE_AFTER, roomSchedule);
+                ScheduleDTO langScheduleDTO = createScheduleDTO(
+                        classData.getClassName(),
+                        languageSubject.getSubjectName(),
+                        selectedRoom.getRoomName(),
+                        day,
+                        COMBINED_START_LANGUAGE_AFTER,
+                        COMBINED_END_LANGUAGE_AFTER,
+                        DEFAULT_START_DATE,
+                        DEFAULT_END_DATE,
+                        classData.getLanguageMentorId()
+                );
+                classSchedules.add(langScheduleDTO);
             }
 
             // Tăng số lần sử dụng phòng (2 lần mỗi ngày)
@@ -744,7 +907,6 @@ public class SchedulingService {
         dto.setEndTime(endTime);
         dto.setStartDate(startDate);
         dto.setEndDate(endDate);
-
 
         // Use the assigned mentor ID
         dto.setMentorId(assignedMentorId);
@@ -914,7 +1076,6 @@ public class SchedulingService {
                 Schedule savedSchedule = scheduleRepository.save(schedule);
                 successCount++;
 
-
                 System.out.println("Đã lưu lịch học ID: " + savedSchedule.getId() +
                         ", Lớp: " + savedSchedule.getClassField().getClassName() +
                         ", Môn: " + savedSchedule.getSubject().getSubjectName() +
@@ -922,7 +1083,6 @@ public class SchedulingService {
                         ", Ngày: " + savedSchedule.getDayOfWeek() +
                         ", Giờ: " + savedSchedule.getStartTime() + "-" + savedSchedule.getEndTime() +
                         ", " + mentorStatus);
-
 
                 if (savedSchedule.getMentor() == null) {
                     System.err.println("CẢNH BÁO: Lịch học ID " + savedSchedule.getId() + " đã được lưu nhưng mentor_id là NULL!");
@@ -1001,5 +1161,5 @@ public class SchedulingService {
             this.currentHours = currentHours;
         }
     }
-    }
+}
 

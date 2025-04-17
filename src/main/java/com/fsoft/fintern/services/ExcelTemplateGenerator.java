@@ -167,12 +167,12 @@ public class ExcelTemplateGenerator {
 
 
         // Add dropdown list for ClassType
-        createDropdownList(workbook, sheet, 1, 100, 2, 2,
-                Arrays.stream(ClassType.values()).map(Enum::name).toArray(String[]::new));
-
-        // Add dropdown list for LanguageType
-        createDropdownList(workbook, sheet, 1, 100, 3, 3,
-                Arrays.stream(LanguageType.values()).map(Enum::name).toArray(String[]::new));
+//        createDropdownList(workbook, sheet, 1, 100, 2, 2,
+//                Arrays.stream(ClassType.values()).map(Enum::name).toArray(String[]::new));
+//
+//        // Add dropdown list for LanguageType
+//        createDropdownList(workbook, sheet, 1, 100, 3, 3,
+//                Arrays.stream(LanguageType.values()).map(Enum::name).toArray(String[]::new));
 
         // Auto-size columns
         for (int i = 0; i < 5; i++) {
@@ -193,23 +193,23 @@ public class ExcelTemplateGenerator {
 
         Cell cellSpecialization = headerRow.createCell(2);
         cellSpecialization.setCellValue("Specialization");
-        
+
         Cell cellMentorType = headerRow.createCell(3);
         cellMentorType.setCellValue("Type");
 
         Cell cellMaxHoursPerWeek = headerRow.createCell(4);
         cellMaxHoursPerWeek.setCellValue("MaxHoursPerWeek");
-        
+
         Cell cellMinHoursPerWeek = headerRow.createCell(5);
         cellMinHoursPerWeek.setCellValue("MinHoursPerWeek");
 
         // Add dropdown list for Specialization
-        createDropdownList(workbook, sheet, 1, 100, 2, 2,
-                new String[]{"CODE", "JAPANESE", "KOREAN"});
-
-        // Add dropdown list for Mentor Type
-        createDropdownList(workbook, sheet, 1, 100, 3, 3,
-                new String[]{"CodeMentor", "LanguageMentor"});
+//        createDropdownList(workbook, sheet, 1, 100, 2, 2,
+//                new String[]{"CODE", "JAPANESE", "KOREAN"});
+//
+//        // Add dropdown list for Mentor Type
+//        createDropdownList(workbook, sheet, 1, 100, 3, 3,
+//                new String[]{"CodeMentor", "LanguageMentor"});
 
         // Auto-size columns
         for (int i = 0; i < 6; i++) {
@@ -238,12 +238,12 @@ public class ExcelTemplateGenerator {
         cellSlotType.setCellValue("SlotType");
 
         // Add dropdown list for DayOfWeek
-        createDropdownList(workbook, sheet, 1, 100, 1, 1,
-                new String[]{"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"});
-
-        // Add dropdown list for SlotType
-        createDropdownList(workbook, sheet, 1, 100, 4, 4,
-                new String[]{"LANG_SHORT", "LANG_LONG", "CODE_AM", "CODE_PM"});
+//        createDropdownList(workbook, sheet, 1, 100, 1, 1,
+//                new String[]{"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"});
+//
+//        // Add dropdown list for SlotType
+//        createDropdownList(workbook, sheet, 1, 100, 4, 4,
+//                new String[]{"LANG_SHORT", "LANG_LONG", "CODE_AM", "CODE_PM"});
 
         // Auto-size columns
         for (int i = 0; i < 5; i++) {
@@ -294,38 +294,4 @@ public class ExcelTemplateGenerator {
         }
     }
 
-    private void createDropdownList(Workbook workbook, Sheet sheet, int firstRow, int lastRow,
-                                    int firstCol, int lastCol, String[] values) {
-        // Kiểm tra phạm vi ô hợp lệ
-        if (firstRow > lastRow || firstCol > lastCol) {
-            throw new IllegalArgumentException("Invalid cell range: firstRow=" + firstRow + ", lastRow=" + lastRow +
-                    ", firstCol=" + firstCol + ", lastCol=" + lastCol);
-        }
-
-        // Create a hidden sheet for the list values
-        String hiddenSheetName = "Hidden_" + sheet.getSheetName() + "_" + firstCol + "_" + lastCol;
-        Sheet hiddenSheet = workbook.createSheet(hiddenSheetName);
-        workbook.setSheetHidden(workbook.getSheetIndex(hiddenSheetName), true);
-
-        // Populate the hidden sheet with the list values
-        for (int i = 0; i < values.length; i++) {
-            Row row = hiddenSheet.createRow(i);
-            row.createCell(0).setCellValue(values[i]);
-        }
-
-        // Define the name range that refers to the list
-        String rangeName = "Range_" + sheet.getSheetName() + "_" + firstCol + "_" + lastCol;
-        Name name = workbook.createName();
-        name.setNameName(rangeName);
-        name.setRefersToFormula(hiddenSheetName + "!$A$1:$A$" + values.length);
-
-        // Create the data validation for the dropdown
-        CellRangeAddressList addressList = new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol);
-        DataValidationHelper dvHelper = sheet.getDataValidationHelper();
-        DataValidationConstraint dvConstraint = dvHelper.createFormulaListConstraint("=" + rangeName);
-        DataValidation validation = dvHelper.createValidation(dvConstraint, addressList);
-        validation.setSuppressDropDownArrow(true);
-        validation.setShowErrorBox(true);
-        sheet.addValidationData(validation);
-    }
 }

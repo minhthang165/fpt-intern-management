@@ -1,5 +1,6 @@
 <div th:fragment="sidebar(content)">
     <!-- Preloder start -->
+    <input type="hidden" id="user_id_header" th:value="${user.id}">
     <input type="hidden" id="user_fullName" th:value="${user.first_name + ' ' + user.last_name}">
     <input type="hidden" id="user_avatar" th:value="${user.avatar_path}">
     <div id="preloader">
