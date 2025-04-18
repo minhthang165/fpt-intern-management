@@ -100,6 +100,7 @@ public class TaskService {
         newTask.setEndTime(taskDTO.getEndTime());
         newTask.setClassroom(existedClass);
         newTask.setCreatedBy(creator.getId());
+        newTask.setDescription(taskDTO.getDescription());
 
 
         Task savedTask = this.taskRepository.save(newTask);

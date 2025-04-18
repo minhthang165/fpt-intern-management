@@ -891,6 +891,7 @@ body {
 
 /* Unified Modal Styles */
 .modal-content {
+    width: 120%;
     border-radius: 10px;
     border: none;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -1302,6 +1303,218 @@ body {
 
 /* Ensure modal content is above other elements */
 .modal-content {
+    width: 120%;
     position: relative;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+/* Task Detail Styles */
+/* Task Detail Styles */
+.task-detail-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.task-detail-header {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #e67e22;
+}
+
+.task-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.task-detail-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #6c757d;
+}
+
+.task-detail-content {
+    padding: 10px;
+    background-color: white;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+
+/* Modal Header Styles */
+.modal-header {
+    display: flex;
+    align-items: center;
+}
+
+.modal-title {
+    font-weight: bold;
+    color: #e67e22;
+    font-size: 1.25rem;
+    text-align: center;
+}
+
+/* Make the modal larger */
+.modal-lg {
+    max-width: 200%; /* Increase from default 800px to 90% of viewport width */
+    margin: 1.75rem auto;
+}
+
+/* Horizontal Table Styles */
+.submission-table-container {
+    overflow-x: auto;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.submission-table {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+/* Update grid template columns to include the new update time column */
+.submission-table-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr 1.5fr 2fr 0.8fr; /* Adjusted column widths */
+    font-weight: bold;
+    border-bottom: 2px solid #dee2e6;
+    padding: 0.5rem 0;
+    background-color: #f8f9fa;
+}
+
+.submission-table-body {
+    display: table-row-group;
+}
+
+/* Update the submission row to match the header columns */
+.submission-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr 1.5fr 2fr 0.8fr; /* Must match header */
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.5rem 0;
+    cursor: pointer;
+}
+
+.submission-row:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.submission-row:hover {
+    background-color: #e9ecef;
+}
+
+.submission-cell {
+    padding: 8px 12px;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.header-cell {
+    background-color: #e9ecef;
+    color: #495057;
+    font-weight: bold;
+    text-align: center;
+}
+
+.submission-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    width: 100%;
+    grid-column: 1 / -1; /* Span all columns */
+}
+
+.status-submitted {
+    color: #198754;
+    font-weight: bold;
+}
+
+.status-not-submitted {
+    color: #dc3545;
+}
+
+.mark-graded {
+    font-weight: bold;
+    color: #198754;
+    text-align: center;
+}
+
+.mark-not-graded {
+    color: #6c757d;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Add styles for the update time cell */
+.update-time {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Pagination styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    grid-column: 1 / -1; /* Span all columns */
+}
+
+.pagination {
+    margin: 0;
+}
+
+.page-item .page-link {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    color: #007bff;
+}
+
+.page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+/* Make the table responsive */
+@media (max-width: 992px) {
+    .submission-table-container {
+        overflow-x: auto;
+    }
+
+    .submission-table-header,
+    .submission-row {
+        min-width: 800px; /* Ensure minimum width for scrolling on small screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .task-detail-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal-lg {
+        max-width: 95%;
+        margin: 0.5rem auto;
+    }
 }
