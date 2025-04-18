@@ -1,7 +1,9 @@
 package com.fsoft.fintern.controllers;
 
+import com.fsoft.fintern.dtos.UserTaskDTO;
 import com.fsoft.fintern.models.CompletedTask;
 import com.fsoft.fintern.models.EmbedableID.CompletedTaskId;
+import com.fsoft.fintern.models.User;
 import com.fsoft.fintern.services.CompletedTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/completed-tasks")
@@ -111,6 +114,20 @@ public class CompletedTaskRestController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>("An error occurred while updating the comment", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/class/{classId}/task/{taskId}")
+    public ResponseEntity<List<UserTaskDTO>> getUsersWithCompletedTasks(
+            @PathVariable Integer classId,
+            @PathVariable Integer taskId) {
+        try {
+            // Call the service method to get the user-task list
+            List<UserTaskDTO> userTaskList = completedTaskService.getUsersWithCompletedTasks(classId, taskId);
+            return ResponseEntity.ok(userTaskList);
+        } catch (Exception e) {
+            // Handle any errors
+            return ResponseEntity.status(500).body(null);
         }
     }
 

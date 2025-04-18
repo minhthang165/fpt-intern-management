@@ -1,27 +1,29 @@
 package com.fsoft.fintern.services;
 
+import com.fsoft.fintern.dtos.UserTaskDTO;
 import com.fsoft.fintern.models.CompletedTask;
 import com.fsoft.fintern.models.EmbedableID.CompletedTaskId;
+import com.fsoft.fintern.repositories.ClassroomRepository;
 import com.fsoft.fintern.repositories.CompletedTaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.fsoft.fintern.models.User;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class CompletedTaskService {
 
     private final CompletedTaskRepository completedTaskRepository;
-
+    private final ClassroomRepository class_repository;
     @Autowired
-    public CompletedTaskService(CompletedTaskRepository completedTaskRepository) {
+    public CompletedTaskService(CompletedTaskRepository completedTaskRepository, ClassroomRepository classRepository) {
         this.completedTaskRepository = completedTaskRepository;
+        class_repository = classRepository;
     }
 
     // Create or update a task
     public CompletedTask saveTask(CompletedTask task) {
-        // Validate status
         if (!isValidStatus(task.getStatus())) {
             throw new IllegalArgumentException("Status must be PENDING, COMPLETED, or REJECTED");
         }
@@ -94,4 +96,24 @@ public class CompletedTaskService {
     private boolean isValidStatus(String status) {
         return "PENDING".equals(status) || "COMPLETED".equals(status) || "REJECTED".equals(status);
     }
+    public List<UserTaskDTO> getUsersWithCompletedTasks(Integer classId, Integer taskId) {
+        // Get list of users by classId
+        List<User> users = class_repository.findByClassIdAndIsActiveTrue(classId);
+
+        // Create list to store UserTaskDTOs
+        List<UserTaskDTO> userTaskList = new ArrayList<>();
+
+        // Iterate through users and get their completed task (if any)
+        for (User user : users) {
+            Optional<CompletedTask> completedTask = completedTaskRepository
+                    .findByTaskIdAndUserIdAndClassroomId(taskId, user.getId(), classId);
+
+            // Add UserTaskDTO with user and their completed task (or null if not found)
+            userTaskList.add(new UserTaskDTO(user, completedTask.orElse(null)));
+        }
+
+        return userTaskList;
+    }
+
+
 }
