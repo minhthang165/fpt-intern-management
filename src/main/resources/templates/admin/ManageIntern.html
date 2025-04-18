@@ -170,6 +170,60 @@
         text-align: center;
         cursor: pointer;
     }
+
+
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: white;
+        color: #333;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        display: none;
+        min-width: 300px;
+        border-left: 4px solid #ff6600;
+        animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+    }
+
+    .toast-content {
+        display: flex;
+        align-items: center;
+    }
+
+    .toast-icon {
+        color: #ff6600;
+        font-size: 22px;
+        margin-right: 15px;
+    }
+
+    .toast-message {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+            display: none;
+        }
+    }
 </style>
 <body class="body-area">
 <th:block th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
@@ -229,14 +283,14 @@
                     <!--                        pagination-->
                     <div class="table-footer">
                         <div class="records-selector">
-                            <span>Hiển thị</span>
+                            <span>Show</span>
                             <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)">
                                 <option value="5" selected>5</option>
                                 <option value="10">10</option>
                                 <option value="20">20</option>
                                 <option value="50">50</option>
                             </select>
-                            <span>bản ghi</span>
+                            <span>record</span>
                         </div>
 
                         <div class="pagination-container">
@@ -322,16 +376,10 @@
 
 
 
-        <!-- Toast Notification -->
-        <div class="toast-container position-fixed top-0 end-0 p-3">
-            <div id="notificationToast" class="toast align-items-center text-white bg-dark border-0" role="alert"
-                 aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body" id="notificationMessage">
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                            aria-label="Close"></button>
-                </div>
+        <div id="toastNotification" class="toast-notification">
+            <div class="toast-content">
+                <i class="fas fa-check-circle toast-icon"></i>
+                <div class="toast-message" id="toastMessage">Notification message</div>
             </div>
         </div>
 
@@ -588,7 +636,8 @@
                 // Hiển thị modal
                 $('#editUserModal').modal('show');
             })
-            .catch(error => console.error("Error fetching user:", error));
+            .catch(error => showToast("Error for Fetch user: " + error, "warning"));
+
     }
 
     function updateUser() {
@@ -642,11 +691,12 @@
             .then(response => response.json())
             .then(user => {
                 $('#editUserModal').modal('hide');
+                showToast("Class updated successfully!", "success");
                 setTimeout(() => {
                     location.reload();
                 }, 500);
             })
-            .catch(error => console.error("Error updating user:", error));
+            .catch(error => showToast("Error updating user: " + error, "error"));
     }
 
 
@@ -771,6 +821,44 @@
         if (currentPage < totalPages - 1) {
             pagination.innerHTML += `<li class="pagination-item"><a href="#" onclick="loadPage(${currentPage + 1}, ${pageSize})" class="pagination-link pagination-arrow">&#8250;</a></li>`;
         }
+    }
+
+    //Toast thông báo
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toastNotification');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = toast.querySelector('.toast-icon');
+
+        // Set message
+        toastMessage.textContent = message;
+
+        // Set appropriate icon and color based on type
+        if (type === 'success') {
+            toastIcon.className = 'fas fa-check-circle toast-icon';
+            toast.style.borderLeftColor = '#28a745';
+            toastIcon.style.color = '#28a745';
+        } else if (type === 'error') {
+            toastIcon.className = 'fas fa-exclamation-circle toast-icon';
+            toast.style.borderLeftColor = '#dc3545';
+            toastIcon.style.color = '#dc3545';
+        } else if (type === 'warning') {
+            toastIcon.className = 'fas fa-exclamation-triangle toast-icon';
+            toast.style.borderLeftColor = '#fd7e14';
+            toastIcon.style.color = '#fd7e14';
+        }
+
+        // Show the toast
+        toast.style.display = 'block';
+
+        // Reset the animation
+        toast.style.animation = 'none';
+        toast.offsetHeight; // Trigger reflow
+        toast.style.animation = 'slideIn 0.3s, fadeOut 0.5s 2.5s forwards';
+
+        // Hide the toast after 3 seconds
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
     }
 
 </script>

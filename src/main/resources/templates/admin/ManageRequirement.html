@@ -211,20 +211,13 @@
     }
 
     .modal-content {
-        background-color: white;
-        margin: 0;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        width: 75%;
+        background-color: #ffffff;
+        margin: 5% auto;
+        padding: 30px;
+        border-radius: 16px;
+        width: 80%;
         max-width: 900px;
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        animation: modalopen 0.4s;
-        max-height: 90vh;
-        overflow-y: auto;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
 
     @keyframes modalopen {
@@ -737,7 +730,6 @@
                             <th>Experience Requirement</th>
                             <th>Language</th>
                             <th>Min GPA</th>
-<!--                            <th>Total Slot</th>-->
                             <th>End Time</th>
                             <th>Action</th>
                         </tr>
@@ -746,14 +738,14 @@
                     </table>
                     <div class="table-footer">
                         <div class="records-selector">
-                            <span>Hiển thị</span>
+                            <span>Show</span>
                             <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)">
                                 <option value="5" selected>5</option>
                                 <option value="10">10</option>
                                 <option value="20">20</option>
                                 <option value="50">50</option>
                             </select>
-                            <span>bản ghi</span>
+                            <span>record</span>
                         </div>
                         <div class="pagination-container">
                             <ul id="pagination-list" class="pagination-list">
@@ -972,7 +964,6 @@
                 });
             })
             .catch(error => {
-                console.error('Error fetching classrooms:', error);
                 const classSelect = document.getElementById('classId');
                 classSelect.innerHTML = '<option value="">Error loading classrooms</option>';
             });
@@ -982,7 +973,6 @@
     function openAddRequirementModal() {
         const modal = document.getElementById("addRequirementModal");
         if (!modal) {
-            console.error("Modal with ID 'addRequirementModal' not found in HTML");
             return;
         }
         modal.style.display = "block";
@@ -1011,6 +1001,16 @@
             document.getElementById("requirementForm").reset();
         }
     }
+
+
+    // Đóng modal khi click ra ngoài nội dung modal
+    window.addEventListener("click", function (event) {
+        const modal = document.getElementById("addRequirementModal");
+        if (event.target === modal) {
+            closeAddRequirementModal();
+        }
+    });
+
 
     // Function to validate form data
     function validateFormData(formDataObj) {
@@ -1042,7 +1042,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById("requirementForm");
         if (!form) {
-            console.error("Form with ID 'requirementForm' not found in HTML");
             return;
         }
 
@@ -1072,8 +1071,6 @@
                 return;
             }
 
-            // Log dữ liệu gửi đi
-            console.log('Sending data:', formDataObj);
 
             fetch('/api/recruitment/create', {
                 method: 'POST',
@@ -1083,9 +1080,7 @@
                 body: JSON.stringify(formDataObj)
             })
                 .then(response => {
-                    console.log('Response status:', response.status);
                     return response.text().then(text => {
-                        console.log('Response text:', text);
                         if (!response.ok) {
                             throw new Error(text || 'Failed to create requirement');
                         }
@@ -1093,13 +1088,11 @@
                     });
                 })
                 .then(data => {
-                    console.log('Success:', data);
                     showToast("Requirement added successfully!", "success");
                     closeAddRequirementModal();
                     setTimeout(() => window.location.reload(), 1500);
                 })
                 .catch(error => {
-                    console.error('Error:', error);
                     showToast("Error: " + error.message, "error");
                     saveButton.disabled = false;
                     saveButton.innerHTML = 'Save';
@@ -1181,7 +1174,6 @@
 
     function openCandidateModal(row) {
         // Get the data from the clicked row
-        console.log(row);
         const name = row.cells[0].textContent;
         const position = row.cells[1].textContent;
         const recruitmentId = row.getAttribute('data-id');
@@ -1231,7 +1223,6 @@
                 displayCandidates(data, recruitmentId);
             })
             .catch(error => {
-                console.error('Error fetching candidates:', error);
                 tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading candidates: ' + error.message + '</td></tr>';
 
                 // For demo purposes, load sample data if API fails
@@ -1242,7 +1233,6 @@
     }
 
     function loadSampleCandidates(recruitmentId) {
-        console.warn('Using sample data because API failed');
         const sampleCandidates = [
             {
                 name: "John Doe",
@@ -1404,7 +1394,6 @@
             rejectButton.title = "Reject Candidate";
             rejectButton.innerHTML = '<i class="fas fa-times"></i>';
             rejectButton.onclick = function() {
-                console.log("Reject button clicked for fileId:", candidate.fileId);
                 rejectCandidate(candidate.fileId, recruitmentId);
             };
 
@@ -1450,7 +1439,6 @@
                         return response.text();
                     })
                     .then(data => {
-                        console.log('Rejection response:', data);
                         showToast('Candidate rejected successfully!', 'success');
 
                         // Reload candidates data
@@ -1473,10 +1461,9 @@
                 if (emailResponse && !emailResponse.ok) {
                     throw new Error('Failed to send email');
                 }
-                console.log('Email sent successfully');
             })
             .catch(error => {
-                console.error('Error in rejection process:', error);
+
                 showToast('Error: ' + error.message, 'error');
             });
     }
@@ -1603,7 +1590,6 @@
                         return response.json();
                     })
                     .then(data => {
-                        console.log('Approval response:', data);
 
                         // Show toast notification for success
                         showToast('Candidate approved successfully!', 'success');
@@ -1628,10 +1614,8 @@
                 if (emailResponse && !emailResponse.ok) {
                     throw new Error('Failed to send email');
                 }
-                console.log('Email sent successfully');
             })
             .catch(error => {
-                console.error('Error in approval process:', error);
                 if(error.message !== "User has been approved into another class") {
                     showToast('Error: ' + error.message, 'error');
                 }
@@ -1889,8 +1873,7 @@
                 editModal.show()
             })
             .catch((error) => {
-                console.error("Error fetching recruitment details:", error)
-                alert("Error loading recruitment details: " + error.message)
+                showToast("Error loading recruitment details!", "error");
             })
     }
 
@@ -1933,14 +1916,13 @@
                 editModal.hide()
 
                 // Show success message
-                alert("Recruitment updated successfully!")
+                showToast("Recruitment updated successfully!", "success");
 
                 // Reload the page to show updated data
                 window.location.reload()
             })
             .catch((error) => {
-                console.error("Error updating recruitment:", error)
-                alert("Error updating recruitment: " + error.message)
+                showToast("Error updating recruitment", "error");
             })
     }
 
@@ -1987,14 +1969,12 @@
                 const deleteModal = bootstrap.Modal.getInstance(deleteModalElement)
                 deleteModal.hide()
 
-                // Show success message
-                alert("Recruitment deleted successfully!")
+                showToast("Recruitment deleted successfully!", "success");
 
                 // Reload the page to update the table
                 window.location.reload()
             })
             .catch((error) => {
-                console.error("Error deleting recruitment:", error)
                 alert("Error deleting recruitment: " + error.message)
             })
     }

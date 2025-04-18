@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const month = date.getMonth() + 1;
         const year = date.getFullYear();
 
-        document.querySelector('.current-date').textContent = `${day} tháng ${month}, ${year}`;
+        document.querySelector('.current-date').textContent = `${day}/${month}/${year}`;
     };
 
     // Khởi tạo ngày hiển thị ban đầu
@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Tăng ngày hiện tại lên 1
         currentDisplayDate.setDate(currentDisplayDate.getDate() + 1);
         updateCurrentDate(currentDisplayDate);
-        console.log('Next day clicked - New date:', currentDisplayDate.toLocaleDateString());
         fetchAndRenderSchedules(currentDisplayDate);
     });
 
@@ -37,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Giảm ngày hiện tại đi 1
         currentDisplayDate.setDate(currentDisplayDate.getDate() - 1);
         updateCurrentDate(currentDisplayDate);
-        console.log('Previous day clicked - New date:', currentDisplayDate.toLocaleDateString());
         fetchAndRenderSchedules(currentDisplayDate);
     });
 
@@ -59,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.style.justifyContent = 'center';
         modal.style.alignItems = 'center';
         modal.style.zIndex = '1000';
-        
+
         // Create content container
         const content = document.createElement('div');
         content.style.backgroundColor = 'white';
@@ -68,13 +66,13 @@ document.addEventListener('DOMContentLoaded', function() {
         content.style.maxWidth = '500px';
         content.style.width = '100%';
         content.style.textAlign = 'center';
-        
+
         // Create title
         const title = document.createElement('h3');
         title.textContent = 'Upload Schedule Template';
         title.style.marginBottom = '20px';
         title.style.fontWeight = '600';
-        
+
         // Create drag and drop area
         const dropArea = document.createElement('div');
         dropArea.style.border = '2px dashed #ccc';
@@ -84,30 +82,30 @@ document.addEventListener('DOMContentLoaded', function() {
         dropArea.style.marginBottom = '20px';
         dropArea.style.cursor = 'pointer';
         dropArea.style.backgroundColor = '#f9f9f9';
-        
+
         const dropText = document.createElement('p');
         dropText.innerHTML = 'Drag and drop your file here<br>or<br>click to select file';
         dropText.style.margin = '0';
         dropText.style.fontSize = '16px';
         dropText.style.color = '#555';
-        
+
         // Create file input (hidden)
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = '.xlsx, .xls';
         fileInput.style.display = 'none';
-        
+
         // Create status text area
         const statusText = document.createElement('p');
         statusText.style.margin = '10px 0';
         statusText.style.color = '#666';
-        
+
         // Create buttons container
         const buttonContainer = document.createElement('div');
         buttonContainer.style.display = 'flex';
         buttonContainer.style.justifyContent = 'space-between';
         buttonContainer.style.marginTop = '20px';
-        
+
         // Create cancel button
         const cancelButton = document.createElement('button');
         cancelButton.textContent = 'Cancel';
@@ -116,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
         cancelButton.style.backgroundColor = '#fff';
         cancelButton.style.border = '1px solid #ccc';
         cancelButton.style.borderRadius = '4px';
-        
+
         // Create upload button (disabled initially)
         const uploadButton = document.createElement('button');
         uploadButton.textContent = 'Generate Schedule';
@@ -129,40 +127,40 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadButton.disabled = true;
         uploadButton.style.opacity = '0.5';
         uploadButton.style.cursor = 'not-allowed';
-        
+
         // Store the selected file
         let selectedFile = null;
-        
+
         // Add dragover event
         dropArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropArea.style.backgroundColor = '#eef5ff';
             dropArea.style.borderColor = '#4a6cf7';
         });
-        
+
         // Add dragleave event
         dropArea.addEventListener('dragleave', () => {
             dropArea.style.backgroundColor = '#f9f9f9';
             dropArea.style.borderColor = '#ccc';
         });
-        
+
         // Add drop event
         dropArea.addEventListener('drop', (e) => {
             e.preventDefault();
             dropArea.style.backgroundColor = '#f9f9f9';
             dropArea.style.borderColor = '#ccc';
-            
+
             if (e.dataTransfer.files.length) {
                 selectedFile = e.dataTransfer.files[0];
                 updateFileStatus(selectedFile);
             }
         });
-        
+
         // Add click event to dropArea
         dropArea.addEventListener('click', () => {
             fileInput.click();
         });
-        
+
         // Add change event to fileInput
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length) {
@@ -170,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateFileStatus(selectedFile);
             }
         });
-        
+
         // Function to update file status
         function updateFileStatus(file) {
             if (file) {
@@ -190,62 +188,69 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
-        
+
         // Add click event to cancel button
         cancelButton.addEventListener('click', () => {
             document.body.removeChild(modal);
         });
-        
+
         // Add click event to upload button
         uploadButton.addEventListener('click', async () => {
             if (!selectedFile) return;
-            
+
             try {
                 // Show loading state
+                // Reset trạng thái cũ
+                statusText.style.display = 'block';
+                statusText.style.color = '#4a6cf7';
+                statusText.textContent = 'Generating schedule, please wait...';
+
                 uploadButton.disabled = true;
                 uploadButton.textContent = 'Generating...';
-                statusText.textContent = 'Generating schedule, please wait...';
-                statusText.style.color = '#4a6cf7';
-                
+
+
                 const formData = new FormData();
                 formData.append('file', selectedFile);
-                
+
                 // Call the API
                 const response = await fetch('/api/scheduling/generate', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 if (!response.ok) {
-                    throw new Error(`Failed to generate schedule: ${response.status} ${response.statusText}`);
+                    showToast(`Cannot generate schedule!`, "warning");
+                    uploadButton.disabled = false;
+                    uploadButton.textContent = 'Generate Schedule';
+                    return; //
                 }
-                
+
+
                 const result = await response.json();
-                
+
                 // Success - close modal and refresh schedules
                 document.body.removeChild(modal);
+                showToast(`Generate schedule successfully!`, "success");
                 fetchAndRenderSchedules(currentDisplayDate);
             } catch (error) {
-                console.error('Error generating schedule:', error);
-                statusText.textContent = `Error: ${error.message}`;
                 statusText.style.color = 'red';
                 uploadButton.disabled = false;
                 uploadButton.textContent = 'Generate Schedule';
             }
         });
-        
+
         // Assemble components
         dropArea.appendChild(dropText);
-        
+
         buttonContainer.appendChild(cancelButton);
         buttonContainer.appendChild(uploadButton);
-        
+
         content.appendChild(title);
         content.appendChild(dropArea);
         content.appendChild(fileInput);
         content.appendChild(statusText);
         content.appendChild(buttonContainer);
-        
+
         modal.appendChild(content);
         document.body.appendChild(modal);
     }
@@ -267,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('alpha')?.addEventListener('change', function() {
         const isChecked = this.checked;
         // Thực hiện logic khi checkbox thay đổi trạng thái
-        console.log('Alpha checkbox:', isChecked ? 'đã chọn' : 'đã bỏ chọn');
+
     });
 
     // Xử lý sự kiện khi nhấp vào các nút khác
@@ -275,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
     allButtons.forEach(button => {
         button.addEventListener('click', function() {
             const buttonText = this.textContent.trim();
-            console.log(`Đã nhấp vào nút: ${buttonText}`);
+
         });
     });
 
@@ -303,14 +308,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hàm để fetch dữ liệu lịch học từ API
     async function fetchAndRenderSchedules(date) {
         try {
-            console.log("Starting fetchAndRenderSchedules for date:", date.toLocaleDateString());
             
             // Format ngày thành chuỗi YYYY-MM-DD
             const formattedDate = formatDateToString(date);
             
             // API endpoint
             const endpoint = `/api/scheduling/date/${formattedDate}`;
-            console.log("Fetching schedules from:", endpoint);
             
             // Call API để lấy lịch
             const response = await fetch(endpoint, {
@@ -326,7 +329,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Xử lý dữ liệu JSON từ response
             let scheduleData = await response.json();
-            console.log("Data from API:", scheduleData);
             
             // Lưu lịch và render
             schedules = scheduleData;
@@ -347,25 +349,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Nếu không có lịch, dừng xử lý
         if (!schedules || schedules.length === 0) {
-            console.log("No schedules to display");
             updateColorLegend(); // Vẫn gọi để xóa chú thích nếu có
             return;
         }
-        
-        console.log(`Rendering ${schedules.length} schedules`);
-        
+
         const currentDay = currentDisplayDate.getDay() || 7;
         const dayNames = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
         const currentDayName = dayNames[currentDisplayDate.getDay()];
         
-        console.log("Current day:", currentDayName);
-        
+
         // Xử lý mỗi lịch
         schedules.forEach(schedule => {
             try {
                 // Kiểm tra xem lịch có phải ngày hiện tại không
                 if (schedule.dayOfWeek && schedule.dayOfWeek !== currentDayName) {
-                    console.log(`Schedule day ${schedule.dayOfWeek} doesn't match current day ${currentDayName}`);
                     return; // Bỏ qua nếu không phải ngày hiện tại
                 }
                 
@@ -393,7 +390,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 if (!roomRow) {
-                    console.log(`Room not found in table: ${roomName}`);
                     return;
                 }
                 
@@ -403,7 +399,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Đảm bảo thời gian nằm trong phạm vi 7:00 - 18:00
                 if (startHour < 7 || startHour >= 18 || endHour < 7 || endHour > 18) {
-                    console.log(`Time out of range: ${startTime} - ${endTime}`);
                     return;
                 }
                 
@@ -545,61 +540,114 @@ document.addEventListener('DOMContentLoaded', function() {
         const startTime = formatTime(schedule.startTime || "00:00");
         const endTime = formatTime(schedule.endTime || "00:00");
         const mentorUsername = schedule.mentor?.userName || "N/A";
-        const mentorName = schedule.mentor?.first_name && schedule.mentor?.last_name 
+        const mentorName = schedule.mentor?.first_name && schedule.mentor?.last_name
             ? `${schedule.mentor.first_name} ${schedule.mentor.last_name}`
             : mentorUsername;
-        
-        // Create modal for details display
+
+        // Inject glass CSS once
+        if (!document.getElementById("schedule-glass-style")) {
+            const style = document.createElement("style");
+            style.id = "schedule-glass-style";
+            style.textContent = `
+      .schedule-glass {
+        backdrop-filter: blur(14px);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(210, 230, 255, 0.6));
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 16px;
+        padding: 24px;
+        color: #1f2937;
+        font-family: 'Segoe UI', sans-serif;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        max-width: 400px;
+        width: 100%;
+        transition: all 0.3s ease;
+      }
+
+      .schedule-glass h3 {
+        margin-bottom: 20px;
+        font-size: 22px;
+        color: #0f172a;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      .schedule-detail {
+        margin-bottom: 14px;
+        font-size: 15px;
+        display: flex;
+        justify-content: space-between;
+        color: #374151;
+      }
+
+      .schedule-actions {
+        text-align: right;
+        margin-top: 20px;
+      }
+
+       .schedule-actions button {
+              padding: 10px 20px;
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.8), rgba(255, 165, 42, 0.8));
+              border: none;
+              border-radius: 8px;
+              cursor: pointer;
+              color: #fff;
+              font-weight: bold;
+              transition: background 0.3s ease;
+            }
+
+      .schedule-actions button:hover {
+        background-color: #ffb485;
+      }
+
+      .schedule-detail-modal {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+    `;
+            document.head.appendChild(style);
+        }
+
+        // Modal container
         const modal = document.createElement('div');
         modal.className = 'schedule-detail-modal';
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.width = '100%';
-        modal.style.height = '100%';
-        modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        modal.style.display = 'flex';
-        modal.style.justifyContent = 'center';
-        modal.style.alignItems = 'center';
-        modal.style.zIndex = '1000';
-        
-        // Create content
+
+        // Content (inner)
         const content = document.createElement('div');
-        content.style.backgroundColor = 'white';
-        content.style.padding = '20px';
-        content.style.borderRadius = '8px';
-        content.style.maxWidth = '400px';
-        content.style.width = '100%';
-        content.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-        
-        // Create content HTML
+        content.className = 'schedule-glass';
+
         content.innerHTML = `
-            <h3 style="margin-bottom: 16px; font-size: 18px; color: #1f2937;">Schedule Info</h3>
-            <div style="margin-bottom: 12px;"><strong>Class:</strong> ${className}</div>
-            <div style="margin-bottom: 12px;"><strong>Subject:</strong> ${subjectName}</div>
-            <div style="margin-bottom: 12px;"><strong>Room:</strong> ${roomName}</div>
-            <div style="margin-bottom: 12px;"><strong>Mentor:</strong> ${mentorUsername}</div>
-            <div style="margin-bottom: 12px;"><strong>Time:</strong> ${startTime} - ${endTime}</div>
-            <div style="text-align: right; margin-top: 20px;">
-                <button id="close-detail-btn" style="padding: 8px 16px; background-color: #e5e7eb; border: none; border-radius: 6px; cursor: pointer;">Close</button>
-            </div>
-        `;
-        
+    <h3>Schedule Info</h3>
+    <div class="schedule-detail"><strong>Class:</strong> <span>${className}</span></div>
+    <div class="schedule-detail"><strong>Subject:</strong> <span>${subjectName}</span></div>
+    <div class="schedule-detail"><strong>Room:</strong> <span>${roomName}</span></div>
+    <div class="schedule-detail"><strong>Mentor:</strong> <span>${mentorName}</span></div>
+    <div class="schedule-detail"><strong>Time:</strong> <span>${startTime} - ${endTime}</span></div>
+    <div class="schedule-actions">
+      <button id="close-detail-btn">Close</button>
+    </div>
+  `;
+
         modal.appendChild(content);
         document.body.appendChild(modal);
-        
-        // Handle close button
-        document.getElementById('close-detail-btn').addEventListener('click', function() {
-            document.body.removeChild(modal);
+
+        // Close handlers
+        document.getElementById('close-detail-btn').addEventListener('click', () => {
+            modal.remove();
         });
-        
-        // Close when clicking outside
-        modal.addEventListener('click', function(e) {
+
+        modal.addEventListener('click', (e) => {
             if (e.target === modal) {
-                document.body.removeChild(modal);
+                modal.remove();
             }
         });
     }
+
 
     // Hàm để lấy màu cho lớp học
     function getColorForClass(className, classId) {
@@ -791,4 +839,86 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    function showToast(message, type = 'info') {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+      `;
+            document.body.appendChild(toastContainer);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.style.cssText = `
+    padding: 12px 20px;
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    min-width: 250px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+    pointer-events: auto;
+    margin-bottom: 5px;
+    position: relative;
+  `;
+
+        switch (type) {
+            case 'success':
+                toast.style.backgroundColor = '#4caf50';
+                break;
+            case 'error':
+                toast.style.backgroundColor = '#f44336';
+                break;
+            case 'warning':
+                toast.style.backgroundColor = '#ff993c';
+                break;
+            default:
+                toast.style.backgroundColor = '#2196f3';
+        }
+
+        toast.innerHTML = `
+    <span>${message}</span>
+    <button style="background: none; border: none; color: white; cursor: pointer; font-size: 16px; margin-left: 10px;">×</button>
+  `;
+
+        toastContainer.appendChild(toast);
+
+        const closeBtn = toast.querySelector('button');
+        closeBtn.addEventListener('click', () => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        });
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
+
+        const style = document.createElement('style');
+        style.textContent = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast {
+      transition: opacity 0.3s ease;
+    }
+  `;
+        document.head.appendChild(style);
+    }
 });
+

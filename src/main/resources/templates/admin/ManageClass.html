@@ -291,7 +291,58 @@
         border-color: #e67812;
     }
 
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: white;
+        color: #333;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        display: none;
+        min-width: 300px;
+        border-left: 4px solid #ff6600;
+        animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+    }
 
+    .toast-content {
+        display: flex;
+        align-items: center;
+    }
+
+    .toast-icon {
+        color: #ff6600;
+        font-size: 22px;
+        margin-right: 15px;
+    }
+
+    .toast-message {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+            display: none;
+        }
+    }
 
 </style>
 
@@ -358,14 +409,14 @@
                     <!--                        pagination-->
                     <div class="table-footer">
                         <div class="records-selector">
-                            <span>Hiển thị</span>
+                            <span>Shows</span>
                             <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)">
                                 <option value="5" selected>5</option>
                                 <option value="10">10</option>
                                 <option value="20">20</option>
                                 <option value="50">50</option>
                             </select>
-                            <span>bản ghi</span>
+                            <span>record</span>
                         </div>
 
                         <div class="pagination-container">
@@ -517,10 +568,18 @@
                 </div>
             </div>
         </div>
+        <div id="toastNotification" class="toast-notification">
+            <div class="toast-content">
+                <i class="fas fa-check-circle toast-icon"></i>
+                <div class="toast-message" id="toastMessage">Notification message</div>
+            </div>
+        </div>
     </section>
 </th:block>
 <footer th:replace="~{include/master-footer :: footer}"></footer>
 <script>
+
+
     // Hàm sử dụng UserModal
     document.addEventListener("DOMContentLoaded", function () {
         loadPage(0, 5);
@@ -840,12 +899,12 @@
                     row.children[2].textContent = newClass.manager.first_name + " " + newClass.manager.last_name;
                 }
 
-                alert("Created a new class successfully!");
+                showToast("Created a new class successfully!", "success");
                 let newClassModal = bootstrap.Modal.getInstance(document.getElementById("newClassModal"));
                 newClassModal.hide();
                 document.getElementById("newClassForm").reset();
             })
-            .catch(error => alert("Error Create class: " + error.message));
+            .catch(error => showToast("Error Create class: " + error.message, "error"));
     });
 
 
@@ -860,13 +919,13 @@
 
         let classStatusElement = row.querySelector(".toggle-class-status");
         if (!classStatusElement) {
-            alert("Error: Cannot find class ID.");
+            showToast("Error: Class ID is missing.", "error");
             return;
         }
 
         let classId = classStatusElement.getAttribute("data-id");
         if (!classId) {
-            alert("Error: Class ID is missing.");
+            showToast("Error: Class ID is missing.", "error");
             return;
         }
 
@@ -877,7 +936,7 @@
         let managerId = rowId.startsWith("manager-") ? rowId.split("-")[1] : null;
 
         if (!managerId) {
-            alert("Error: Manager ID is missing.");
+            showToast("Error: Class ID is missing.", "warning");
             return;
         }
 
@@ -921,10 +980,11 @@
             })
 
             .then(updatedClass => {
-                alert("Class updated successfully!");
+                showToast("Class updated successfully!", "success");
                 location.reload();
             })
-            .catch(error => alert("Error updating class: " + error.message));
+            .catch(error => showToast("Error Update class: " + error.message, "warning"));
+
     });
 
     function changePageSize(select) {
@@ -1026,6 +1086,45 @@
         rows.forEach(row => table.appendChild(row));
         table.setAttribute("data-sort", isAscending ? "asc" : "desc");
     }
+
+    //Toast thông báo
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toastNotification');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = toast.querySelector('.toast-icon');
+
+        // Set message
+        toastMessage.textContent = message;
+
+        // Set appropriate icon and color based on type
+        if (type === 'success') {
+            toastIcon.className = 'fas fa-check-circle toast-icon';
+            toast.style.borderLeftColor = '#28a745';
+            toastIcon.style.color = '#28a745';
+        } else if (type === 'error') {
+            toastIcon.className = 'fas fa-exclamation-circle toast-icon';
+            toast.style.borderLeftColor = '#dc3545';
+            toastIcon.style.color = '#dc3545';
+        } else if (type === 'warning') {
+            toastIcon.className = 'fas fa-exclamation-triangle toast-icon';
+            toast.style.borderLeftColor = '#fd7e14';
+            toastIcon.style.color = '#fd7e14';
+        }
+
+        // Show the toast
+        toast.style.display = 'block';
+
+        // Reset the animation
+        toast.style.animation = 'none';
+        toast.offsetHeight; // Trigger reflow
+        toast.style.animation = 'slideIn 0.3s, fadeOut 0.5s 2.5s forwards';
+
+        // Hide the toast after 3 seconds
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
 
 </script>
 </body>

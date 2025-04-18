@@ -184,6 +184,67 @@
     #userTable tbody tr:hover {
         background-color: rgba(0, 0, 0, 0.05);
     }
+
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: white;
+        color: #333;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        display: none;
+        min-width: 300px;
+        border-left: 4px solid #ff6600;
+        animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+    }
+
+    .toast-content {
+        display: flex;
+        align-items: center;
+    }
+
+    .toast-icon {
+        color: #ff6600;
+        font-size: 22px;
+        margin-right: 15px;
+    }
+
+    .toast-message {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+            display: none;
+        }
+    }
+
+    .uneditable {
+        cursor: not-allowed;
+        background-color: #f9f9f9;
+    }
+    .uneditable:hover {
+        border-color: red;
+    }
 </style>
 <body class="body-area">
 <th:block th:replace="~{include/admin-sidebar :: sidebar(~{::content})}">
@@ -280,14 +341,14 @@
                     <!--                        pagination-->
                     <div class="table-footer">
                         <div class="records-selector">
-                            <span>Hiển thị</span>
+                            <span>Show</span>
                             <select class="records-per-page" style="width: 64px" onchange="changePageSize(this)">
                                 <option value="5" selected>5</option>
                                 <option value="10">10</option>
                                 <option value="20">20</option>
                                 <option value="50">50</option>
                             </select>
-                            <span>bản ghi</span>
+                            <span>record</span>
                         </div>
                         <div class="pagination-container">
                             <ul id="pagination-list" class="pagination-list">
@@ -346,7 +407,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Email</label>
-                                <input type="email" id="editEmail" class="form-control">
+                                <input type="email" id="editEmail" class="form-control uneditable" readonly>
                             </div>
                             <div class="form-group">
                                 <label>Phone number</label>
@@ -359,14 +420,8 @@
                                     <option value="FEMALE">FEMALE</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label>Role</label>
-                                <select id="editRole" class="form-control">
-                                    <option value="ADMIN">ADMIN</option>
-                                    <option value="EMPLOYEE">EMPLOYEE</option>
-                                    <option value="INTERN">INTERN</option>
-                                    <option value="GUEST">GUEST</option>
-                                </select>
+                            <div hidden>
+                                <select id="editRole" class="form-control"></select>
                             </div>
                         </form>
                     </div>
@@ -397,8 +452,8 @@
                                 <input type="email" class="form-control" id="addUserEmail" required>
                             </div>
                             <div class="mb-3">
-                                <label for="addUserEmail" class="form-label">PhoneNumber</label>
-                                <input type="email" class="form-control" id="addUserPhoneNumber" required>
+                                <label for="addUserPhoneNumber" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="addUserPhoneNumber" required>
                             </div>
                             <div class="mb-3">
                                 <label for="addUserGender" class="form-label">Gender</label>
@@ -407,14 +462,9 @@
                                     <option value="FEMALE">Female</option>
                                 </select>
                             </div>
-                            <div class="mb-3">
+                            <div class="mb-3" hidden>
                                 <label for="addUserRole" class="form-label">Role</label>
-                                <select class="form-control" id="addUserRole">
-                                    <option value="ADMIN">Admin</option>
-                                    <option value="EMPLOYEE">Employee</option>
-                                    <option value="INTERN">Intern</option>
-                                    <option value="GUEST">Guest</option>
-                                </select>
+                                <select class="form-control" id="addUserRole"></select>
                             </div>
                         </form>
                     </div>
@@ -455,15 +505,10 @@
         </div>
 
         <!-- Toast Notification -->
-        <div class="toast-container position-fixed top-0 end-0 p-3">
-            <div id="notificationToast" class="toast align-items-center text-white bg-dark border-0" role="alert"
-                 aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body" id="notificationMessage">
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                            aria-label="Close"></button>
-                </div>
+        <div id="toastNotification" class="toast-notification">
+            <div class="toast-content">
+                <i class="fas fa-check-circle toast-icon"></i>
+                <div class="toast-message" id="toastMessage">Notification message</div>
             </div>
         </div>
 
@@ -645,7 +690,7 @@
                 // Hiển thị modal
                 $('#editUserModal').modal('show');
             })
-            .catch(error => console.error("Error fetching user:", error));
+            .catch(error => showToast("Error Fetching user: " + error, "error"));
     }
 
     function updateUser() {
@@ -653,7 +698,6 @@
         let emailInput = document.getElementById("editEmail");
         let phoneNumberInput = document.getElementById("editPhoneNumber");
         let genderInput = document.getElementById("editGender");
-        let roleInput = document.getElementById("editRole");
         let userId = document.getElementById("editUserId").value;
 
         let fullName = fullNameInput.value.trim();
@@ -668,15 +712,15 @@
 
 
         if (fullName === "") {
-            showError(fullNameInput, "This field is required");
+            showError(fullNameInput, "Need input Full name");
             isValid = false;
         }
         if (email === "") {
-            showError(emailInput, "This field is required");
+            showError(emailInput, "Need input Email");
             isValid = false;
         }
         if (phoneNumber === "") {
-            showError(phoneNumberInput, "This field is required");
+            showError(phoneNumberInput, "Need input Phone Number");
             isValid = false;
         }
 
@@ -688,7 +732,7 @@
             email: email,
             phone_number: phoneNumber,
             gender: genderInput.value,
-            role: roleInput.value
+            role: "EMPLOYEE"
         };
 
         fetch(`/api/user/update/${userId}`, {
@@ -701,9 +745,10 @@
             .then(response => response.json())
             .then(user => {
                 $('#editUserModal').modal('hide');
+                showToast("Class updated successfully!", "success");
                 location.reload();
             })
-            .catch(error => console.error("Error updating user:", error));
+            .catch(error => showToast("Error Updating user!" + error.message, "warning"));
     }
 
     function addUser() {
@@ -711,7 +756,6 @@
         let emailInput = document.getElementById("addUserEmail");
         let phoneNumberInput = document.getElementById("addUserPhoneNumber");
         let genderInput = document.getElementById("addUserGender");
-        let roleInput = document.getElementById("addUserRole");
 
         let fullName = fullNameInput.value.trim();
         let email = emailInput.value.trim();
@@ -722,16 +766,21 @@
         document.querySelectorAll(".error-message").forEach(e => e.remove());
         [fullNameInput, emailInput, phoneNumberInput].forEach(input => input.classList.remove("is-invalid"));
 
+        // Kiểm tra Full Name
         if (fullName === "") {
-            showError(fullNameInput, "This field is required");
+            showError(fullNameInput, "Need Full name");
             isValid = false;
         }
+
+        // Kiểm tra Email
         if (email === "") {
-            showError(emailInput, "This field is required");
+            showError(emailInput, "Need Email");
             isValid = false;
         }
+
+        // Kiểm tra Phone Number
         if (phoneNumber === "") {
-            showError(phoneNumberInput, "This field is required");
+            showError(phoneNumberInput, "Need Phone Number");
             isValid = false;
         }
 
@@ -743,10 +792,11 @@
             email: email,
             phone_number: phoneNumber,
             gender: genderInput.value,
-            role: roleInput.value
+            role: "EMPLOYEE"
         };
 
-        fetch('api/user/create-employee', {
+
+        fetch('/api/user/create-employee', {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -756,10 +806,12 @@
             .then(response => response.json())
             .then(user => {
                 $('#addUserModal').modal('hide');
+                showToast("Create User successfully", "success");
                 location.reload();
             })
-            .catch(error => console.error("Error adding user:", error));
+            .catch(error => showToast("Error adding user: " + error.message, "warning"));
     }
+
 
     function showError(input, message) {
         let error = document.createElement("div");
@@ -841,8 +893,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error("Upload error:", error);
-                    alert("Error occurs when uploading file: " + error.message);
+                    showToast("Error occurs when uploading file!", "warning")
                 });
         });
 
@@ -1007,7 +1058,47 @@
         updateSelectedCount();
     }
 
-    </script>
+    //Toast thông báo
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toastNotification');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = toast.querySelector('.toast-icon');
+
+        // Set message
+        toastMessage.textContent = message;
+
+        // Set appropriate icon and color based on type
+        if (type === 'success') {
+            toastIcon.className = 'fas fa-check-circle toast-icon';
+            toast.style.borderLeftColor = '#28a745';
+            toastIcon.style.color = '#28a745';
+        } else if (type === 'error') {
+            toastIcon.className = 'fas fa-exclamation-circle toast-icon';
+            toast.style.borderLeftColor = '#dc3545';
+            toastIcon.style.color = '#dc3545';
+        } else if (type === 'warning') {
+            toastIcon.className = 'fas fa-exclamation-triangle toast-icon';
+            toast.style.borderLeftColor = '#fd7e14';
+            toastIcon.style.color = '#fd7e14';
+        }
+
+        // Show the toast
+        toast.style.display = 'block';
+
+        // Reset the animation
+        toast.style.animation = 'none';
+        toast.offsetHeight; // Trigger reflow
+        toast.style.animation = 'slideIn 0.3s, fadeOut 0.5s 2.5s forwards';
+
+        // Hide the toast after 3 seconds
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
+    document.getElementById("editEmail").addEventListener("click", function () {showToast("Không thể chỉnh sửa email", "warning");});
+
+</script>
 </body>
 </html>
 
