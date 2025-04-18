@@ -80,7 +80,7 @@ public class UserService {
     public ResponseEntity<User> createEmployeeOrGuest(CreateUserDTO createUserDTO) throws BadRequestException {
 
         if (createUserDTO.getRole() == null) {
-            createUserDTO.setRole(Role.GUEST);
+            createUserDTO.setRole(Role.EMPLOYEE);
         }
 
         if ("INTERN".equalsIgnoreCase(createUserDTO.getRole().name())) {

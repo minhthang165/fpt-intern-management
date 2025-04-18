@@ -1,5 +1,4 @@
-<!doctype
-        html >
+<!doctype html >
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="include/master-header :: head">
   <meta charset="UTF-8">
@@ -71,7 +70,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
       padding: 20px;
-      max-height: calc(100vh - 80px);
+      max-height: calc(90vh - 80px);
       display: flex;
       flex-direction: column;
       height: calc(100vh - 50px); /* Mở rộng tối đa */
@@ -139,7 +138,7 @@
       flex-grow: 1;
       overflow-y: auto;
       padding: 15px;
-      height: 80vh;
+      height: 70vh;
     }
 
     .chat-header {
@@ -211,14 +210,14 @@
     }
 
     .modal-backdrop {
-      background-color: rgba(0, 0, 0, 0.5); /* Làm nền tối hơn */
-      backdrop-filter: blur(8px); /* Làm mờ nền */
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
       display: none;
     }
 
     .modal {
-      backdrop-filter: blur(8px); /* Làm mờ nền phía sau */
-      background: rgba(0, 0, 0, 0.2); /* Thêm một lớp tối nhẹ */
+      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.2);
     }
 
     .modal-content{
@@ -855,7 +854,8 @@
               <nav>
                 <ul>
                   <li style="margin-bottom: 20px; margin-top: 20px"><span>Dashboard</span></li>
-                  <li class="active"><span>Classroom</span></li>
+
+                  <li style="margin-bottom: 20px; margin-top: 20px" class="active"><span>Classroom</span></li>
                 </ul>
               </nav>
             </div>
@@ -872,14 +872,14 @@
             <div class="spinner-border text-warning" role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
-            <p class="mt-2">Đang tải dữ liệu lớp học...</p>
+            <p class="mt-2">Loading Classroom...</p>
           </div>
           <div id="error-message" class="alert alert-danger" style="display: none;">
-            Không thể tải dữ liệu lớp học. Vui lòng thử lại sau.
+            Cannot Load Classroom Data. Please try again later.
           </div>
           <div id="class-content" style="display: none;">
-            <div class="gamma-header mb-3" id="className">Tên lớp học</div>
-            <div class="text-muted mb-4" id="classTime">Thời gian</div>
+            <div class="gamma-header mb-3" id="className">CLass Name</div>
+            <div class="text-muted mb-4" id="classTime">Time</div>
 
             <!-- Framed Mentor Section without Avatar -->
             <div class="mentor-info">
@@ -940,7 +940,7 @@
           font-weight: 600;
           color: #333;
           transition: color 0.3s ease;
-        ">Tên mentor</div>
+        ">Class mentor</div>
                     <div style="
           height: 3px;
           width: 48px;
@@ -953,13 +953,13 @@
               </div>
             </div>
             <div class="mb-3">
-              <h5 id="task-header" class="mb-3">Danh sách Task</h5>
+              <h5 id="task-header" class="mb-3">Tasks List</h5>
               <div id="task-list" class="task-list">
                 <div class="text-center py-2">
                   <div class="spinner-border spinner-border-sm text-warning" role="status">
                     <span class="visually-hidden">Loading...</span>
                   </div>
-                  <span>Đang tải danh sách task...</span>
+                  <span>Loading Task List...</span>
                 </div>
               </div>
             </div>
@@ -979,12 +979,12 @@
         <div class="modal-content">
           <!-- Header with centered text -->
           <div class="modal-header">
-            <h5 class="modal-title w-100 text-center fw-bold" id="taskDetailModalLabel">Chi tiết Task</h5>
+            <h5 class="modal-title w-100 text-center fw-bold" id="taskDetailModalLabel">Task Detail</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <!-- Task Name -->
-            <h5 id="task-name" class="fw-bold mb-4">Tên Task</h5>
+            <h5 id="task-name" class="fw-bold mb-4">Task Name</h5>
 
             <!-- Task Dates -->
             <div class="task-dates p-3 bg-light rounded mb-4">
@@ -993,7 +993,7 @@
                   <div class="d-flex align-items-center">
                     <i class="bi bi-calendar me-2 text-primary"></i>
                     <div>
-                      <strong>Thời gian bắt đầu:</strong>
+                      <strong>Start Time:</strong>
                       <span id="task-start-time" class="ms-2">01/01/2023 08:00</span>
                     </div>
                   </div>
@@ -1002,7 +1002,7 @@
                   <div class="d-flex align-items-center">
                     <i class="bi bi-clock me-2 text-danger"></i>
                     <div>
-                      <strong>Hạn nộp:</strong>
+                      <strong>Deadline:</strong>
                       <span id="task-end-time" class="ms-2 text-danger">15/01/2023 23:59</span>
                     </div>
                   </div>
@@ -1014,7 +1014,7 @@
             <div id="task-file-container" class="mb-4 p-3 bg-light rounded">
               <div class="d-flex align-items-center">
                 <i class="bi bi-paperclip me-2 text-primary"></i>
-                <strong>Tệp đính kèm:</strong>
+                <strong>File Attachments:</strong>
                 <a href="#" id="task-file-link" class="ms-2">
                   <i class="bi bi-file-earmark-text me-1"></i>
                   <span id="task-file-name">file.pdf</span>
@@ -1026,9 +1026,9 @@
             <div class="mb-4">
               <div class="d-flex align-items-center mb-2">
                 <i class="bi bi-info-circle me-2 text-primary"></i>
-                <strong>Mô tả:</strong>
+                <strong>Decsription:</strong>
               </div>
-              <p id="task-description" class="p-3 border rounded">Mô tả task sẽ hiển thị ở đây.</p>
+              <p id="task-description" class="p-3 border rounded">Task Decsription will display here</p>
             </div>
 
             <!-- Link (if needed) -->
@@ -1037,32 +1037,32 @@
                 <i class="bi bi-link-45deg me-2 text-primary"></i>
                 <strong>Link:</strong>
               </div>
-              <p id="task-link" class="p-3 border rounded">Mô tả task sẽ hiển thị ở đây.</p>
+              <p id="task-link" class="p-3 border rounded">Task Description will display here.</p>
             </div>
 
             <!-- Keeping the original submission form as requested -->
             <div class="submission-form">
-              <h6>Nộp bài</h6>
+              <h6></h6>
               <form id="submission-form">
                 <div class="mb-3">
-                  <label for="submission-file" class="form-label">Tệp đính kèm</label>
+                  <label for="submission-file" class="form-label">Task Attachment</label>
                   <input type="file" class="form-control" id="submission-file">
                 </div>
 
-                <button type="submit" class="btn btn-primary" id="submit-task-btn">Nộp bài</button>
+                <button type="submit" class="btn btn-primary" id="submit-task-btn">Submit now</button>
               </form>
             </div>
 
             <!-- Keeping the original submission history as requested -->
             <div id="submission-history" class="mt-4">
-              <h6>Lịch sử nộp bài</h6>
+              <h6>Submit History</h6>
               <div id="submission-list">
                 <!-- Submission history will be loaded here -->
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
@@ -1364,7 +1364,7 @@
     taskListElement.innerHTML = "";
 
     if (!tasks || tasks.length === 0) {
-      taskListElement.innerHTML = '<div class="text-muted">Không có công việc nào</div>';
+      taskListElement.innerHTML = '<div class="text-muted">No Tasks Available now</div>';
       return;
     }
 
@@ -1408,17 +1408,17 @@
         // Add expired indicator if needed
         let statusIndicator = '';
         if (isExpired) {
-          statusIndicator = '<div class="expired-indicator">Đã hết hạn</div>';
+          statusIndicator = '<div class="expired-indicator">No more Available</div>';
         }
 
         // Add the task content first (we'll check submission status later)
         taskElement.innerHTML = `
         ${statusIndicator}
         <div class="task-title">${task.taskName || 'Unnamed Task'}</div>
-        <div class="task-description">${task.description || 'Không có mô tả nào'}</div>
+        <div class="task-description">${task.description || 'No Description'}</div>
         <div class="task-meta">
-          <div>Bắt đầu: ${formattedStartTime}</div>
-          <div class="task-deadline">Hạn nộp: ${formattedEndTime}</div>
+          <div>Start At: ${formattedStartTime}</div>
+          <div class="task-deadline">Deadline: ${formattedEndTime}</div>
         </div>
       `;
 
@@ -1783,7 +1783,7 @@
                 <!-- Chat Input -->
                 <div class="chat-input">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="message" placeholder="Nhập tin nhắn...">
+                        <input type="text" class="form-control" id="message" placeholder="Enter...">
                         <button class="btn btn-warning" onclick="sendMessage()">
                             <i class="bi bi-send"></i>
                         </button>
@@ -1862,7 +1862,7 @@
 
     // Set task details
     taskName.textContent = task.taskName || "Unnamed Task";
-    taskDescription.textContent = task.description || "Không có mô tả";
+    taskDescription.textContent = task.description || "No Description";
 
     // Handle task link
     if (task.link) {
@@ -1971,7 +1971,7 @@
     fetch(`/api/completed-tasks/find/${taskId}/${internId}/${classId}`)
             .then(response => {
               if (!response.ok) {
-                throw new Error('Không thể lấy lịch sử nộp bài từ server');
+                throw new Error('Cannot fetch History Submit from server');
               }
               return response.json();
             })
@@ -1981,24 +1981,24 @@
               // Check if submissions.mark is not null
               if (submissions.mark !== null) {
                 submitButton.disabled = true;
-                submitButton.title = "Bài đã được chấm, không thể nộp lại";
+                submitButton.title = "The Task has been Graded and cannot be resubmitted.";
               } else {
                 // Ensure button is enabled if mark is null and task is not expired
                 const taskDetailModal = document.getElementById("taskDetailModal");
                 const isExpired = taskDetailModal.dataset.expired === "true";
-                submitButton.disabled = isExpired; // Respect expiration status
-                submitButton.title = isExpired ? "Đã hết hạn nộp bài" : "";
+                submitButton.disabled = isExpired;
+                submitButton.title = isExpired ? "Submission deadline has passed." : "";
               }
 
               // Display submission history
               displaySubmissionHistory(submissions);
             })
             .catch(error => {
-              console.error("Lỗi khi lấy lịch sử nộp bài:", error);
+              console.error("Fall to list History:", error);
               // Show empty state
               submissionList.innerHTML = `
           <div class="alert alert-info">
-              Bạn chưa có bài nộp nào cho task này.
+               You not submit any yet.
           </div>
       `;
             });
@@ -2020,7 +2020,7 @@
     if (!submissions) {
       submissionList.innerHTML = `
             <div class="alert alert-info">
-                Bạn chưa có bài nộp nào cho task này.
+             You have no submissions for this task yet.
             </div>
         `
       return
@@ -2031,7 +2031,7 @@
     if (submissionArray.length === 0) {
       submissionList.innerHTML = `
             <div class="alert alert-info">
-                Bạn chưa có bài nộp nào cho task này.
+          You have no submissions for this task yet.
             </div>
         `
       return
@@ -2062,9 +2062,9 @@
           mentorCommentHTML = `
             <div class="mentor-comment mt-2 p-2 border-start border-4 border-info bg-light rounded">
               <div class="mentor-comment-header fw-bold mb-1">
-                 Nhận xét của mentor:
+              Comment from mentor:
               </div>
-              <div class="ps-2">${submission.comment || "Không có nhận xét"}</div>
+              <div class="ps-2">${submission.comment || "No comment from Mentor"}</div>
             </div>
           `
         }
@@ -2086,13 +2086,13 @@
         submissionItem.innerHTML = `
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Nộp lúc: ${formattedDate}</strong>
+                        <strong>Submit at: ${formattedDate}</strong>
                         <span class="badge bg-${submission.status === "PENDING" ? "warning" : "success"}">${submission.status}</span>
                     </div>
                     <div class="mb-2">
                         <span class="fw-bold">Attachment File:</span>
                         <a href="${submission.file || "#"}" target="_blank" class="text-decoration-none">
-                          ${submission.file ? submission.file.split("/").pop() : "Tệp đính kèm"}
+                          ${submission.file ? submission.file.split("/").pop() : "File Attachments"}
                         </a>
                     </div>
                     ${markHTML}
@@ -2123,24 +2123,19 @@
     // Check if task is expired
     const isExpired = taskDetailModal.dataset.expired === "true";
     if (isExpired) {
-      showGlobalAlert("Không thể nộp bài vì đã quá hạn!", "danger");
-      return;
-    }
-
-    if (isExpired) {
-      showGlobalAlert("Không thể nộp bài vì đã quá hạn!", "danger");
+      showGlobalAlert("You cannot submit because the deadline has passed!", "danger");
       return;
     }
 
     // Validate form
     if (fileInput.files.length === 0) {
-      showGlobalAlert("Vui lòng chọn tệp để nộp!", "warning");
+      showGlobalAlert("Please choose right File Attachments!", "warning");
       return;
     }
 
     // Disable button and show loading state
     submitButton.disabled = true;
-    submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang nộp...`;
+    submitButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...`;
     // Step 1: Upload file to Cloudinary
     const formData = new FormData();
     formData.append("file", fileInput.files[0]);
@@ -2165,9 +2160,8 @@
               })
                       .then(deleteResponse => {
                         if (!deleteResponse.ok && deleteResponse.status !== 404) {
-                          throw new Error('Không thể xóa CompletedTask cũ');
+                          throw new Error('Cannot deleted old Task');
                         }
-                        console.log("Old CompletedTask deleted or not found");
 
                         // Step 3: Create new CompletedTask
                         const newTask = {
@@ -2193,7 +2187,7 @@
             })
             .then(response => {
               if (!response.ok) {
-                throw new Error('Không thể tạo CompletedTask mới');
+                throw new Error('Cannot create CompletedTask');
               }
               return response.json();
             })
@@ -2207,16 +2201,15 @@
               loadSubmissionHistory(taskId);
 
               // Show success message
-              showGlobalAlert("Nộp bài thành công!", "success");
+              showGlobalAlert("Submit successfully!", "success");
             })
             .catch(error => {
-              console.error("Lỗi khi nộp bài:", error);
-              showGlobalAlert("Không thể nộp bài. Vui lòng thử lại sau.", "danger");
+              showGlobalAlert("Cannot submit. Try again.", "warning");
             })
             .finally(() => {
               // Reset button
               submitButton.disabled = false;
-              submitButton.textContent = "Nộp bài";
+              submitButton.textContent = "Submit!";
             });
   }
 
@@ -2239,21 +2232,19 @@
     try {
       const response = await fetch(`/api/completed-tasks/find/${taskId}/${internId}/${classId}`);
       if (!response.ok) {
-        throw new Error('Không thể lấy lịch sử nộp bài từ server');
+        throw new Error('Cannot fetch Submit history from server');
       }
       const submissions = await response.json();
-      console.log("Submissions retrieved:", submissions);
       displaySubmissionHistory(submissions);
       return submissions; // Trả về danh sách submissions
     } catch (error) {
-      console.error("Lỗi khi lấy lịch sử nộp bài:", error);
       // Show empty state
       submissionList.innerHTML = `
             <div class="alert alert-info">
-                Bạn chưa có bài nộp nào cho task này.
+              You have no submissions for this task yet.
             </div>
         `;
-      throw error; // Ném lỗi để hàm gọi có thể xử lý
+      throw error;
     }
   }
 </script>
