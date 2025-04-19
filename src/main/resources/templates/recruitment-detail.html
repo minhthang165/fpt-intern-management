@@ -292,7 +292,6 @@
   function getIdsFromPath() {
     let pathSegments = window.location.pathname.split('/');
     let recruitmentId = pathSegments[pathSegments.length - 1];
-    console.log("Extracted recruitmentId:", recruitmentId);
     return { recruitmentId };
   }
 
@@ -304,16 +303,13 @@
     const { recruitmentId } = getIdsFromPath();
 
     try {
-      console.log("Fetching CV list for userId:", userId);
       let response = await fetch(`/file/user/${userId}/all`);
-      console.log("CV list API response status:", response.status);
 
       if (!response.ok) {
         throw new Error("Không thể tải danh sách CV!");
       }
 
       let cvList = await response.json();
-      console.log("Received CV list:", cvList);
 
       cvSelect.innerHTML = '<option value="">-- Chọn CV để apply --</option>';
 
@@ -405,9 +401,6 @@
     const cvSelect = document.getElementById("cvSelect");
     const selectedCV = cvSelect.options[cvSelect.selectedIndex];
 
-    console.log("User ID:", userId);
-    console.log("Recruitment ID:", recruitmentId);
-    console.log("Selected CV ID:", selectedCV.value);
 
     if (!recruitmentId || !userId || isNaN(recruitmentId) || isNaN(userId)) {
       messageEl.textContent = "Không tìm thấy thông tin tuyển dụng hoặc người dùng.";
@@ -437,9 +430,7 @@
       }
 
       if (!driveLink) {
-        console.log("No driveLink in dataset, fetching from API for fileId:", fileId);
         let pathResponse = await fetch(`/file/file/path/${fileId}`);
-        console.log("File path API response status:", pathResponse.status);
 
         if (!pathResponse.ok) {
           throw new Error("Không tìm thấy đường dẫn CV!");
@@ -447,8 +438,6 @@
         driveLink = await pathResponse.text();
       }
 
-      console.log("Selected fileId:", fileId);
-      console.log("Selected driveLink:", driveLink);
 
       if (!driveLink || driveLink === "undefined") {
         throw new Error("Đường dẫn CV không hợp lệ!");
@@ -459,15 +448,11 @@
       formData.append("fileId", fileId);
       formData.append("recruitmentId", recruitmentId);
 
-      console.log("Sending data:", { driveLink, fileId, recruitmentId });
 
       let applyResponse = await fetch("/cv/save", {
         method: "POST",
         body: formData
       });
-
-      console.log("Apply API response status:", applyResponse.status);
-
       // Lấy email của user (giả định từ API)
       let userResponse = await fetch(`/api/user/${userId}`);
       if (!userResponse.ok) {
@@ -493,7 +478,6 @@
       }
 
       let applyData = await applyResponse.text();
-      console.log("Apply response data:", applyData);
 
       // Gửi email thông báo thành công
       await fetch("/api/email/send-mail", {

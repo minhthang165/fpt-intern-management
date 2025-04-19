@@ -1145,13 +1145,10 @@
     if (userIdElement && userIdElement.value) {
       internId = userIdElement.value;
       classId = classroom.value;
-      console.log("User ID from input:", internId);
-      console.log("class_Id ID from input :", classId);
       loadClassData(classId);
     } else {
       // Fallback to example ID for testing
       internId = "203";
-      console.log("Using fallback intern ID:", internId);
 
       // Load the intern's class with mock data
       loadInternClass();
@@ -1249,7 +1246,7 @@
 
   // Function to load students for a class
   function loadStudents(classId) {
-    console.log("Loading students for class ID:", classId);
+
 
     fetch(`/api/class/${classId}/users`)
             .then(response => {
@@ -1259,7 +1256,7 @@
               return response.json();
             })
             .then(students => {
-              console.log("Students retrieved:", students);
+
               displayStudents(students);
             })
             .catch(error => {
@@ -1271,7 +1268,6 @@
   // Function to fetch tasks for the class
   async function fetchTasks(classId) {
     try {
-      console.log("Fetching tasks for class ID:", classId);
 
       const taskList = document.getElementById("task-list");
       // Show loading indicator in the task list
@@ -1294,7 +1290,7 @@
 
       // Parse the JSON response
       const tasks = await response.json();
-      console.log("Tasks API Response:", tasks);
+
 
       // Render the tasks
       renderTasksNewDesign(tasks);
@@ -1347,7 +1343,6 @@
         taskList.appendChild(spacer);
       }
 
-      console.log("Task list display fixed");
     }
   }
 
@@ -1437,7 +1432,6 @@
             try {
               // Load submission history for this task
               const submission = await loadSubmissionHistory2(task.id);
-              console.log(`Submission for task ${task.id}:`, submission);
 
               if (submission) {
                 let notificationHTML = '';
@@ -1529,16 +1523,15 @@
 
   // Function to load the intern's class with mock data
   function loadInternClass() {
-    console.log("Loading intern class");
+
 
     // Get the intern ID from the hidden input
     const classroom = document.getElementById("class_Id");
     const userIdElement = document.getElementById("user_id");
     if (userIdElement && userIdElement.value) {
       internId = userIdElement.value;
-      console.log("User ID from input:", internId);
       classId = classroom.value;
-      console.log("User ID from input:", internId);
+
     } else {
       console.error("No intern ID found in input");
       const errorMessage = document.getElementById("error-message");
@@ -1550,8 +1543,6 @@
   }
 
   function loadClassData(classId) {
-    console.log("Loading class data for class ID:", classId);
-
     // Show loading indicator
     const loadingIndicator = document.getElementById("loading-indicator");
     const errorMessage = document.getElementById("error-message");
@@ -1569,7 +1560,6 @@
               return response.json();
             })
             .then(classData => {
-              console.log("Class data retrieved:", classData);
               if (classData && classData.conversation && classData.conversation.id) {
                 conversationId = classData.conversation.id;
               } else {
@@ -1640,7 +1630,6 @@
     // Get mentor ID and fetch avatar
     if (classData.manager && classData.manager.id) {
       const mentorId = classData.manager.id;
-      console.log("Mentor ID:", mentorId);
 
       // Fetch mentor avatar using the mentor ID
       fetchMentorAvatar(mentorId, mentorAvatar, mentorInitials);
@@ -1679,8 +1668,6 @@
               return response.json();
             })
             .then(userData => {
-              console.log("Mentor data retrieved:", userData.avatar_path);
-
               // Check if avatar URL exists
               if (userData && userData.avatar_path) {
                 // Create and set image
@@ -1857,9 +1844,6 @@
       return;
     }
 
-    // Log task để debug
-    console.log("Task object:", task);
-
     // Set task details
     taskName.textContent = task.taskName || "Unnamed Task";
     taskDescription.textContent = task.description || "No Description";
@@ -1946,8 +1930,6 @@
 
   // Function to load submission history
   function loadSubmissionHistory(taskId) {
-    console.log("Loading submission history for task ID:", taskId);
-
     const submissionList = document.getElementById("submission-list");
     const submitButton = document.getElementById("submit-task-btn"); // Reference to submit button
 
@@ -1964,7 +1946,7 @@
     submissionList.innerHTML = `
       <div class="text-center py-2">
           <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-          <span>Đang tải lịch sử nộp bài...</span>
+          <span>Loading Submit history...</span>
       </div>
   `;
 
@@ -1976,7 +1958,6 @@
               return response.json();
             })
             .then(submissions => {
-              console.log("Submissions retrieved:", submissions);
 
               // Check if submissions.mark is not null
               if (submissions.mark !== null) {
@@ -2077,7 +2058,7 @@
               <div class="d-flex align-items-center">
 
                 <span class="fw-bold">Score:</span>
-                <span class="ms-2 badge bg-primary fs-6">${submission.mark}</span>
+                <span class="ms-2 badge bg-success fs-6">${submission.mark}</span>
               </div>
             </div>
           `
@@ -2151,8 +2132,7 @@
               return response.json();
             })
             .then(data => {
-              console.log("File uploaded to Cloudinary:", data);
-              const fileUrl = data.secure_url; // Cloudinary trả về URL trong thuộc tính secure_url
+              const fileUrl = data.secure_url;
 
               // Step 2: Delete old CompletedTask (if exists)
               return fetch(`/api/completed-tasks/${taskId}/${internId}/${classId}`, {
@@ -2192,7 +2172,6 @@
               return response.json();
             })
             .then(result => {
-              console.log("New CompletedTask created:", result);
 
               // Reset form
               document.getElementById("submission-form").reset();
@@ -2214,7 +2193,6 @@
   }
 
   async function loadSubmissionHistory2(taskId) {
-    console.log("Loading submission history for task ID:", taskId);
 
     const submissionList = document.getElementById("submission-list");
     if (!submissionList) {

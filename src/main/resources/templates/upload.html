@@ -460,7 +460,6 @@
     }
 
     try {
-      console.log("📤 Đang upload file...");
       const response = await fetch("/drive/uploadFileToGoogleDrive", {
         method: "POST",
         body: formData
@@ -471,7 +470,6 @@
       clearInterval(progressInterval);
 
       const data = await response.json();
-      console.log("📥 Phản hồi từ server:", data);
 
       let message = data.success ? "✅ " + data.message : "❌ " + data.message;
       messageEl.textContent = message;
