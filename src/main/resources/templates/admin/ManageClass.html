@@ -550,6 +550,15 @@
                                 <input type="number" class="form-control" id="newNumberOfInterns" required min="1">
                             </div>
 
+                            <div class="mb-3">
+                                <label for="newStatus" class="form-label">Status</label>
+                                <select class="form-control" id="newStatus" required>
+                                    <option value="NOT_STARTED">NOT_STARTED</option>
+                                    <option value="ON_GOING">ON_GOING</option>
+                                    <option value="ENDED">ENDED</option>
+                                </select>
+                            </div>
+
                             <label for="newManager">Select Manager:</label>
                             <select id="newManager" name="manager" class="form-control">
                                 <option th:each="userRole : ${userRoleList}"
@@ -830,6 +839,7 @@
 
         let className = document.getElementById("newClassName").value;
         let numberOfIntern = document.getElementById("newNumberOfInterns").value;
+        let status = document.getElementById("newStatus").value;
         let managerId = document.getElementById("newManager").value;
 
         let conversationData = {
@@ -875,6 +885,7 @@
                     className: className,
                     numberOfIntern: numberOfIntern,
                     managerId: managerId,
+                    status: status,
                     conversationId: conversationId
                 };
 

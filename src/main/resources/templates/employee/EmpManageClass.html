@@ -47,7 +47,7 @@
 
                         <!-- Error message (initially hidden) -->
                         <div id="error-message" class="alert alert-danger" style="display: none;">
-                            Unable to load classroom data. Please try again later.
+                            Unable to load classroom data. Please try again.
                         </div>
 
                         <!-- Classroom cards will be inserted here by JavaScript -->
@@ -407,7 +407,6 @@
 
                 // Parse the JSON response
                 const classrooms = await response.json();
-                console.log("API Response:", classrooms); // Debug log
 
                 // Check if we got valid data
                 if (!Array.isArray(classrooms)) {
@@ -422,13 +421,11 @@
                 document.getElementById("loading-indicator").style.display = "none";
 
                 // Log success
-                console.log(`Successfully loaded ${classrooms.length} classrooms`);
 
             } catch (error) {
                 // Hide loading indicator and show error message
                 document.getElementById("loading-indicator").style.display = "none";
                 showError(error.message);
-                console.error("Error fetching classrooms:", error);
             }
         }
 
@@ -457,9 +454,6 @@
                 classroomList.appendChild(noDataElement);
                 return;
             }
-
-            // Log the entire classrooms array to inspect the data
-            console.log("Classrooms data:", classrooms);
 
             // Create and append classroom cards
             classrooms.forEach(classroom => {
@@ -495,7 +489,6 @@
                             formattedTime = createdAt.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                             formattedDate = createdAt.toLocaleDateString("vi-VN", { day: '2-digit', month: '2-digit', year: 'numeric' });
                         } catch (e) {
-                            console.error("Error formatting date:", e);
                             formattedTime = "Invalid date";
                             formattedDate = "Invalid date";
                         }
@@ -504,10 +497,6 @@
                     card.setAttribute("data-time", formattedTime);
                     card.setAttribute("data-date", formattedDate);
 
-                    // Log description and status to debug
-                    console.log("Classroom ID:", classroom.id);
-                    console.log("Description:", classroom.description);
-                    console.log("Status:", classroom.status);
 
                     // Fill in the content
                     card.querySelector(".card-date").textContent = formattedDate;
@@ -517,9 +506,6 @@
                     const statusElement = card.querySelector(".card-status");
                     statusElement.textContent = getStatusText(classroom.status);
 
-                    // Log the status text and dot class for further debugging
-                    console.log("Status Text:", getStatusText(classroom.status));
-                    console.log("Status Dot Class:", getStatusDotClass(classroom.status));
 
                     // Set status dot color
                     const statusDot = card.querySelector(".status-dot");
@@ -587,7 +573,7 @@
             // Reset details container to placeholder
             document.getElementById("detailsContainer").innerHTML = `
                 <div class="detail-placeholder">
-                    <p>Chọn một lớp học để xem chi tiết</p>
+                    <p>Select a classroom to view details</p>
                 </div>
             `;
 
@@ -642,7 +628,7 @@
                 console.error("Error loading classroom details:", error);
                 document.getElementById("detailsContainer").innerHTML = `
                     <div class="alert alert-danger">
-                        Không thể tải chi tiết lớp học. Vui lòng thử lại sau.
+                        Unable loading Classroom details. Please try again later.
                     </div>
                 `;
             }
@@ -728,7 +714,7 @@
 
             studentContainer.innerHTML = `
                 <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
-                <span>Đang tải danh sách sinh viên...</span>
+                <span>Loading Interns list...</span>
             `;
 
             fetch(`/api/class/${classId}/users`)
@@ -741,9 +727,8 @@
                     displayUsers(users);
                 })
                 .catch(error => {
-                    console.log(classId)
                     console.error("Error fetching users:", error);
-                    studentContainer.innerHTML = '<div class="text-warning">Không thể tải danh sách sinh viên</div>';
+                    studentContainer.innerHTML = '<div class="text-warning">Unable to loading Interns list</div>';
                 });
         }
 
@@ -774,7 +759,7 @@
             studentContainer.innerHTML = "";
 
             if (!users || users.length === 0) {
-                studentContainer.innerHTML = "<div class='text-muted'>Không có sinh viên nào trong lớp.</div>";
+                studentContainer.innerHTML = "<div class='text-muted'>No Interns in this Classroom</div>";
                 return;
             }
             users.forEach(user => {
@@ -833,7 +818,7 @@
                 taskListElement.innerHTML = `
                 <div class="d-flex align-items-center">
                     <div class="spinner-border spinner-border-sm text-warning me-2" role="status"></div>
-                    <span>Đang tải danh sách task...</span>
+                    <span>Loading Tasks...</span>
                 </div>
             `;
 
@@ -847,13 +832,12 @@
 
                 // Parse the JSON response
                 const tasks = await response.json();
-                console.log("Tasks API Response:", tasks);
 
                 // If no tasks found
                 if (tasks.length === 0) {
                     taskListElement.innerHTML = `
                     <div class="alert alert-info">
-                        Không có bài tập nào cho lớp này.
+                        There are no Task for this class.
                     </div>
                 `;
                     return;
@@ -866,7 +850,7 @@
                 // Show error message if API call fails
                 document.getElementById("task-list").innerHTML = `
                 <div class="alert alert-danger">
-                    Không thể tải danh sách task. Vui lòng thử lại sau.
+                   Unable loading Tasks list. Please try again.
                 </div>
             `;
                 console.error("Error fetching tasks:", error);
@@ -881,7 +865,7 @@
 
             // If no tasks, show a message
             if (!tasks || tasks.length === 0) {
-                taskListElement.innerHTML = '<div class="text-muted">Không có công việc nào</div>';
+                taskListElement.innerHTML = '<div class="text-muted">No Task Available</div>';
                 return;
             }
 
@@ -932,10 +916,7 @@
                         </div>
                     </div>
                 `;
-
-                // Add click event to open task detail modal
                 taskElement.addEventListener("click", () => {
-                    // Tạo đối tượng task
                     const taskDetails = {
                         taskId: task.id,
                         classId: task.classId || task.classroom?.id,
@@ -947,7 +928,6 @@
 
                     // Lưu vào biến toàn cục
                     currentTaskData = taskDetails;
-                    console.log("Stored task in currentTaskData:", JSON.stringify(currentTaskData, null, 2));
                     openTaskDetailModal(taskDetails);
                 });
 
@@ -976,7 +956,6 @@
             // Xóa giá trị classId cũ
             document.getElementById("classId").value = "";
 
-            // Gọi lại để hiển thị danh sách checkbox lớp học từ cachedClassrooms
             renderClassCheckboxes();
 
             // Mở modal
@@ -1070,14 +1049,12 @@
 
             // Disable save button
             saveButton.disabled = true;
-            saveButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang lưu...`;
+            saveButton.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...`;
 
             try {
                 let fileUrl = null;
 
-                console.log("Checking files before upload:", fileInput.files);
                 if (fileInput.files?.length > 0) {
-                    console.log("Uploading file:", fileInput.files[0].name);
                     const formData = new FormData();
                     formData.append("file", fileInput.files[0]);
 
@@ -1086,7 +1063,6 @@
                         body: formData,
                     });
 
-                    console.log("Upload response:", uploadResponse.status, uploadResponse.statusText);
                     if (!uploadResponse.ok) {
                         const errorText = await uploadResponse.text();
                         console.error("Upload error:", errorText);
@@ -1094,7 +1070,6 @@
                     }
 
                     const uploadData = await uploadResponse.json();
-                    console.log("Upload data:", uploadData);
                     fileUrl = uploadData.secure_url;
                     if (!fileUrl) {
                         throw new Error("Cloudinary response missing secure_url");
@@ -1113,7 +1088,6 @@
                     creator: Number.parseInt(mentorId, 10),
                     fileData: fileUrl || null,
                 };
-                console.log("Task data before submission:", taskData);
 
                 // Submit task to classes
                 await submitTaskForClasses(taskData, selectedClassIds, saveButton);
@@ -1135,7 +1109,6 @@
                         classId: parseInt(classId, 10),
                     };
 
-                    console.log("Sending task data for classId:", classId, JSON.stringify(taskDataForClass, null, 2));
 
                     const response = await fetch('/api/task/create', {
                         method: 'POST',
@@ -1151,7 +1124,6 @@
                     }
 
                     const result = await response.json();
-                    console.log("Task created for classId:", classId, result);
                 }
 
                 // Close modal and reset form
@@ -1176,21 +1148,17 @@
             }
         }
         async function openTaskDetailModal(task) {
-            console.log("openTaskDetailModal called with task:", JSON.stringify(task, null, 2));
 
             // Validate task object
-            console.log("Validating task object...");
             if (!task?.taskId || !task?.classId) {
                 console.error("Invalid task object:", task);
                 console.error("task.taskId:", task?.taskId, "task.classId:", task?.classId);
                 showCommentAlert("Error: Invalid task or class ID.", "danger");
                 return;
             }
-            console.log("Task validation passed. taskId:", task.taskId, "classId:", task.classId);
 
             try {
-                // Initialize and show modal immediately
-                console.log("Initializing modal...");
+
                 const taskDetailModalElement = document.getElementById("taskDetailModal");
                 if (!taskDetailModalElement) {
                     console.error("taskDetailModal element not found");
@@ -1199,18 +1167,15 @@
                 }
                 const taskDetailModal = new bootstrap.Modal(taskDetailModalElement);
 
-                // Update modal header
-                console.log("Setting modal header with taskName:", task.taskName);
+
                 const modalLabel = document.getElementById("taskDetailModalLabel");
                 if (modalLabel) {
                     modalLabel.textContent = task.taskName || "Unnamed Task";
-                    console.log("Modal header set to:", modalLabel.textContent);
                 } else {
                     console.error("modalLabel element not found");
                 }
 
-                // Update basic task details
-                console.log("Updating task details...");
+
                 const taskDetailStartTime = document.getElementById("taskDetailStartTime");
                 const taskDetailEndTime = document.getElementById("taskDetailEndTime");
                 const taskDetailDescription = document.getElementById("taskDetailDescription");
@@ -1222,8 +1187,6 @@
                         taskDetailDescription: !!taskDetailDescription,
                     });
                 } else {
-                    // Format dates
-                    console.log("Formatting dates. startTime:", task.startTime, "endTime:", task.endTime);
                     const startTime = new Date(task.startTime);
                     const endTime = new Date(task.endTime);
 
@@ -1248,12 +1211,10 @@
                         month: "2-digit",
                         year: "numeric",
                     });
-                    console.log("Formatted dates:", { formattedStartTime, formattedEndTime });
 
                     taskDetailStartTime.innerHTML = `<i class="bi bi-calendar-check"></i> <span>Start Time: ${formattedStartTime}</span>`;
                     taskDetailEndTime.innerHTML = `<i class="bi bi-calendar-x"></i> <span>End Time: ${formattedEndTime}</span>`;
                     taskDetailDescription.textContent = task.description || "No description for this task.";
-                    console.log("Task details updated");
                 }
 
                 // Make sure the header has the correct columns
@@ -1270,14 +1231,12 @@
                 }
 
                 // Show loading for submission rows
-                console.log("Locating submissionRows element...");
                 const submissionRows = document.getElementById("submissionRows");
                 if (!submissionRows) {
                     console.error("submissionRows element not found");
                     showCommentAlert("Error: Submission rows element not found.", "danger");
                     return;
                 }
-                console.log("submissionRows element found");
 
                 submissionRows.innerHTML = `
                 <div class="submission-loading">
@@ -1289,30 +1248,24 @@
             `;
 
                 // Show modal immediately
-                console.log("Showing taskDetailModal...");
                 taskDetailModal.show();
-                console.log("taskDetailModal displayed");
 
                 // Fetch user-task data from new API
-                console.log("Fetching user-task data from /api/users-tasks/class/", task.classId, "/task/", task.taskId);
                 const response = await fetch(`/api/completed-tasks/class/${task.classId}/task/${task.taskId}`);
-                console.log("User-task fetch response status:", response.status);
+
                 if (!response.ok) {
                     console.error("Failed to fetch user-task data. Status:", response.status, "StatusText:", response.statusText);
                     submissionRows.innerHTML = '<div class="text-danger p-3">Can not Load the Student list.</div>';
                     throw new Error(`Failed to fetch user-task data: ${response.status} ${response.statusText}`);
                 }
                 const userTasks = await response.json();
-                console.log("User-task data fetched:", JSON.stringify(userTasks, null, 2));
 
                 // Check if no data is returned
                 if (!userTasks || userTasks.length === 0) {
                     console.warn("No user-task data found for classId:", task.classId, "taskId:", task.taskId);
                     submissionRows.innerHTML = '<div class="text-warning p-3">no student in this class.</div>';
-                    console.log("Updated submissionRows with no users message");
                     return;
                 }
-                console.log("Number of user-tasks:", userTasks.length);
 
                 // Pagination
                 const itemsPerPage = 10;
@@ -1321,7 +1274,6 @@
 
                 // Function to render users for the current page
                 async function renderPage(page) {
-                    console.log(`Rendering page ${page}...`);
                     submissionRows.innerHTML = `
                     <div class="submission-loading">
                         <div class="spinner-border text-primary" role="status">
@@ -1339,7 +1291,6 @@
 
                     // Process user-tasks in the current page
                     for (const [index, userTask] of pageUserTasks.entries()) {
-                        console.log(`Processing user-task ${start + index + 1}:`, JSON.stringify(userTask, null, 2));
                         try {
                             // Validate user object
                             const user = userTask.user;
@@ -1354,11 +1305,10 @@
 
                             // Create full name
                             const fullName = `${user.first_name} ${user.last_name}`;
-                            console.log(`User ${start + index + 1} fullName:`, fullName);
 
                             // Get submission (completedTask)
                             const submission = userTask.completedTask;
-                            console.log(`Submission for user ${user.id}:`, JSON.stringify(submission, null, 2));
+
 
                             // Create submission row
                             const submissionRow = document.createElement("div");
@@ -1367,10 +1317,9 @@
                             submissionRow.setAttribute("data-user-name", fullName);
 
                             submissionRow.addEventListener("click", () => {
-                                console.log(`Clicked submission row for user ${user.id}`);
                                 openCommentPopup(user.id, fullName);
                             });
-                            console.log(`Added click event listener for user ${user.id}`);
+
 
                             // Determine submission status
                             const hasSubmitted = submission !== null;
@@ -1427,7 +1376,6 @@
 
                             // Append row to table
                             submissionRows.appendChild(submissionRow);
-                            console.log(`Added row for user ${fullName}`);
                         } catch (error) {
                             console.error(`Error processing user-task ${start + index + 1}:`, error.message);
                             const errorRow = document.createElement("div");
@@ -1535,14 +1483,12 @@
                         paginationContainer.appendChild(paginationNav);
                         paginationWrapper.appendChild(paginationContainer);
                         submissionRows.appendChild(paginationWrapper);
-                        console.log(`Added enhanced pagination controls for page ${page}`);
                     }
                 }
 
                 // Render the first page
                 if (userTasks.length > 0) {
                     await renderPage(currentPage);
-                    console.log("Rendered first page");
                 }
             } catch (error) {
                 console.error("Error in openTaskDetailModal:", error);
@@ -1652,7 +1598,6 @@
 
             // Replace with enhanced version
             window.openTaskDetailModal = function(task) {
-                console.log("Enhanced openTaskDetailModal called with:", task);
 
                 // Store task context
                 currentTaskId = task.taskId;
@@ -1673,7 +1618,6 @@
 
         // Function to set up click handlers on submission items
         function setupSubmissionItemHandlers() {
-            console.log("Setting up submission item handlers");
 
             // Find all submission items in the task detail modal
             const submissionList = document.getElementById('submissionList');
@@ -1686,14 +1630,12 @@
             const submissionItems = submissionList.querySelectorAll('.submission-item');
 
             if (submissionItems.length > 0) {
-                console.log(`Found ${submissionItems.length} submission items with class`);
                 submissionItems.forEach((item, index) => {
                     addClickHandlerToSubmissionItem(item, index);
                 });
             } else {
                 // If no items found with the class, try to find direct children
                 const children = submissionList.children;
-                console.log(`Found ${children.length} children in submissionList`);
 
                 if (children.length > 0) {
                     Array.from(children).forEach((item, index) => {
@@ -1703,8 +1645,6 @@
                         }
                     });
                 } else {
-                    // If still no items, the content might be plain text or not loaded yet
-                    console.log("No submission items found, will try again in 1 second");
                     setTimeout(setupSubmissionItemHandlers, 1000);
                 }
             }
@@ -1712,7 +1652,6 @@
 
         // Function to add click handler to a submission item
         function addClickHandlerToSubmissionItem(item, index) {
-            console.log(`Adding click handler to submission item ${index}`);
 
             // Skip if this item already has our handler
             if (item.hasAttribute('data-comment-handler-added')) {
@@ -1830,7 +1769,6 @@
             return comment || null;
         }
         async function openCommentPopup(userId, fullName) {
-            console.log(`Opening comment popup for user ${userId}, name: ${fullName}`);
 
             // Cập nhật tên người dùng trong modal
             const commentModalUserName = document.getElementById("commentModalUserName");
@@ -1853,12 +1791,9 @@
                     throw new Error("currentTaskData không hợp lệ");
                 }
 
-                // Lấy dữ liệu submission
-                console.log(`Fetching submission for user ${userId} from /api/completed-tasks/find/${currentTaskData.taskId}/${currentUserId}/${currentTaskData.classId}`);
                 const submissionResponse = await fetch(`/api/completed-tasks/find/${currentTaskData.taskId}/${currentUserId}/${currentTaskData.classId}`);
                 if (!submissionResponse.ok) {
                     if (submissionResponse.status === 404) {
-                        console.log(`No submission found for user ${userId}`);
                         commentModalAttachment.innerHTML = `
                         <i class="bi bi-file-earmark-arrow-down me-1"></i>
                         <span>No attachment</span>
@@ -1870,8 +1805,6 @@
                 }
 
                 const submission = await submissionResponse.json();
-                console.log(`Submission data for user ${userId}:`, JSON.stringify(submission, null, 2));
-
                 // Kiểm tra tệp đính kèm
                 if (submission.file) {
 
@@ -1891,7 +1824,6 @@
                 if (commentModalElement) {
                     const commentModal = new bootstrap.Modal(commentModalElement);
                     commentModal.show();
-                    console.log("Comment modal displayed");
                 } else {
                     console.error("commentModal element not found");
                 }
@@ -1965,7 +1897,7 @@
             }
 
             if (!currentUserId || !currentTaskId || !currentClassId) {
-                console.error("Thiếu dữ liệu để gửi", {
+                console.error("Mising data to Sending", {
                     currentUserId,
                     currentTaskId,
                     currentClassId,
@@ -1979,40 +1911,35 @@
 
             submitBtn.disabled = true
             submitBtn.innerHTML =
-                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang gửi...'
+                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...'
 
             try {
                 let commentResult, markResult
 
                 // Gửi comment nếu có
                 if (comment) {
-                    console.log(`Gửi comment đến /api/completed-tasks/${currentTaskId}/${currentUserId}/${currentClassId}/comment`)
 
                     const commentResponse = await fetch(
                         `/api/completed-tasks/${currentTaskId}/${currentUserId}/${currentClassId}/comment`,
                         {
                             method: "PATCH",
                             headers: {
-                                // Sử dụng Content-Type là text/plain để gửi văn bản thuần túy
                                 "Content-Type": "text/plain",
                             },
-                            // Gửi comment dưới dạng văn bản thuần túy, không sử dụng JSON.stringify
                             body: comment,
                         },
                     )
 
                     if (!commentResponse.ok) {
                         const errorText = await commentResponse.text()
-                        throw new Error(`Không thể gửi comment (${commentResponse.status}): ${errorText || commentResponse.statusText}`)
+                        throw new Error(`Canot sending Comment (${commentResponse.status}): ${errorText || commentResponse.statusText}`)
                     }
 
                     try {
                         commentResult = await commentResponse.json()
-                        console.log("Comment đã được gửi thành công:", commentResult)
                     } catch (e) {
                         // Nếu response không phải JSON, sử dụng text
                         const textResult = await commentResponse.text()
-                        console.log("Comment đã được gửi thành công (text):", textResult)
                         commentResult = { comment: textResult }
                     }
 
@@ -2022,8 +1949,6 @@
 
                 // Gửi mark nếu có
                 if (mark) {
-                    console.log(`Gửi mark đến /api/completed-tasks/${currentTaskId}/${currentUserId}/${currentClassId}/mark`)
-
                     const markResponse = await fetch(
                         `/api/completed-tasks/${currentTaskId}/${currentUserId}/${currentClassId}/mark`,
                         {
@@ -2042,9 +1967,7 @@
 
                     try {
                         markResult = await markResponse.json()
-                        console.log("Mark đã được gửi thành công:", markResult)
                     } catch (e) {
-                        console.log("Mark đã được gửi thành công, nhưng không thể parse JSON response")
                         markResult = { mark: mark }
                     }
 
@@ -2064,7 +1987,6 @@
                 showCommentAlert(successMessage, "success")
 
             } catch (error) {
-                console.error("Lỗi khi gửi dữ liệu:", error)
                 showCommentAlert(`Không thể gửi dữ liệu: ${error.message}`, "danger")
             } finally {
                 submitBtn.disabled = false
@@ -2074,7 +1996,6 @@
 
         // Initialize everything when the document is ready
         document.addEventListener('DOMContentLoaded', function() {
-            console.log("Initializing enhanced comment popup functionality");
 
             // Enhance the original openTaskDetailModal function
             enhanceOpenTaskDetailModal();

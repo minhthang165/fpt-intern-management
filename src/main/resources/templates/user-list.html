@@ -23,7 +23,6 @@
   }
   const { userId } = getIdsFromPath();
   localStorage.setItem("userId", userId);
-  console.log("✅ User ID:", userId);
 
   function fetchUsers() {
     fetch('/api/user/')

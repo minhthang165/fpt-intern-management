@@ -1411,6 +1411,7 @@ body {
 }
 
 .submission-cell {
+    text-align: center;
     padding: 8px 12px;
     vertical-align: middle;
     overflow: hidden;
